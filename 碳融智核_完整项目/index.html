@@ -1,0 +1,2204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>碳融智核 - 中小企业ESG与碳数据智能管理平台</title>
+    <meta name="description" content="专为中小企业打造的ESG数据自动化与绿色金融赋能平台，助力企业低成本、高效率完成绿色转型">
+    <meta name="keywords" content="碳管理,ESG,绿色金融,中小企业,碳中和,可持续发展">
+    
+    <!-- Open Graph 社交媒体分享 -->
+    <meta property="og:title" content="碳融智核 - 中小企业ESG智能管理平台">
+    <meta property="og:description" content="让碳迹有信用，让绿色更融易">
+    <meta property="og:image" content="images/og-image.jpg">
+    <meta property="og:url" content="https://carbon-platform.com">
+    
+    <!-- 样式文件 -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- 图标 -->
+    <link rel="icon" type="image/svg+xml" href="images/logo.svg">
+    
+    <!-- 数据可视化库 修复CDN引入顺序和稳定性 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <!-- 加载动画 -->
+    <style>
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .loading-logo {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        .loading-text {
+            color: white;
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        /* 修复同步提示框默认隐藏 */
+        #databaseStatus {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载动画 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-logo">
+            <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="3"/>
+                <path d="M30,50 L50,30 L70,50 L50,70 Z" fill="none" stroke="white" stroke-width="3"/>
+                <circle cx="50" cy="50" r="15" fill="white" opacity="0.7"/>
+            </svg>
+        </div>
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">加载中...</span>
+        </div>
+        <div class="loading-text">正在初始化平台...</div>
+    </div>
+
+    <!-- 登录页面容器 -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-left">
+                <div class="login-brand">
+                    <i class="fas fa-leaf"></i>
+                    <h1>碳融智核</h1>
+                    <p>中小企业ESG数据智能管理平台</p>
+                </div>
+                <div class="login-slogan">
+                    <h2>让每一吨碳<br><span>都有信用价值</span></h2>
+                    <p>整合碳核算、信用评级、绿色金融对接，助力企业低成本绿色转型</p>
+                    <div class="login-features">
+                        <div class="feature-item">
+                            <i class="fas fa-brain"></i>
+                            <span>AI智能识别</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-calculator"></i>
+                            <span>精准碳核算</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>ESG动态评分</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-file-contract"></i>
+                            <span>智能报告生成</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="login-right">
+                <div class="login-form-box">
+                    <div class="login-tabs">
+                        <button class="login-tab active" data-tab="login">账号登录</button>
+                        <button class="login-tab" data-tab="register">账号注册</button>
+                    </div>
+                    <div id="loginForm" class="login-content active">
+                        <form id="loginFormContent">
+                            <div class="mb-4">
+                                <label class="form-label">邮箱账号</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" placeholder="请输入登录邮箱" value="demo@carbon-ai.com" required>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">登录密码</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" placeholder="请输入登录密码" value="demo123" required>
+                                </div>
+                            </div>
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">记住我</label>
+                                <a href="#" class="float-end">忘记密码？</a>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 btn-lg login-btn">
+                                <i class="fas fa-sign-in-alt me-2"></i>立即登录
+                            </button>
+                        </form>
+                        <div class="login-divider">
+                            <span>其他登录方式</span>
+                        </div>
+                        <div class="login-other">
+                            <button class="other-login-btn"><i class="fab fa-weixin"></i></button>
+                            <button class="other-login-btn"><i class="fas fa-phone"></i></button>
+                        </div>
+                    </div>
+                    <div id="registerForm" class="login-content">
+                        <form id="registerFormContent">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">姓名</label>
+                                    <input type="text" class="form-control" placeholder="请输入姓名" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">企业名称</label>
+                                    <input type="text" class="form-control" placeholder="请输入企业名称">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">邮箱</label>
+                                <input type="email" class="form-control" placeholder="请输入邮箱" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">密码</label>
+                                <input type="password" class="form-control" placeholder="至少8位字符" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">确认密码</label>
+                                <input type="password" class="form-control" placeholder="再次输入密码" required>
+                            </div>
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                                <label class="form-check-label" for="agreeTerms">我已阅读并同意《用户服务协议》和《隐私政策》</label>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>注册账号
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主应用容器（登录后显示） -->
+   <div id="appMain" class="app-main" style="display:none;">
+        <!-- 顶部导航栏 -->
+       <nav class="top-navbar" id="mainNavbar">
+            <div class="navbar-left">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="#home">
+                    <i class="fas fa-leaf me-2"></i>
+                    <strong>碳融智核</strong>
+                    <small class="text-light ms-2 d-none d-md-inline">ESG数据智能平台</small>
+                </a>
+            </div>
+            <div class="navbar-right">
+                <div class="nav-item me-3">
+                    <button class="btn btn-outline-light btn-sm" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell me-1"></i>
+                        <span class="badge bg-danger">3</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#">政策更新提醒</a></li>
+                        <li><a class="dropdown-item" href="#">报告生成完成</a></li>
+                        <li><a class="dropdown-item" href="#">金融产品推荐</a></li>
+                    </ul>
+                </div>
+                <div class="nav-item ms-3">
+                    <div class="user-info dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="userInfoBtn">
+                            <i class="fas fa-user me-1"></i>
+                            <span id="userName">用户</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#profile"><i class="fas fa-user-circle me-2"></i>个人中心</a></li>
+                            <li><a class="dropdown-item" href="#settings"><i class="fas fa-cog me-2"></i>账号设置</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+<!-- ★ 新增 app-body 包裹层 -->
+    <div class="app-body">
+        <!-- 侧边栏遮罩（移动端） -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-menu">
+                <ul class="menu-list">
+                    <li class="menu-item active" data-page="home">
+                        <a href="#home" class="menu-link">
+                            <i class="fas fa-home"></i>
+                            <span>首页概览</span>
+                        </a>
+                    </li>
+                    <li class="menu-title">核心功能</li>
+                    <li class="menu-item" data-page="features">
+                        <a href="#features" class="menu-link">
+                            <i class="fas fa-cube"></i>
+                            <span>产品功能</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-page="esg-calculator">
+                        <a href="#esg-calculator" class="menu-link">
+                            <i class="fas fa-calculator"></i>
+                            <span>ESG智能计算器</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-page="data-center">
+                        <a href="#data-center" class="menu-link">
+                            <i class="fas fa-file-alt"></i>
+                            <span>数据报告中心</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-page="finance-match">
+                        <a href="#finance-match" class="menu-link">
+                            <i class="fas fa-handshake"></i>
+                            <span>绿色金融对接</span>
+                        </a>
+                    </li>
+                    <li class="menu-title">行业服务</li>
+                    <li class="menu-item" data-page="solutions">
+                        <a href="#solutions" class="menu-link">
+                            <i class="fas fa-gem"></i>
+                            <span>行业解决方案</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-page="cases">
+                        <a href="#cases" class="menu-link">
+                            <i class="fas fa-briefcase"></i>
+                            <span>客户成功案例</span>
+                        </a>
+                    </li>
+                    <li class="menu-title">平台管理</li>
+                    <li class="menu-item" data-page="about">
+                        <a href="#about" class="menu-link">
+                            <i class="fas fa-info-circle"></i>
+                            <span>关于我们</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-page="settings">
+                        <a href="#settings" class="menu-link">
+                            <i class="fas fa-cog"></i>
+                            <span>系统设置</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- 主内容区域 -->
+        <main class="main-content" id="mainContent">
+            <!-- 快捷工具栏 -->
+            <div class="quick-toolbar">
+                <button class="tool-btn" data-bs-toggle="modal" data-bs-target="#calculatorModal" title="碳计算器">
+                    <i class="fas fa-calculator"></i>
+                </button>
+                <button class="tool-btn" data-bs-toggle="modal" data-bs-target="#reportModal" title="报告生成">
+                    <i class="fas fa-file-alt"></i>
+                </button>
+                <button class="tool-btn" onclick="window.open('https://carbon-platform.com/docs', '_blank')" title="使用文档">
+                    <i class="fas fa-book"></i>
+                </button>
+                <button class="tool-btn" id="scrollTopBtn" title="返回顶部">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+            </div>
+
+            <!-- 页面容器 - 所有原有功能模块完整保留 -->
+            <div class="page-container">
+                <!-- 首页模块 -->
+                <section id="home" class="page-section active">
+                    <div class="hero-section">
+                        <div class="container">
+                            <div class="row align-items-center">
+                                <div class="col-lg-6">
+                                    <h1 class="display-4 fw-bold mb-4 animate-text">
+                                        让每一吨碳<br>
+                                        <span class="text-gradient">都有信用价值</span>
+                                    </h1>
+                                    <p class="lead mb-4">
+                                        专为中小企业打造的ESG数据自动化平台，整合碳核算、信用评级、绿色金融对接，助力企业实现低成本绿色转型。
+                                    </p>
+                                    
+                                    <div class="hero-stats mb-5">
+                                        <div class="row g-3">
+                                            <div class="col-4">
+                                                <div class="stat-item">
+                                                    <div class="stat-value" data-count="5000">0</div>
+                                                    <div class="stat-label">服务企业</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="stat-item">
+                                                    <div class="stat-value" data-count="70">0</div>
+                                                    <div class="stat-label">成本降低%</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="stat-item">
+                                                    <div class="stat-value" data-count="24">0</div>
+                                                    <div class="stat-label">报告生成(小时)</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex flex-wrap gap-3 mb-5">
+                                        <a href="#solutions" class="btn btn-primary btn-lg page-link" data-page="solutions">
+                                            <i class="fas fa-rocket me-2"></i>立即体验
+                                        </a>
+                                        <a href="#features" class="btn btn-outline-light btn-lg page-link" data-page="features">
+                                            <i class="fas fa-play-circle me-2"></i>观看演示
+                                        </a>
+                                        <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#contactModal">
+                                            <i class="fas fa-phone-alt me-2"></i>联系我们
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- 合作伙伴展示 -->
+                                    <div class="partners-section">
+                                        <p class="text-light mb-3"><small>已获得以下机构认可</small></p>
+                                        <div class="partners-logos">
+                                            <div class="partner-logo">中国人民银行</div>
+                                            <div class="partner-logo">生态环境部</div>
+                                            <div class="partner-logo">上海环境能源交易所</div>
+                                            <div class="partner-logo">中国工商银行</div>
+                                            <div class="partner-logo">阿里巴巴集团</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="hero-visual">
+                                        <div class="visual-main">
+                                            <div class="dashboard-preview">
+                                                <!-- 这里将放置交互式数据可视化 -->
+                                                <div id="heroDashboard" style="height: 400px;"></div>
+                                            </div>
+                                            <div class="floating-card card1">
+                                                <i class="fas fa-chart-line"></i>
+                                                <span>实时监控</span>
+                                            </div>
+                                            <div class="floating-card card2">
+                                                <i class="fas fa-robot"></i>
+                                                <span>AI分析</span>
+                                            </div>
+                                            <div class="floating-card card3">
+                                                <i class="fas fa-shield-alt"></i>
+                                                <span>数据安全</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 波浪装饰 -->
+                        <div class="wave-divider">
+                            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                                <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 产品功能模块 -->
+                <section id="features" class="page-section section-padding">
+                    <div class="container">
+                        <div class="section-header text-center mb-5">
+                            <h2 class="section-title">核心产品功能</h2>
+                            <p class="section-subtitle">一站式解决中小企业碳管理与ESG数据挑战</p>
+                        </div>
+                        
+                        <div class="row g-4">
+                            <!-- 功能卡片 -->
+                            <div class="col-lg-3 col-md-6">
+                                <div class="feature-card" data-aos="fade-up">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-brain"></i>
+                                    </div>
+                                    <h4>AI智能识别</h4>
+                                    <p>基于OCR+NLP技术，自动识别发票、账单、物流单等票据，准确率>95%</p>
+                                    <ul class="feature-list">
+                                        <li>支持20+种票据格式</li>
+                                        <li>多语言识别</li>
+                                        <li>批量处理</li>
+                                    </ul>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#ocrDemoModal">
+                                        体验识别
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6">
+                                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-calculator"></i>
+                                    </div>
+                                    <h4>精准碳核算</h4>
+                                    <p>符合国家标准的核算体系，覆盖范围1、2、3碳排放</p>
+                                    <ul class="feature-list">
+                                        <li>50+行业排放因子库</li>
+                                        <li>自动化计算引擎</li>
+                                        <li>动态更新因子</li>
+                                    </ul>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="openCalculator('carbon')">
+                                        开始计算
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6">
+                                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </div>
+                                    <h4>ESG动态评分</h4>
+                                    <p>多维度评分模型，实时反映企业ESG表现</p>
+                                    <ul class="feature-list">
+                                        <li>环境(E)维度评分</li>
+                                        <li>社会(S)维度评分</li>
+                                        <li>治理(G)维度评分</li>
+                                    </ul>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="openCalculator('esg')">
+                                        查看评分
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6">
+                                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-file-contract"></i>
+                                    </div>
+                                    <h4>智能报告生成</h4>
+                                    <p>AIGC技术自动生成合规报告，支持多场景适配</p>
+                                    <ul class="feature-list">
+                                        <li>10+报告模板</li>
+                                        <li>分钟级生成</li>
+                                        <li>多格式导出</li>
+                                    </ul>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportModal">
+                                        生成报告
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 功能展示 -->
+                        <div class="row mt-5 pt-5">
+                            <div class="col-lg-6">
+                                <div class="feature-demo">
+                                    <div class="demo-header">
+                                        <h3><i class="fas fa-bolt me-2"></i>实时数据驾驶舱</h3>
+                                        <p class="text-muted">可视化监控企业碳足迹与ESG表现</p>
+                                    </div>
+                                    <div class="demo-content">
+                                        <div id="dashboardDemo" style="height: 400px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="feature-demo">
+                                    <div class="demo-header">
+                                        <h3><i class="fas fa-university me-2"></i>绿色金融对接</h3>
+                                        <p class="text-muted">连接银行、投资机构的绿色金融产品</p>
+                                    </div>
+                                    <div class="demo-content">
+                                        <div class="finance-products">
+                                            <div class="product-card featured">
+                                                <div class="product-badge">热门</div>
+                                                <h5>绿色信贷优惠包</h5>
+                                                <div class="product-details">
+                                                    <p><i class="fas fa-percentage text-success me-2"></i>利率优惠：LPR-50BP</p>
+                                                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i>额度：最高500万元</p>
+                                                    <p><i class="fas fa-clock text-warning me-2"></i>期限：1-3年</p>
+                                                </div>
+                                                <button class="btn btn-sm btn-success w-100 mt-3" onclick="applyProduct(1)">
+                                                    立即申请
+                                                </button>
+                                            </div>
+                                            <div class="product-card">
+                                                <h5>供应链绿色金融</h5>
+                                                <div class="product-details">
+                                                    <p><i class="fas fa-percentage text-success me-2"></i>账期延长至90天</p>
+                                                    <p><i class="fas fa-tags text-primary me-2"></i>需ESG评分≥75分</p>
+                                                </div>
+                                                <button class="btn btn-sm btn-outline-primary w-100 mt-3" onclick="applyProduct(2)">
+                                                    查看详情
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ESG计算器模块 -->
+                <section id="esg-calculator" class="page-section section-padding bg-light">
+                    <div class="container">
+                        <div class="section-header text-center mb-5">
+                            <h2 class="section-title">ESG智能计算器</h2>
+                            <p class="section-subtitle">快速评估企业ESG表现，获得专业评分报告</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="calculator-container">
+                                    <div class="calculator-tabs">
+                                        <button class="calc-tab active" data-target="env-calc">
+                                            <i class="fas fa-leaf me-2"></i>环境(E)计算
+                                        </button>
+                                        <button class="calc-tab" data-target="social-calc">
+                                            <i class="fas fa-users me-2"></i>社会(S)评估
+                                        </button>
+                                        <button class="calc-tab" data-target="gov-calc">
+                                            <i class="fas fa-landmark me-2"></i>治理(G)分析
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="calculator-content">
+                                        <!-- 环境计算器 -->
+                                        <div id="env-calc" class="calc-panel active">
+                                            <h4 class="mb-4">环境绩效计算</h4>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">企业类型</label>
+                                                        <select class="form-select" id="companyType">
+                                                            <option value="ecommerce">电商企业</option>
+                                                            <option value="manufacture" selected>制造企业</option>
+                                                            <option value="service">服务企业</option>
+                                                            <option value="logistics">物流企业</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">年营收（万元）</label>
+                                                        <input type="number" class="form-control" id="annualRevenue" value="1000">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="energy-inputs mt-4">
+                                                <h5><i class="fas fa-bolt me-2"></i>能源消耗</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">电力</span>
+                                                            <input type="number" class="form-control" id="electricityUsage" value="10000" placeholder="kWh">
+                                                            <span class="input-group-text">kWh</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">天然气</span>
+                                                            <input type="number" class="form-control" id="gasUsage" value="500" placeholder="m³">
+                                                            <span class="input-group-text">m³</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">燃油</span>
+                                                            <input type="number" class="form-control" id="fuelUsage" value="200" placeholder="升">
+                                                            <span class="input-group-text">升</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="waste-inputs mt-4">
+                                                <h5><i class="fas fa-recycle me-2"></i>废弃物管理</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">废弃物产生量</span>
+                                                            <input type="number" class="form-control" id="wasteGeneration" value="10">
+
+                                                            <span class="input-group-text">吨</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">回收利用率</span>
+                                                            <input type="number" class="form-control" id="recyclingRate" value="60" min="0" max="100">
+                                                            <span class="input-group-text">%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <button class="btn btn-primary w-100 mt-4" onclick="calculateEnvironmental()">
+                                                <i class="fas fa-calculator me-2"></i>计算环境绩效
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- 社会评估 -->
+                                        <div id="social-calc" class="calc-panel">
+                                            <h4 class="mb-4">社会责任评估</h4>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">企业员工规模</label>
+                                                        <select class="form-select" id="employeeScale">
+                                                            <option value="small">小型企业 (1-50人)</option>
+                                                            <option value="medium" selected>中型企业 (51-300人)</option>
+                                                            <option value="large">大型企业 (300人以上)</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">员工满意度 (%)</label>
+                                                        <input type="number" class="form-control" id="employeeSatisfaction" value="75" min="0" max="100">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="social-inputs mt-4">
+                                                <h5><i class="fas fa-user-check me-2"></i>员工权益</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">年度培训小时</span>
+                                                            <input type="number" class="form-control" id="trainingHours" value="20" placeholder="小时/年">
+                                                            <span class="input-group-text">小时</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">员工流失率</span>
+                                                            <input type="number" class="form-control" id="turnoverRate" value="15" min="0" max="100">
+                                                            <span class="input-group-text">%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="community-inputs mt-4">
+                                                <h5><i class="fas fa-hands-helping me-2"></i>社区与供应链</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">社区投入</span>
+                                                            <input type="number" class="form-control" id="communityInvestment" value="50" placeholder="万元">
+                                                            <span class="input-group-text">万元</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">供应商ESG评估</span>
+                                                            <select class="form-select" id="supplierESG">
+                                                                <option value="0">未评估</option>
+                                                                <option value="30">部分评估</option>
+                                                                <option value="60" selected>基本评估</option>
+                                                                <option value="90">全面评估</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="customer-inputs mt-4">
+                                                <h5><i class="fas fa-users me-2"></i>客户与消费者</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">客户满意度</span>
+                                                            <input type="number" class="form-control" id="customerSatisfaction" value="85" min="0" max="100">
+                                                            <span class="input-group-text">%</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">产品投诉率</span>
+                                                            <input type="number" class="form-control" id="complaintRate" value="2" min="0" max="100">
+                                                            <span class="input-group-text">%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button class="btn btn-primary w-100 mt-4" onclick="calculateSocial()">
+                                                <i class="fas fa-users me-2"></i>计算社会责任
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- 治理分析 -->
+                                        <div id="gov-calc" class="calc-panel">
+                                            <h4 class="mb-4">公司治理分析</h4>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">企业所有权性质</label>
+                                                        <select class="form-select" id="ownershipType">
+                                                            <option value="private">民营企业</option>
+                                                            <option value="state" selected>国有企业</option>
+                                                            <option value="foreign">外资企业</option>
+                                                            <option value="mixed">混合所有制</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">公司治理水平</label>
+                                                        <select class="form-select" id="governanceLevel">
+                                                            <option value="20">初始阶段</option>
+                                                            <option value="40">发展阶段</option>
+                                                            <option value="60" selected>规范阶段</option>
+                                                            <option value="80">优化阶段</option>
+                                                            <option value="100">卓越阶段</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="board-inputs mt-4">
+                                                <h5><i class="fas fa-landmark me-2"></i>董事会结构</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">独立董事比例</span>
+                                                            <input type="number" class="form-control" id="independentDirectors" value="30" min="0" max="100">
+                                                            <span class="input-group-text">%</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">女性董事比例</span>
+                                                            <input type="number" class="form-control" id="femaleDirectors" value="25" min="0" max="100">
+                                                            <span class="input-group-text">%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="ethics-inputs mt-4">
+                                                <h5><i class="fas fa-scale-balanced me-2"></i>商业道德与合规</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">合规培训次数</span>
+                                                            <input type="number" class="form-control" id="complianceTraining" value="4" placeholder="次/年">
+                                                            <span class="input-group-text">次/年</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">反腐败政策</span>
+                                                            <select class="form-select" id="antiCorruption">
+                                                                <option value="0">无政策</option>
+                                                                <option value="30">基本政策</option>
+                                                                <option value="60" selected>完善政策</option>
+                                                                <option value="90">严格执行</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="transparency-inputs mt-4">
+                                                <h5><i class="fas fa-eye me-2"></i>透明度与披露</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">ESG信息披露</span>
+                                                            <select class="form-select" id="esgDisclosure">
+                                                                <option value="0">未披露</option>
+                                                                <option value="30">部分披露</option>
+                                                                <option value="60" selected>基本披露</option>
+                                                                <option value="90">全面披露</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">审计独立性</span>
+                                                            <select class="form-select" id="auditIndependence">
+                                                                <option value="0">未审计</option>
+                                                                <option value="25">内部审计</option>
+                                                                <option value="50" selected>外部基本审计</option>
+                                                                <option value="75">外部详细审计</option>
+                                                                <option value="100">国际标准审计</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="risk-inputs mt-4">
+                                                <h5><i class="fas fa-shield-alt me-2"></i>风险管理</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">风险管理制度</span>
+                                                            <select class="form-select" id="riskManagement">
+                                                                <option value="0">无制度</option>
+                                                                <option value="30">初步建立</option>
+                                                                <option value="60" selected>基本完善</option>
+                                                                <option value="90">全面系统</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">数据安全等级</span>
+                                                            <select class="form-select" id="dataSecurity">
+                                                                <option value="0">基础防护</option>
+                                                                <option value="25">标准防护</option>
+                                                                <option value="50" selected>增强防护</option>
+                                                                <option value="75">高级防护</option>
+                                                                <option value="100">企业级防护</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button class="btn btn-primary w-100 mt-4" onclick="calculateGovernance()">
+                                                <i class="fas fa-landmark me-2"></i>计算治理绩效
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="calculator-result mt-4" id="calcResult">
+                                        <!-- 计算结果将显示在这里 -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="result-visualization">
+                                    <h4 class="mb-4">ESG评分可视化</h4>
+                                    <div id="esgRadarChart" style="height: 300px;"></div>
+                                    
+                                    <div class="score-breakdown mt-4">
+                                        <div class="score-item">
+                                            <span class="score-label">环境(E)得分</span>
+                                            <div class="score-bar">
+                                                <div class="score-fill" id="envScoreBar" style="width: 0%"></div>
+                                            </div>
+                                            <span class="score-value" id="envScore">0</span>
+                                        </div>
+                                        <div class="score-item">
+                                            <span class="score-label">社会(S)得分</span>
+                                            <div class="score-bar">
+                                                <div class="score-fill" id="socialScoreBar" style="width: 0%"></div>
+                                            </div>
+                                            <span class="score-value" id="socialScore">0</span>
+                                        </div>
+                                        <div class="score-item">
+                                            <span class="score-label">治理(G)得分</span>
+                                            <div class="score-bar">
+                                                <div class="score-fill" id="govScoreBar" style="width: 0%"></div>
+                                            </div>
+                                            <span class="score-value" id="govScore">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 数据报告中心模块 -->
+                <section id="data-center" class="page-section section-padding">
+                    <div class="container">
+                        <div class="section-header text-center mb-5">
+                            <h2 class="section-title">智能数据报告中心</h2>
+                            <p class="section-subtitle">基于AI技术的自动化报告生成与分析</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="report-types">
+                                    <div class="report-type-card active" data-type="carbon">
+                                        <i class="fas fa-cloud"></i>
+                                        <h5>碳排放报告</h5>
+                                        <p>核算范围1、2、3排放，生成合规报告</p>
+                                    </div>
+                                    <div class="report-type-card" data-type="esg">
+                                        <i class="fas fa-chart-pie"></i>
+                                        <h5>ESG综合报告</h5>
+                                        <p>环境、社会、治理多维度分析</p>
+                                    </div>
+                                    <div class="report-type-card" data-type="finance">
+                                        <i class="fas fa-university"></i>
+                                        <h5>绿色金融报告</h5>
+                                        <p>适配银行信贷申请要求</p>
+                                    </div>
+                                    <div class="report-type-card" data-type="supplychain">
+                                        <i class="fas fa-truck"></i>
+                                        <h5>供应链碳足迹</h5>
+                                        <p>分析上下游碳排放影响</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-8">
+                                <div class="report-generator">
+                                    <div class="report-header">
+                                        <h4>碳排放报告生成器</h4>
+                                        <p class="text-muted">选择报告模板，AI将自动生成专业报告</p>
+                                    </div>
+                                    
+                                    <div class="report-templates">
+                                        <div class="template-card">
+                                            <div class="template-preview">
+                                                <i class="fas fa-file-alt"></i>
+                                            </div>
+                                            <h6>基础碳核算报告</h6>
+                                            <p>符合国家基本要求</p>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="generateReport('basic')">
+                                                使用此模板
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="template-card">
+                                            <div class="template-preview">
+                                                <i class="fas fa-chart-line"></i>
+                                            </div>
+                                            <h6>碳减排规划报告</h6>
+                                            <p>包含减排路径规划</p>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="generateReport('reduction')">
+                                                使用此模板
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="template-card">
+                                            <div class="template-preview">
+                                                <i class="fas fa-award"></i>
+                                            </div>
+                                            <h6>ESG披露报告</h6>
+                                            <p>符合交易所要求</p>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="generateReport('esg')">
+                                                使用此模板
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="report-preview mt-4" id="reportPreview">
+                                        <div class="preview-placeholder">
+                                            <i class="fas fa-file-alt fa-3x text-muted"></i>
+                                            <p class="mt-3">选择模板后，预览将显示在这里</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="report-actions mt-4">
+                                        <button class="btn btn-primary" onclick="downloadReport()">
+                                            <i class="fas fa-download me-2"></i>下载报告 (PDF)
+                                        </button>
+                                        <button class="btn btn-outline-primary ms-2" onclick="shareReport()">
+                                            <i class="fas fa-share-alt me-2"></i>分享报告
+                                        </button>
+                                        <button class="btn btn-outline-success ms-2" onclick="saveToCloud()">
+                                            <i class="fas fa-cloud-upload-alt me-2"></i>保存至云端
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 绿色金融对接模块（新增独立页面） -->
+                <section id="finance-match" class="page-section section-padding bg-light">
+                    <div class="container">
+                        <div class="section-header text-center mb-5">
+                            <h2 class="section-title">绿色金融对接中心</h2>
+                            <p class="section-subtitle">连接金融机构与中小企业，助力绿色融资</p>
+                        </div>
+                        
+                        <div class="row g-4">
+                            <div class="col-lg-8">
+                                <div class="finance-products-list">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="product-card featured">
+                                                <div class="product-badge">热门</div>
+                                                <h5>绿色信贷优惠包</h5>
+                                                <div class="product-details">
+                                                    <p><i class="fas fa-university text-success me-2"></i>发行机构：中国工商银行</p>
+                                                    <p><i class="fas fa-percentage text-success me-2"></i>利率优惠：LPR-50BP</p>
+                                                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i>最高额度：500万元</p>
+                                                    <p><i class="fas fa-clock text-warning me-2"></i>贷款期限：1-3年</p>
+                                                    <p><i class="fas fa-check-circle text-info me-2"></i>申请要求：ESG评分≥70分</p>
+                                                </div>
+                                                <button class="btn btn-success w-100 mt-3" onclick="applyProduct(1)">
+                                                    立即申请
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="product-card">
+                                                <h5>供应链绿色金融</h5>
+                                                <div class="product-details">
+                                                    <p><i class="fas fa-university text-success me-2"></i>发行机构：中国建设银行</p>
+                                                    <p><i class="fas fa-percentage text-success me-2"></i>账期延长至90天</p>
+                                                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i>最高额度：300万元</p>
+                                                    <p><i class="fas fa-clock text-warning me-2"></i>贷款期限：按需定制</p>
+                                                    <p><i class="fas fa-check-circle text-info me-2"></i>申请要求：ESG评分≥75分</p>
+                                                </div>
+                                                <button class="btn btn-outline-primary w-100 mt-3" onclick="applyProduct(2)">
+                                                    查看详情
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="product-card">
+                                                <h5>碳减排项目贷款</h5>
+                                                <div class="product-details">
+                                                    <p><i class="fas fa-university text-success me-2"></i>发行机构：国家开发银行</p>
+                                                    <p><i class="fas fa-percentage text-success me-2"></i>利率优惠：LPR-80BP</p>
+                                                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i>最高额度：1000万元</p>
+                                                    <p><i class="fas fa-clock text-warning me-2"></i>贷款期限：3-5年</p>
+                                                    <p><i class="fas fa-check-circle text-info me-2"></i>申请要求：有明确减排项目</p>
+                                                </div>
+                                                <button class="btn btn-outline-primary w-100 mt-3" onclick="applyProduct(3)">
+                                                    查看详情
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="product-card">
+                                                <h5>绿色企业信用贷</h5>
+                                                <div class="product-details">
+                                                    <p><i class="fas fa-university text-success me-2"></i>发行机构：招商银行</p>
+                                                    <p><i class="fas fa-percentage text-success me-2"></i>年化利率低至3.85%</p>
+                                                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i>最高额度：200万元</p>
+                                                    <p><i class="fas fa-clock text-warning me-2"></i>贷款期限：1年</p>
+                                                    <p><i class="fas fa-check-circle text-info me-2"></i>申请要求：无抵押纯信用</p>
+                                                </div>
+                                                <button class="btn btn-outline-primary w-100 mt-3" onclick="applyProduct(4)">
+                                                    查看详情
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="finance-sidebar">
+                                    <div class="finance-filter">
+                                        <h5 class="mb-3">产品筛选</h5>
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">金融机构</label>
+                                            <select class="form-select">
+                                                <option value="">全部机构</option>
+                                                <option value="icbc">中国工商银行</option>
+                                                <option value="ccb">中国建设银行</option>
+                                                <option value="cdb">国家开发银行</option>
+                                                <option value="cmb">招商银行</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">贷款额度</label>
+                                            <select class="form-select">
+                                                <option value="">全部额度</option>
+                                                <option value="100">100万以下</option>
+                                                <option value="500">100-500万</option>
+                                                <option value="1000">500-1000万</option>
+                                                <option value="more">1000万以上</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">贷款期限</label>
+                                            <select class="form-select">
+                                                <option value="">全部期限</option>
+                                                <option value="1">1年以内</option>
+                                                <option value="3">1-3年</option>
+                                                <option value="5">3-5年</option>
+                                                <option value="more">5年以上</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">ESG评分要求</label>
+                                            <select class="form-select">
+                                                <option value="">全部</option>
+                                                <option value="60">≥60分</option>
+                                                <option value="70">≥70分</option>
+                                                <option value="80">≥80分</option>
+                                            </select>
+                                        </div>
+                                        <button class="btn btn-primary w-100">
+                                            <i class="fas fa-filter me-2"></i>筛选产品
+                                        </button>
+                                    </div>
+                                    <div class="finance-notice mt-4">
+                                        <h5 class="mb-3">申请须知</h5>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>需完成企业ESG评分认证</li>
+                                            <li class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>提供企业营业执照等基础资料</li>
+                                            <li class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>平台可协助生成申请报告</li>
+                                            <li class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>最快3个工作日完成审批</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 解决方案模块 -->
+                <section id="solutions" class="page-section section-padding bg-light">
+                    <div class="container">
+                        <div class="section-header text-center mb-5">
+                            <h2 class="section-title">行业解决方案</h2>
+                            <p class="section-subtitle">为不同行业提供定制化的碳管理与ESG解决方案</p>
+                        </div>
+                        
+                        <div class="row g-4">
+                            <!-- 解决方案卡片 -->
+                            <div class="col-lg-4">
+                                <div class="solution-card ecommerce">
+                                    <div class="solution-icon">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </div>
+                                    <h4>电商与零售</h4>
+                                    <p class="solution-desc">
+                                        针对订单履约、物流包装、退货处理等场景，提供全链条碳足迹管理。
+                                    </p>
+                                    <ul class="solution-features">
+                                        <li>订单级碳核算</li>
+                                        <li>包装物回收管理</li>
+                                        <li>绿色物流优化</li>
+                                        <li>平台合规对接</li>
+                                    </ul>
+                                    <button class="btn btn-outline-primary w-100" onclick="viewSolution('ecommerce')">
+                                        查看详情
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="solution-card manufacture">
+                                    <div class="solution-icon">
+                                        <i class="fas fa-industry"></i>
+                                    </div>
+                                    <h4>制造与加工</h4>
+                                    <p class="solution-desc">
+                                        覆盖生产能耗、原材料、供应链等环节，实现精细化碳管理。
+                                    </p>
+                                    <ul class="solution-features">
+                                        <li>生产能耗监控</li>
+                                        <li>供应链碳追溯</li>
+                                        <li>绿色技改评估</li>
+                                        <li>政策补贴申报</li>
+                                    </ul>
+                                    <button class="btn btn-outline-primary w-100" onclick="viewSolution('manufacture')">
+                                        查看详情
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="solution-card logistics">
+                                    <div class="solution-icon">
+                                        <i class="fas fa-truck"></i>
+                                    </div>
+                                    <h4>物流与运输</h4>
+                                    <p class="solution-desc">
+                                        优化运输路径、车辆能耗，降低物流环节碳排放强度。
+                                    </p>
+                                    <ul class="solution-features">
+                                        <li>运输路径优化</li>
+                                        <li>车辆能耗管理</li>
+                                        <li>多式联运评估</li>
+                                        <li>绿色车队认证</li>
+                                    </ul>
+                                    <button class="btn btn-outline-primary w-100" onclick="viewSolution('logistics')">
+                                        查看详情
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 定价方案 -->
+                        <div class="row mt-5 pt-5">
+                            <div class="col-lg-12">
+                                <div class="pricing-header text-center mb-5">
+                                    <h3 class="mb-3">灵活定价方案</h3>
+                                    <p class="text-muted">根据企业规模与需求，选择合适的服务方案</p>
+                                </div>
+                                
+                                <div class="row justify-content-center">
+                                    <div class="col-lg-3 col-md-6 mb-4">
+                                        <div class="pricing-card basic">
+                                            <div class="pricing-header">
+                                                <h5>基础版</h5>
+                                                <div class="price">
+                                                    <span class="currency">¥</span>
+                                                    <span class="amount">0</span>
+                                                    <span class="period">/月</span>
+                                                </div>
+                                                <p class="price-desc">适合初创企业试用</p>
+                                            </div>
+                                            <div class="pricing-features">
+                                                <ul>
+                                                    <li><i class="fas fa-check text-success me-2"></i>每月10次票据识别</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>基础碳核算功能</li>
+                                                    <li><i class="fas fa-times text-muted me-2"></i>ESG评分</li>
+                                                    <li><i class="fas fa-times text-muted me-2"></i>智能报告生成</li>
+                                                    <li><i class="fas fa-times text-muted me-2"></i>金融对接服务</li>
+                                                </ul>
+                                            </div>
+                                            <div class="pricing-footer">
+                                                <button class="btn btn-outline-primary w-100" onclick="selectPlan('basic')">
+                                                    免费使用
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-3 col-md-6 mb-4">
+                                        <div class="pricing-card pro popular">
+                                            <div class="popular-badge">最受欢迎</div>
+                                            <div class="pricing-header">
+                                                <h5>专业版</h5>
+                                                <div class="price">
+                                                    <span class="currency">¥</span>
+                                                    <span class="amount">999</span>
+                                                    <span class="period">/年</span>
+                                                </div>
+                                                <p class="price-desc">适合中小企业</p>
+                                            </div>
+                                            <div class="pricing-features">
+                                                <ul>
+                                                    <li><i class="fas fa-check text-success me-2"></i>无限次票据识别</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>完整碳核算功能</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>ESG动态评分</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>智能报告生成</li>
+                                                    <li><i class="fas fa-times text-muted me-2"></i>金融对接服务</li>
+                                                </ul>
+                                            </div>
+                                            <div class="pricing-footer">
+                                                <button class="btn btn-primary w-100" onclick="selectPlan('pro')">
+                                                    立即购买
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-3 col-md-6 mb-4">
+                                        <div class="pricing-card enterprise">
+                                            <div class="pricing-header">
+                                                <h5>企业版</h5>
+                                                <div class="price">
+                                                    <span class="currency">¥</span>
+                                                    <span class="amount">1999</span>
+                                                    <span class="period">/年</span>
+                                                </div>
+                                                <p class="price-desc">适合成长型企业</p>
+                                            </div>
+                                            <div class="pricing-features">
+                                                <ul>
+                                                    <li><i class="fas fa-check text-success me-2"></i>所有专业版功能</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>绿色金融对接</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>API接口调用</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>专属客户经理</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>定制化报告模板</li>
+                                                </ul>
+                                            </div>
+                                            <div class="pricing-footer">
+                                                <button class="btn btn-outline-primary w-100" onclick="selectPlan('enterprise')">
+                                                    咨询购买
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 客户案例模块 -->
+                <section id="cases" class="page-section section-padding">
+                    <div class="container">
+                        <div class="section-header text-center mb-5">
+                            <h2 class="section-title">成功客户案例</h2>
+                            <p class="section-subtitle">见证中小企业如何通过我们的平台实现绿色转型</p>
+                        </div>
+                        
+                        <div class="row g-4">
+                            <div class="col-lg-4">
+                                <div class="case-card">
+                                    <div class="case-header">
+                                        <div class="case-logo">A公司</div>
+                                        <div class="case-tag">电商企业</div>
+                                    </div>
+                                    <div class="case-body">
+                                        <h5>实现绿色供应链升级</h5>
+                                        <p class="case-desc">
+                                            通过使用平台碳足迹追踪功能，优化包装材料，减少30%碳排放，获得平台流量扶持。
+                                        </p>
+                                        <div class="case-results">
+                                            <div class="result-item">
+                                                <div class="result-value">-30%</div>
+                                                <div class="result-label">碳排放降低</div>
+                                            </div>
+                                            <div class="result-item">
+                                                <div class="result-value">50万</div>
+                                                <div class="result-label">获得绿色信贷</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="case-card">
+                                    <div class="case-header">
+                                        <div class="case-logo">B工厂</div>
+                                        <div class="case-tag">制造企业</div>
+                                    </div>
+                                    <div class="case-body">
+                                        <h5>获得政府补贴支持</h5>
+                                        <p class="case-desc">
+                                            利用平台数据生成合规报告，成功申请到120万元绿色技改补贴。
+                                        </p>
+                                        <div class="case-results">
+                                            <div class="result-item">
+                                                <div class="result-value">120万</div>
+                                                <div class="result-label">补贴金额</div>
+                                            </div>
+                                            <div class="result-item">
+                                                <div class="result-value">85分</div>
+                                                <div class="result-label">ESG评分</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="case-card">
+                                    <div class="case-header">
+                                        <div class="case-logo">C物流</div>
+                                        <div class="case-tag">物流企业</div>
+                                    </div>
+                                    <div class="case-body">
+                                        <h5>优化运输路径降本</h5>
+                                        <p class="case-desc">
+                                            通过碳核算分析，优化车队调度，年节省燃油成本45万元。
+                                        </p>
+                                        <div class="case-results">
+                                            <div class="result-item">
+                                                <div class="result-value">-15%</div>
+                                                <div class="result-label">燃油消耗</div>
+                                            </div>
+                                            <div class="result-item">
+                                                <div class="result-value">45万</div>
+                                                <div class="result-label">年节省成本</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 客户评价轮播 -->
+                        <div class="testimonial-slider mt-5">
+                            <div class="testimonial active">
+                                <div class="testimonial-content">
+                                    <p>"碳融智核平台帮助我们轻松完成了ESG报告编制，大大降低了合规成本。"</p>
+                                    <div class="testimonial-author">
+                                        <strong>张经理</strong>
+                                        <span>某制造企业ESG负责人</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="testimonial">
+                                <div class="testimonial-content">
+                                    <p>"通过平台对接，我们成功申请到了绿色贷款，利率优惠了0.5%。"</p>
+                                    <div class="testimonial-author">
+                                        <strong>王总</strong>
+                                        <span>某电商企业创始人</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="testimonial-nav">
+                                <button class="nav-btn prev"><i class="fas fa-chevron-left"></i></button>
+                                <button class="nav-btn next"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 关于我们模块 -->
+                <section id="about" class="page-section section-padding bg-light">
+                    <div class="container">
+                        <div class="section-header text-center mb-5">
+                            <h2 class="section-title">关于我们</h2>
+                            <p class="section-subtitle">由中南财经政法大学孵化的科技创新项目</p>
+                        </div>
+                        
+                        <div class="row align-items-center">
+                            <div class="col-lg-6">
+                                <div class="about-content">
+                                    <h3 class="mb-4">项目背景与使命</h3>
+                                    <p class="mb-4">
+                                        "碳融智核"项目起源于2023年中南财经政法大学信息工程学院与工商管理学院的跨学科合作研究。
+                                        在"双碳"目标背景下，我们发现中小企业在绿色转型中面临数据管理难、合规成本高、融资对接不畅等痛点。
+                                    </p>
+                                    <p class="mb-4">
+                                        我们的使命是让每一个中小企业都能轻松管理碳数据，让每一吨碳排放都能转化为信用资产，
+                                        助力实体经济绿色转型。
+                                    </p>
+                                    
+                                    <div class="team-section mt-5">
+                                        <h4 class="mb-4">团队核心成员</h4>
+                                        <div class="row g-3">
+                                            <div class="col-6 col-md-4">
+                                                <div class="team-member">
+                                                    <div class="member-avatar">
+                                                        <i class="fas fa-user-tie"></i>
+                                                    </div>
+                                                    <div class="member-info">
+                                                        <strong>孙尚笪</strong>
+                                                        <small>项目负责人</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 col-md-4">
+                                                <div class="team-member">
+                                                    <div class="member-avatar">
+                                                        <i class="fas fa-chalkboard-teacher"></i>
+                                                    </div>
+                                                    <div class="member-info">
+                                                        <strong>宋广华</strong>
+                                                        <small>指导老师</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 col-md-4">
+                                                <div class="team-member">
+                                                    <div class="member-avatar">
+                                                        <i class="fas fa-users"></i>
+                                                    </div>
+                                                    <div class="member-info">
+                                                        <strong>跨学科团队</strong>
+                                                        <small>15名成员</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-6">
+                                <div class="about-stats">
+                                    <div class="stat-card">
+                                        <i class="fas fa-award"></i>
+                                        <div>
+                                            <h4>三创赛</h4>
+                                            <p>全国大学生电子商务创新创意创业大赛</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <i class="fas fa-university"></i>
+                                        <div>
+                                            <h4>中南财经政法大学</h4>
+                                            <p>信息工程学院与工商管理学院联合孵化</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <i class="fas fa-handshake"></i>
+                                        <div>
+                                            <h4>10+合作机构</h4>
+                                            <p>银行、交易所、认证机构深度合作</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="contact-info mt-5">
+                                        <h4 class="mb-4">联系我们</h4>
+                                        <div class="contact-item">
+                                            <i class="fas fa-phone"></i>
+                                            <span>15851986417</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <i class="fas fa-envelope"></i>
+                                            <span>contact@carbon-ai.com</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>中南财经政法大学信息工程学院</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 系统设置模块（新增） -->
+                <section id="settings" class="page-section section-padding">
+                    <div class="container">
+                        <div class="section-header text-center mb-5">
+                            <h2 class="section-title">系统设置</h2>
+                            <p class="section-subtitle">管理您的账号、企业信息与系统偏好</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <div class="settings-nav">
+                                    <div class="list-group">
+                                        <button class="list-group-item list-group-item-action active" data-setting="account">
+                                            <i class="fas fa-user me-2"></i>账号管理
+                                        </button>
+                                        <button class="list-group-item list-group-item-action" data-setting="company">
+                                            <i class="fas fa-building me-2"></i>企业信息
+                                        </button>
+                                        <button class="list-group-item list-group-item-action" data-setting="security">
+                                            <i class="fas fa-shield-alt me-2"></i>安全设置
+                                        </button>
+                                        <button class="list-group-item list-group-item-action" data-setting="notification">
+                                            <i class="fas fa-bell me-2"></i>通知设置
+                                        </button>
+                                        <button class="list-group-item list-group-item-action" data-setting="data">
+                                            <i class="fas fa-database me-2"></i>数据管理
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-9">
+                                <div class="settings-content">
+                                    <div class="setting-panel active" id="account-panel">
+                                        <h4 class="mb-4">账号管理</h4>
+                                        <form id="accountForm">
+                                            <div class="row g-3 mb-4">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">姓名</label>
+                                                        <input type="text" class="form-control" placeholder="请输入姓名" id="accountName">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">邮箱</label>
+                                                        <input type="email" class="form-control" placeholder="请输入邮箱" id="accountEmail" readonly>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">手机号</label>
+                                                        <input type="tel" class="form-control" placeholder="请输入手机号" id="accountPhone">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">职位</label>
+                                                        <input type="text" class="form-control" placeholder="请输入职位" id="accountPosition">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group mb-4">
+                                                <label class="form-label">头像</label>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-preview me-4">
+                                                        <div class="avatar-circle">
+                                                            <i class="fas fa-user"></i>
+                                                        </div>
+                                                    </div>
+                                                    <button class="btn btn-outline-primary">
+                                                        <i class="fas fa-upload me-2"></i>上传头像
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-2"></i>保存修改
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div class="setting-panel" id="company-panel">
+                                        <h4 class="mb-4">企业信息</h4>
+                                        <form id="companyForm">
+                                            <div class="row g-3 mb-4">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">企业名称</label>
+                                                        <input type="text" class="form-control" placeholder="请输入企业名称" id="companyName">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">统一社会信用代码</label>
+                                                        <input type="text" class="form-control" placeholder="请输入统一社会信用代码" id="companyCode">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">所属行业</label>
+                                                        <select class="form-select" id="companyIndustry">
+                                                            <option value="">请选择行业</option>
+                                                            <option value="ecommerce">电商零售</option>
+                                                            <option value="manufacture">制造加工</option>
+                                                            <option value="logistics">物流运输</option>
+                                                            <option value="service">商务服务</option>
+                                                            <option value="other">其他行业</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">企业规模</label>
+                                                        <select class="form-select" id="companyScale">
+                                                            <option value="">请选择规模</option>
+                                                            <option value="micro">微型企业</option>
+                                                            <option value="small">小型企业</option>
+                                                            <option value="medium">中型企业</option>
+                                                            <option value="large">大型企业</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">年营收（万元）</label>
+                                                        <input type="number" class="form-control" placeholder="请输入年营收" id="companyRevenue">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">员工人数</label>
+                                                        <input type="number" class="form-control" placeholder="请输入员工人数" id="companyEmployee">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group mb-4">
+                                                <label class="form-label">企业地址</label>
+                                                <textarea class="form-control" rows="3" placeholder="请输入企业详细地址" id="companyAddress"></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-2"></i>保存企业信息
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- 页脚（仅在首页显示） -->
+    <footer class="footer-section" id="footerSection">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="footer-brand">
+                        <h5><i class="fas fa-leaf me-2"></i>碳融智核</h5>
+                        <p class="footer-desc">
+                            中小企业ESG数据自动化与绿色金融赋能平台，助力企业低成本、高效率完成绿色转型。
+                        </p>
+                        <div class="social-links mt-3">
+                            <a href="#" class="social-link"><i class="fab fa-weixin"></i></a>
+                            <a href="#" class="social-link"><i class="fab fa-weibo"></i></a>
+                            <a href="#" class="social-link"><i class="fab fa-zhihu"></i></a>
+                            <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h6>产品功能</h6>
+                    <ul class="footer-links">
+                        <li><a href="#features">AI智能识别</a></li>
+                        <li><a href="#esg-calculator">ESG计算器</a></li>
+                        <li><a href="#data-center">报告生成</a></li>
+                        <li><a href="#finance-match">金融对接</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h6>解决方案</h6>
+                    <ul class="footer-links">
+                        <li><a href="#solutions">电商零售</a></li>
+                        <li><a href="#solutions">制造加工</a></li>
+                        <li><a href="#solutions">物流运输</a></li>
+                        <li><a href="#solutions">定制方案</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-4 col-md-4 mb-4">
+                    <h6>订阅资讯</h6>
+                    <p class="footer-text">获取最新政策解读与行业洞察</p>
+                    <div class="subscribe-form">
+                        <input type="email" class="form-control" placeholder="输入您的邮箱">
+                        <button class="btn btn-primary mt-2 w-100">订阅</button>
+                    </div>
+                    <div class="footer-contact mt-3">
+                        <p><i class="fas fa-phone me-2"></i> 15851986417</p>
+                        <p><i class="fas fa-envelope me-2"></i> contact@carbon-ai.com</p>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="footer-divider">
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="copyright">
+                        © 2024 碳融智核 - 中南财经政法大学.
+                        保留所有权利.
+                        <a href="#" class="text-light ms-2">隐私政策</a> |
+                        <a href="#" class="text-light">服务条款</a>
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="copyright">
+                        三创赛参赛项目 | 互联网金融组 |
+                        <span id="currentYear">2024</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 模态框区域（全部完整保留） -->
+    <!-- 登录模态框（备用） -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-sign-in-alt me-2"></i>用户登录</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="login-tabs">
+                        <button class="login-tab active" data-tab="login">登录</button>
+                        <button class="login-tab" data-tab="register">注册</button>
+                    </div>
+                    
+                    <div id="loginFormModal" class="login-content active">
+                        <form id="loginFormContentModal">
+                            <div class="mb-3">
+                                <label class="form-label">邮箱</label>
+                                <input type="email" class="form-control" placeholder="请输入邮箱" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">密码</label>
+                                <input type="password" class="form-control" placeholder="请输入密码" required>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMeModal">
+                                <label class="form-check-label" for="rememberMeModal">记住我</label>
+                                <a href="#" class="float-end">忘记密码？</a>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>登录
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div id="registerFormModal" class="login-content">
+                        <form id="registerFormContentModal">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">姓名</label>
+                                    <input type="text" class="form-control" placeholder="请输入姓名" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">企业名称</label>
+                                    <input type="text" class="form-control" placeholder="请输入企业名称">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">邮箱</label>
+                                <input type="email" class="form-control" placeholder="请输入邮箱" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">密码</label>
+                                <input type="password" class="form-control" placeholder="至少8位字符" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">确认密码</label>
+                                <input type="password" class="form-control" placeholder="再次输入密码" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-user-plus me-2"></i>注册账号
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- OCR识别演示模态框 -->
+    <div class="modal fade" id="ocrDemoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-camera me-2"></i>票据识别演示</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="ocr-demo-container">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="upload-area" id="uploadArea">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                                    <p class="mt-3">拖拽文件到这里，或点击选择文件</p>
+                                    <p class="text-muted small">支持 JPG, PNG, PDF 格式，最大10MB</p>
+                                    <input type="file" id="fileInput" class="d-none" accept=".jpg,.jpeg,.png,.pdf">
+                                    <button class="btn btn-outline-primary mt-3" onclick="document.getElementById('fileInput').click()">
+                                        选择文件
+                                    </button>
+                                </div>
+                                <div class="sample-files mt-4">
+                                    <p class="small text-muted mb-2">或使用示例文件测试：</p>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="loadSample('electricity')">
+                                            电费单
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="loadSample('logistics')">
+                                            物流单
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="loadSample('fuel')">
+                                            加油票
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="ocr-result" id="ocrResult">
+                                    <div class="result-placeholder">
+                                        <i class="fas fa-search fa-2x text-muted"></i>
+                                        <p class="mt-3">识别结果将显示在这里</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 报告生成模态框 -->
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>智能报告生成</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="report-generator-modal">
+                        <div class="form-group mb-4">
+                            <label class="form-label">选择报告类型</label>
+                            <select class="form-select" id="reportTypeSelect">
+                                <option value="carbon">碳排放报告</option>
+                                <option value="esg">ESG综合报告</option>
+                                <option value="finance">绿色金融申请报告</option>
+                                <option value="supplychain">供应链碳足迹报告</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label class="form-label">企业信息</label>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="企业名称" id="companyNameInput">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="所属行业" id="companyIndustryInput">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label class="form-label">报告数据</label>
+                            <div class="data-inputs">
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">碳排放数据</span>
+                                    <input type="text" class="form-control" placeholder="可自动识别或手动输入" id="carbonData">
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="fillSampleData()">
+                                    填充示例数据
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary w-100 mb-4" onclick="generateReportModal()">
+                            <i class="fas fa-magic me-2"></i>生成智能报告
+                        </button>
+                        
+                        <div class="report-preview-modal" id="reportPreviewModal">
+                            <!-- 报告预览将显示在这里 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 联系我们模态框 -->
+    <div class="modal fade" id="contactModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-comments me-2"></i>联系我们</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="contact-form-modal">
+                        <form id="contactForm">
+                            <div class="mb-3">
+                                <label class="form-label">姓名</label>
+                                <input type="text" class="form-control" placeholder="请输入您的姓名" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">电话</label>
+                                <input type="tel" class="form-control" placeholder="请输入您的电话" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">邮箱</label>
+                                <input type="email" class="form-control" placeholder="请输入您的邮箱" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">企业类型</label>
+                                <select class="form-select" required>
+                                    <option value="">请选择</option>
+                                    <option value="ecommerce">电商企业</option>
+                                    <option value="manufacture">制造企业</option>
+                                    <option value="logistics">物流企业</option>
+                                    <option value="other">其他</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">咨询内容</label>
+                                <textarea class="form-control" rows="3" placeholder="请简要描述您的需求..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-paper-plane me-2"></i>提交咨询
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 计算器模态框 -->
+    <div class="modal fade" id="calculatorModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-calculator me-2"></i>快速碳计算器</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="quick-calculator">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">电力消耗 (kWh)</label>
+                                    <input type="number" class="form-control" placeholder="请输入电力消耗量" id="quickElectricity">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">天然气消耗 (m³)</label>
+                                    <input type="number" class="form-control" placeholder="请输入天然气消耗量" id="quickGas">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">汽油消耗 (L)</label>
+                                    <input type="number" class="form-control" placeholder="请输入汽油消耗量" id="quickGasoline">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">柴油消耗 (L)</label>
+                                    <input type="number" class="form-control" placeholder="请输入柴油消耗量" id="quickDiesel">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100 mt-4" onclick="quickCalculateCarbon()">
+                            <i class="fas fa-calculator me-2"></i>计算碳排放量
+                        </button>
+                        <div class="quick-result mt-4" id="quickCalcResult">
+                            <!-- 计算结果显示 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D可视化模态框 -->
+    <div class="modal fade" id="viz3dModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-globe-asia me-2"></i>3D碳足迹可视化</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="visualization-3d" id="carbon3dMap">
+                        <div class="visualization-controls">
+                            <button class="visualization-btn" title="旋转" onclick="rotate3DMap()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="visualization-btn" title="缩放" onclick="zoom3DMap('in')">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button class="visualization-btn" title="缩小" onclick="zoom3DMap('out')">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button class="visualization-btn" title="重置" onclick="reset3DMap()">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="viz-info mt-3">
+                        <h6><i class="fas fa-info-circle me-2"></i>使用说明</h6>
+                        <p>使用鼠标拖拽旋转视角，滚轮缩放，点击地区查看详细碳排放数据。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 批量导入模态框 -->
+    <div class="modal fade" id="batchImportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-import me-2"></i>批量数据导入</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="import-wizard">
+                        <div class="wizard-steps">
+                            <div class="step active">1. 选择数据类型</div>
+                            <div class="step">2. 上传文件</div>
+                            <div class="step">3. 数据映射</div>
+                            <div class="step">4. 导入完成</div>
+                        </div>
+                        
+                        <div class="wizard-content">
+                            <div class="step-content active">
+                                <div class="data-type-selection">
+                                    <h6>选择要导入的数据类型：</h6>
+                                    <div class="row g-3 mt-3">
+                                        <div class="col-md-4">
+                                            <div class="data-type-card" data-type="carbon">
+                                                <i class="fas fa-cloud"></i>
+                                                <h6>碳排放数据</h6>
+                                                <small>支持Excel/CSV格式</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="data-type-card" data-type="energy">
+                                                <i class="fas fa-bolt"></i>
+                                                <h6>能耗数据</h6>
+                                                <small>支持Excel/CSV格式</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="data-type-card" data-type="supplychain">
+                                                <i class="fas fa-truck"></i>
+                                                <h6>供应链数据</h6>
+                                                <small>支持Excel/CSV格式</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="step-content">
+                                <div class="upload-area drop-zone" id="batchUploadZone">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>拖拽文件到这里，或点击选择文件</p>
+                                    <p class="small text-muted">支持 Excel (.xlsx, .xls), CSV (.csv) 格式</p>
+                                    <input type="file" id="batchFileInput" class="d-none" accept=".xlsx,.xls,.csv">
+                                    <button class="btn btn-outline-primary mt-3" onclick="document.getElementById('batchFileInput').click()">
+                                        选择文件
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="wizard-actions mt-4">
+                            <button class="btn btn-outline-secondary" onclick="prevImportStep()">上一步</button>
+                            <button class="btn btn-primary" onclick="nextImportStep()">下一步</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 自定义脚本 -->
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        // 初始化年份
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 隐藏加载动画
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }, 500);
+            }, 1500);
+            
+            // 初始化所有功能
+            initPlatform();
+        });
+    </script>
+    
+    <!-- 外部数据库连接状态指示器 修复默认隐藏 -->
+    <div id="databaseStatus" class="sync-status">
+        <div class="sync-spinner"></div>
+        <span>正在同步外部数据...</span>
+    </div>
+    
+    <!-- 新增功能入口点 -->
+    <div id="advancedFeatures" style="display: none;">
+        <!-- 这里将通过JS动态生成高级功能界面 -->
+    </div>
+    
+    <!-- 增强的CSS和JS引用 -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Three.js 用于3D可视化 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/examples/js/controls/OrbitControls.js"></script>
+</body>
+</html>
