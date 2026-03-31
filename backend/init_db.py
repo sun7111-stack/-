@@ -9,7 +9,7 @@ from database import engine, SessionLocal, Base
 
 # 导入所有模型以注册到Base.metadata
 from models.user import User
-from models.carbon import EmissionFactor, IndustryBenchmark, CarbonRecord
+from models.carbon import EmissionFactor, IndustryBenchmark, CarbonRecord, EmissionFactorItem
 from models.esg import EsgScore
 from models.finance import FinancialProduct, FinanceApplication
 from models.report import Report, Policy, CaseStudy, ContactMessage
@@ -44,6 +44,43 @@ def seed_data():
                 EmissionFactor(name="recycle", name_cn="废弃物(回收)", factor=0.12, unit="kgCO2/kg", source="回收处理"),
             ]
             db.add_all(factors)
+
+        # ---------- 1.5 详细排放因子（轻量级参数关联数据库） ----------
+        if db.query(EmissionFactorItem).count() == 0:
+            print("插入轻量级参数关联数据库因子(EmissionFactorItem)...")
+            demo_factors = [
+                # electricity 电力
+                EmissionFactorItem(activity_type="electricity", industry_type="general", region="全国", factor_value=0.5703, factor_unit="kgCO2e/kWh", source="生态环境部2022年全国电网平均排放因子", version="2025-demo", description="通用电力排放因子"),
+                EmissionFactorItem(activity_type="electricity", industry_type="cross_border", region="华东", factor_value=0.5703, factor_unit="kgCO2e/kWh", source="生态环境部2022年全国电网平均排放因子", version="2025-demo", description="跨境电商华东仓储电力"),
+                EmissionFactorItem(activity_type="electricity", industry_type="daily_goods", region="全国", factor_value=0.5703, factor_unit="kgCO2e/kWh", source="生态环境部2022年全国电网平均排放因子", version="2025-demo", description="日用百货店铺电力"),
+                
+                # natural_gas 天然气
+                EmissionFactorItem(activity_type="natural_gas", industry_type="general", region="全国", factor_value=2.1622, factor_unit="kgCO2e/m3", source="2006年IPCC国家温室气体清单指南", version="2025-demo", description="通用天然气"),
+                
+                # diesel 柴油
+                EmissionFactorItem(activity_type="diesel", industry_type="general", region="全国", factor_value=3.1605, factor_unit="kgCO2e/kg", source="2006年IPCC国家温室气体清单指南", version="2025-demo", description="通用柴油燃料"),
+                EmissionFactorItem(activity_type="diesel", industry_type="cross_border", region="全国", factor_value=3.1605, factor_unit="kgCO2e/kg", source="2006年IPCC国家温室气体清单指南", version="2025-demo", description="跨境物流干线运输柴油"),
+                
+                # waste 废弃物
+                EmissionFactorItem(activity_type="waste", industry_type="general", region="全国", factor_value=0.5, factor_unit="kgCO2e/kg", source="缺省估算数值", version="2025-demo", description="一般工业固废处理"),
+                EmissionFactorItem(activity_type="waste", industry_type="daily_goods", region="全国", factor_value=0.35, factor_unit="kgCO2e/kg", source="缺省估算数值", version="2025-demo", description="日用品废弃物处理"),
+
+                # air_logistics 航空物流 (特别是跨境电商场景)
+                EmissionFactorItem(activity_type="air_logistics", industry_type="cross_border", region="全国", factor_value=0.15, factor_unit="kgCO2e/ton-km", source="VTT LIPASTO 估算数据", version="2025-demo", description="跨境电商国际航空货运"),
+
+                # warehouse_energy 仓储能耗
+                EmissionFactorItem(activity_type="warehouse_energy", industry_type="cross_border", region="华东", factor_value=45.0, factor_unit="kgCO2e/m2-year", source="行业均值测算", version="2025-demo", description="跨境海外仓/保税仓综合能耗"),
+                EmissionFactorItem(activity_type="warehouse_energy", industry_type="daily_goods", region="全国", factor_value=30.0, factor_unit="kgCO2e/m2-year", source="行业均值测算", version="2025-demo", description="普通日用百货流转仓储"),
+
+                # reverse_logistics 逆向物流 (退换货)
+                EmissionFactorItem(activity_type="reverse_logistics", industry_type="cross_border", region="全国", factor_value=0.8, factor_unit="kgCO2e/order", source="行业均值测算", version="2025-demo", description="跨境电商高碳排退货物流"),
+                EmissionFactorItem(activity_type="reverse_logistics", industry_type="daily_goods", region="全国", factor_value=0.2, factor_unit="kgCO2e/order", source="行业均值测算", version="2025-demo", description="境内普通日用品退货物流"),
+
+                # packaging_waste 包装废弃物
+                EmissionFactorItem(activity_type="packaging_waste", industry_type="cross_border", region="全国", factor_value=1.5, factor_unit="kgCO2e/kg", source="估算数值", version="2025-demo", description="跨境长途重度包装碳排"),
+                EmissionFactorItem(activity_type="packaging_waste", industry_type="daily_goods", region="全国", factor_value=0.8, factor_unit="kgCO2e/kg", source="估算数值", version="2025-demo", description="日用百货轻量纸箱/塑料袋包装碳排"),
+            ]
+            db.add_all(demo_factors)
 
         # ---------- 2. 行业基准（对应前端 DataService.industryBenchmarks） ----------
         if db.query(IndustryBenchmark).count() == 0:

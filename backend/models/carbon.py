@@ -17,6 +17,21 @@ class EmissionFactor(Base):
     source = Column(String(100), default="", comment="数据来源")
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+class EmissionFactorItem(Base):
+    """(新增)详细排放因子表-轻量级参数关联数据库"""
+    __tablename__ = "emission_factor_items"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    activity_type = Column(String(50), nullable=False, index=True, comment="活动类型(如electricity, natural_gas, air_logistics等)")
+    industry_type = Column(String(50), default="general", index=True, comment="行业或场景类型(如cross_border, general等)")
+    region = Column(String(50), default="全国", index=True, comment="适用地区(如全国, 华中, 华东)")
+    factor_value = Column(Float, nullable=False, comment="排放因子值")
+    factor_unit = Column(String(50), nullable=False, comment="单位(如kgCO2e/kWh, kgCO2e/ton-km)")
+    source = Column(String(200), default="", comment="因子来源(用于可追溯性)")
+    version = Column(String(50), default="2025-demo", index=True, comment="版本(如2025-demo, CN-grid-2025)")
+    description = Column(Text, default="", comment="描述及备注")
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
 
 class IndustryBenchmark(Base):
     """行业基准数据表"""

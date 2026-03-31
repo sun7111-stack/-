@@ -13,9 +13,12 @@ from schemas.carbon import (
     CarbonRecordCreate,
     CarbonRecordOut,
     CarbonCalcResult,
+    OCRCarbonCalcRequest,
+    DynamicCarbonCalcResult,
 )
 from utils.auth import get_current_user
 from utils.calculator import calculate_env_score
+from services.carbon_engine.engine import CarbonEngine
 
 router = APIRouter(prefix="/api/carbon", tags=["碳排放核算"])
 
@@ -48,82 +51,71 @@ def list_carbon_records(
     return records
 
 
-@router.post("/calculate", response_model=CarbonCalcResult, summary="执行碳核算并保存记录")
+@router.post("/calculate", response_model=DynamicCarbonCalcResult, summary="执行基于策略模式的碳核算")
 def calculate_carbon(
-    body: CarbonRecordCreate,
+    body: OCRCarbonCalcRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # 查询排放因子
-    factors_rows = db.query(EmissionFactor).all()
-    factors_dict = {f.name: f.factor for f in factors_rows}
-    if not factors_dict:
-        # 使用默认值（与前端一致）
-        factors_dict = {
-            "electricity": 0.581,
-            "natural_gas": 1.89,
-            "diesel": 2.68,
-        }
+    # 1. 提取或初始化活动数据
+    activity_data = body.activity_data.copy() if hasattr(body, "activity_data") and body.activity_data else {}
 
-    # 查询行业基准
-    benchmarks_rows = db.query(IndustryBenchmark).all()
-    benchmarks_dict = {
-        b.industry: {
-            "carbon_per_revenue": b.carbon_per_revenue,
-            "energy_metric": b.energy_metric,
-            "other_metric": b.other_metric,
-        }
-        for b in benchmarks_rows
-    }
-    if not benchmarks_dict:
-        benchmarks_dict = {
-            "ecommerce": {"carbon_per_revenue": 0.15, "energy_metric": 0.8, "other_metric": 0.65},
-            "manufacture": {"carbon_per_revenue": 0.85, "energy_metric": 1.2, "other_metric": 0.25},
-            "logistics": {"carbon_per_revenue": 0.45, "energy_metric": 0.12, "other_metric": 0.75},
-            "service": {"carbon_per_revenue": 0.08, "energy_metric": 0.3, "other_metric": 0.9},
-        }
+    # 2. 将 OCR/VLM 的结构化字段映射成核算用数据
+    if body.fields and body.suggested_activity_type:
+        act_type = body.suggested_activity_type
+        amount = 0.0
+        # 简单启发式搜索：寻找票据/表单里的主要额度/用量
+        for k, v in body.fields.items():
+            if isinstance(v, (int, float)):
+                amount = float(v)
+                break
+            elif isinstance(v, str) and v.replace('.', '', 1).isdigit():
+                amount = float(v)
+                break
+        
+        # 将本次 OCR 提取的量合并入引擎输入
+        if amount > 0:
+            if act_type not in activity_data:
+                activity_data[act_type] = amount
+            else:
+                activity_data[act_type] += amount
 
-    # 计算
-    result = calculate_env_score(
-        company_type=body.company_type,
-        annual_revenue=body.annual_revenue,
-        electricity_usage=body.electricity_usage,
-        gas_usage=body.gas_usage,
-        fuel_usage=body.fuel_usage,
-        waste_generation=body.waste_generation,
-        recycling_rate=body.recycling_rate,
-        emission_factors=factors_dict,
-        industry_benchmarks=benchmarks_dict,
+    # 3. 初始化并调用策略引擎
+    engine = CarbonEngine(db_session=db)
+    
+    # 4. 识别店铺/行业类型并执行差异化计算 (包含总碳排、分解与同业对比)
+    result = engine.run_calculation(
+        activity_data=activity_data,
+        shop_type=body.shop_type,
+        region=body.region,
+        revenue=body.annual_revenue
     )
 
-    # 保存记录
+    # 5. 落库持久化（原有的模型可以考虑重构或精简，这里直接存基本信息和总量）
     record = CarbonRecord(
         user_id=current_user.id,
-        company_type=body.company_type,
+        company_type=body.shop_type,
         annual_revenue=body.annual_revenue,
-        electricity_usage=body.electricity_usage,
-        gas_usage=body.gas_usage,
-        fuel_usage=body.fuel_usage,
-        waste_generation=body.waste_generation,
-        recycling_rate=body.recycling_rate,
+        electricity_usage=activity_data.get("electricity", 0.0),
+        gas_usage=activity_data.get("natural_gas", 0.0),
+        fuel_usage=activity_data.get("diesel", 0.0),
+        waste_generation=activity_data.get("waste", 0.0),
         total_emission=result["total_emission"],
-        carbon_intensity=result["carbon_intensity"],
+        carbon_intensity=result["benchmark_compare"].get("carbon_intensity", 0.0),
         period=body.period,
-        note=body.note,
+        note=f"基于策略模式核算引擎 | 店铺类型: {body.shop_type} | OCR来源: {body.doc_type}",
     )
     db.add(record)
     db.commit()
     db.refresh(record)
 
-    return CarbonCalcResult(
+    # 6. 返回格式化结果
+    return DynamicCarbonCalcResult(
         record_id=record.id,
         total_emission=result["total_emission"],
-        carbon_intensity=result["carbon_intensity"],
-        industry_benchmark=result["industry_benchmark"],
-        recycling_rate=result["recycling_rate"],
-        env_score=result["score"],
-        level=result["level"],
-        message=result["message"],
+        breakdown=result["breakdown"],
+        benchmark_compare=result["benchmark_compare"],
+        message="智能碳核算与场景拆解完成"
     )
 
 
