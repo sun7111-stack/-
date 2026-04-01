@@ -2026,7 +2026,7 @@ function resetOCRDemo() {
             <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
             <p class="mt-3">拖拽文件到这里，或点击选择文件</p>
             <p class="text-muted small">支持 JPG, PNG, PDF 格式，最大10MB</p>
-            <input type="file" id="fileInput" class="d-none" accept=".jpg,.jpeg,.png,.pdf">
+            <input type="file" id="fileInput" class="d-none" accept=".jpg,.jpeg,.png,.pdf" onchange="handleFileUpload(event)">
             <button class="btn btn-outline-primary mt-3" onclick="document.getElementById('fileInput').click()">
                 选择文件
             </button>

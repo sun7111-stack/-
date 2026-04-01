@@ -20,14 +20,44 @@ load_dotenv()
 # ȫ������
 class OCRSettings:
     DASHSCOPE_API_KEY: Optional[str] = os.getenv("DASHSCOPE_API_KEY", None)
+    DASHSCOPE_MODELS = [
+        m.strip()
+        for m in os.getenv("DASHSCOPE_MODELS", "qwen-vl-max,qwen-vl-plus").split(",")
+        if m.strip()
+    ]
     USE_MOCK: bool = not DASHSCOPE_API_KEY or not DASHSCOPE_AVAILABLE
     SUPPORTED_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
     MAX_SIZE = 10 * 1024 * 1024  # 10MB
+    ACTIVITY_TYPES = {
+        "electricity",
+        "natural_gas",
+        "diesel",
+        "air_logistics",
+        "warehouse_energy",
+        "reverse_logistics",
+        "packaging_waste",
+        "waste",
+    }
 
 settings = OCRSettings()
 
 class VLMParser:
     """����Ʊ�ݽ�����"""
+
+    @staticmethod
+    def _normalize_activity_type(value: Optional[str]) -> str:
+        if value in settings.ACTIVITY_TYPES:
+            return value
+        return "waste"
+
+    @staticmethod
+    def _extract_json_text(raw: str) -> str:
+        cleaned = raw.strip().replace("```json", "").replace("```", "")
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start != -1 and end != -1 and start < end:
+            return cleaned[start : end + 1]
+        return cleaned
 
     @staticmethod
     def _read_file(file: BinaryIO, filename: str) -> tuple[bytes, str, str]:
@@ -48,7 +78,7 @@ class VLMParser:
             "confidence": 0.95,
             "raw_text": raw_text or "Mockģʽԭʼ�ı�",
             "doc_type": "unknown",
-            "suggested_activity_type": "unknown",
+            "suggested_activity_type": "waste",
             "fields": {}
         }
 
@@ -99,7 +129,7 @@ class VLMParser:
         2. confidence: 0-1�ĸ�����
         3. fields: �ṹ���ֶΣ�����Ʊ��������ȡ���õ���/����/��������λ��ʱ�䡢��Ӧ�̵ȣ�
         4. raw_text: Ʊ��ȫ��
-        5. suggested_activity_type: ֻ������⼸������ѡ [electricity, air_logistics, diesel, natural_gas]
+        5. suggested_activity_type: ֻ������⼸������ѡ [electricity, natural_gas, diesel, air_logistics, warehouse_energy, reverse_logistics, packaging_waste, waste]
         """
 
         if mime_type == "image":
@@ -119,13 +149,22 @@ class VLMParser:
                 "content": [{"text": f"{system_prompt}\n\nƱ���ı����ݣ�\n{text}"}]
             }]
 
-        response = MultiModalConversation.call(model='qwen-vl-max', messages=messages)
-        if response.status_code != 200:
-            raise Exception(f"API����ʧ��: {response.code}")
+        model_errors = []
+        for model_name in settings.DASHSCOPE_MODELS:
+            response = MultiModalConversation.call(model=model_name, messages=messages)
+            if response.status_code != 200:
+                model_errors.append(f"{model_name}: {response.code}")
+                continue
 
-        output_text = response.output.choices[0].message.content[0]["text"]
-        output_text = output_text.strip().replace("`json", "").replace("`", "")
-        return json.loads(output_text)
+            output_text = response.output.choices[0].message.content[0]["text"]
+            parsed = json.loads(VLMParser._extract_json_text(output_text))
+
+            parsed["suggested_activity_type"] = VLMParser._normalize_activity_type(
+                parsed.get("suggested_activity_type")
+            )
+            return parsed
+
+        raise Exception(f"API����ʧ��: {'; '.join(model_errors)}")
 
     @classmethod
     def parse_document(cls, file_obj: BinaryIO, filename: str) -> Dict[str, Any]:
