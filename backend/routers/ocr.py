@@ -1,109 +1,54 @@
-"""OCR识别路由（模拟）"""
+﻿from typing import Optional, Dict, Any
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from pydantic import BaseModel, Field
+from services.vlm_parser import parse_document_wrapper, settings
 
-router = APIRouter(prefix="/api/ocr", tags=["OCR票据识别"])
+router = APIRouter(prefix='/api/ocr', tags=['OCR票据识别'])
 
-# 模拟OCR识别结果（与前端script.js中的sampleResults一致）
-SAMPLE_RESULTS = {
-    "electricity": {
-        "title": "电费单识别结果",
-        "data": {
-            "用电类型": "工商业用电",
-            "用电量": "1,245 kWh",
-            "电费金额": "¥ 1,245.00",
-            "计费期间": "2024年3月1日-3月31日",
-            "识别准确率": "98.5%",
-        },
-        "parsed": {
-            "electricity_usage": 1245,
-            "electricity_cost": 1245,
-        },
-    },
-    "logistics": {
-        "title": "物流面单识别结果",
-        "data": {
-            "运单号": "SF1234567890",
-            "收件人": "张先生",
-            "重量": "2.5 kg",
-            "运输距离": "350 km",
-            "运输方式": "陆运",
-            "识别准确率": "96.2%",
-        },
-        "parsed": {
-            "logistics_distance": 350,
-            "logistics_weight": 2.5,
-        },
-    },
-    "fuel": {
-        "title": "加油发票识别结果",
-        "data": {
-            "油品类型": "95#汽油",
-            "加油量": "45.6 L",
-            "金额": "¥ 386.52",
-            "加油站": "中国石化",
-            "识别准确率": "97.8%",
-        },
-        "parsed": {
-            "fuel_usage": 45.6,
-            "fuel_cost": 386.52,
-        },
-    },
-}
+# ================== 数据模型 (Schemas) ==================
+class OCRParseResult(BaseModel):
+    doc_type: str = Field(..., description="票据类型枚举")
+    confidence: float = Field(..., ge=0, le=1, description="识别置信度")
+    fields: Dict[str, Any] = Field(..., description="结构化关键字段")
+    raw_text: str = Field(..., description="原始文本(存证用)")
+    suggested_activity_type: str = Field(..., description="碳核算活动类型")
+    message: Optional[str] = None
 
-ALLOWED_TYPES = {
-    "image/jpeg",
-    "image/png",
-    "image/jpg",
-    "application/pdf",
-}
-MAX_SIZE = 10 * 1024 * 1024  # 10MB
+class OCRResponse(BaseModel):
+    success: bool
+    data: Optional[OCRParseResult] = None
+    message: str = ""
 
+@router.get('/health', summary='健康检查与模式探测')
+async def health_check():
+    return {
+        "status": "ok",
+        "mock_mode": settings.USE_MOCK,
+        "message": "碳融智核OCR服务运行正常"
+    }
 
-@router.post("/recognize", summary="上传票据进行OCR识别")
+@router.post('/recognize', response_model=OCRResponse, summary='票据结构化识别')
 async def recognize(file: UploadFile = File(...)):
-    """
-    模拟OCR识别。
-    实际场景中可接入百度OCR、腾讯OCR或自建识别服务。
-    """
-    # 验证文件类型
-    if file.content_type not in ALLOWED_TYPES:
-        raise HTTPException(status_code=400, detail="请上传图片文件 (JPEG, PNG) 或 PDF 文件")
+    # 1. 校验
+    if file.content_type not in settings.SUPPORTED_TYPES:
+        raise HTTPException(status_code=400, detail="文件格式不支持，仅支持JPG/PNG/PDF")
 
-    # 读取文件（验证大小）
+    # 读取一次检查大小
     content = await file.read()
-    if len(content) > MAX_SIZE:
-        raise HTTPException(status_code=400, detail="文件太大，请上传小于10MB的文件")
+    if len(content) > settings.MAX_SIZE:
+        raise HTTPException(status_code=400, detail=f"文件过大，最大支持 {settings.MAX_SIZE / 1024 / 1024} MB")
+    await file.seek(0)  # 重置指针
 
-    # 根据文件名猜测票据类型
-    filename = (file.filename or "").lower()
-    if "物流" in filename or "快递" in filename or "logistics" in filename:
-        doc_type = "logistics"
-    elif "油" in filename or "fuel" in filename or "加油" in filename:
-        doc_type = "fuel"
-    else:
-        doc_type = "electricity"
-
-    result = SAMPLE_RESULTS[doc_type]
-
-    return {
-        "success": True,
-        "doc_type": doc_type,
-        "title": result["title"],
-        "data": result["data"],
-        "parsed": result["parsed"],
-    }
-
-
-@router.get("/sample/{doc_type}", summary="获取示例识别结果")
-def get_sample(doc_type: str):
-    """获取指定类型的示例识别数据"""
-    result = SAMPLE_RESULTS.get(doc_type)
-    if not result:
-        raise HTTPException(status_code=400, detail=f"不支持的文档类型: {doc_type}")
-    return {
-        "success": True,
-        "doc_type": doc_type,
-        "title": result["title"],
-        "data": result["data"],
-        "parsed": result["parsed"],
-    }
+    # 2. 调用业务逻辑
+    try:
+        result_data = await parse_document_wrapper(file)
+        return OCRResponse(
+            success=True,
+            data=OCRParseResult(**result_data),
+            message="识别成功"
+        )
+    except Exception as e:
+        return OCRResponse(
+            success=False,
+            message=f"识别失败: {str(e)}"
+        )
