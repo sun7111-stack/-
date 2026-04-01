@@ -11,3 +11,5 @@ pydantic[email]==2.9.0
 pydantic-settings==2.5.0
 python-dotenv==1.0.1
 aiofiles==24.1.0
+dashscope>=1.14.0
+pypdf>=4.0.0
