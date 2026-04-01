@@ -201,94 +201,52 @@ function initSidebar() {
 }
 //初始化页面路由
 function initPageRouter() {
-    const menuItems = document.querySelectorAll('.menu-item');
-    const pageSections = document.querySelectorAll('.page-section');
-    const pageLinks = document.querySelectorAll('.page-link');
-    
-    // 菜单点击切换页面
-    menuItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetPage = this.getAttribute('data-page');
-            switchPage(targetPage);
-            
-            // 更新菜单激活状态
-            menuItems.forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-            
-            // 移动端关闭侧边栏
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            if (window.innerWidth <= 768 && sidebar && overlay) {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('show');
-            }
-        });
+    // 监听所有带有 data-page 的点击（包括侧边栏和内页按钮）
+    document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('[data-page]');
+        if (trigger) {
+            const pageId = trigger.getAttribute('data-page');
+            switchPage(pageId);
+        }
     });
-    
-    // 页面内链接跳转
-    pageLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetPage = this.getAttribute('data-page');
-            if (targetPage) {
-                switchPage(targetPage);
-                menuItems.forEach(item => {
-                    item.classList.remove('active');
-                    if (item.getAttribute('data-page') === targetPage) {
-                        item.classList.add('active');
-                    }
-                });
-            }
-        });
-    });
-    
-    // 锚点链接处理
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-            if (href === '#' || href.startsWith('#!')) return;
-            
-            const targetSection = document.querySelector(href);
-            if (targetSection && targetSection.classList.contains('page-section')) {
-                e.preventDefault();
-                switchPage(href.substring(1));
-                menuItems.forEach(item => {
-                    item.classList.remove('active');
-                    if (item.getAttribute('data-page') === href.substring(1)) {
-                        item.classList.add('active');
-                    }
-                });
-            }
-        });
+
+    // 处理浏览器前进/后退
+    window.addEventListener('hashchange', () => {
+        const pageId = window.location.hash.replace('#', '') || 'home';
+        switchPage(pageId);
     });
 }
 // 页面切换函数
 function switchPage(pageId) {
-    const pageSections = document.querySelectorAll('.page-section');
-    const targetPage = document.getElementById(pageId);
-    
-    if (!targetPage) return;
-    
-    // 隐藏所有页面
-    pageSections.forEach(section => {
-        section.classList.remove('active');
+    const sections = document.querySelectorAll('.page-section');
+    const menuItems = document.querySelectorAll('.menu-item');
+    const targetSection = document.getElementById(pageId);
+
+    if (!targetSection) return;
+
+    // 1. 隐藏所有页面并移除内联 display 样式
+    sections.forEach(s => {
+        s.classList.remove('active');
+        s.style.display = 'none'; // 强制隐藏并覆盖 HTML 里的 inline style
     });
-    
-    // 显示目标页面
-    targetPage.classList.add('active');
-    
-    // 更新URL hash
-    window.history.pushState(null, null, `#${pageId}`);
-    
-    // 页面切换后重新初始化图表
-    setTimeout(() => {
-        if (pageId === 'home') initHeroDashboard();
-        if (pageId === 'features') initDashboardDemo();
-        if (pageId === 'esg-calculator') {
-            initESGRadarChart();
-            updateESGVisualization();
+
+    // 2. 显示目标页面
+    targetSection.classList.add('active');
+    targetSection.style.display = 'block'; // 强制显示
+
+    // 3. 更新侧边栏高亮
+    menuItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-page') === pageId) {
+            item.classList.add('active');
         }
+    });
+
+    // 4. 同步 URL 哈希
+    window.history.pushState(null, null, `#${pageId}`);
+
+    // 5. 触发 resize 确保 ECharts 图表渲染正常
+    setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
     }, 100);
 }

@@ -1581,95 +1581,6 @@
                 </section>
 
                 <!-- 系统设置模块（新增） -->
-                 <section id="demo-upload" class="page-section" style="display:none;">
-                    <div class="container py-4">
-                        <h3 class="mb-4"><i class="fas fa-file-invoice me-2"></i>票据智能识别</h3>
-                        
-                        <div class="card shadow-sm mb-4 border-0">
-                            <div class="card-body bg-light rounded">
-                                <label class="form-label fw-bold">请上传能耗票据（电费、水费、发票等）</label>
-                                <input type="file" id="fileInput" class="form-control mb-3" accept="image/*,.pdf">
-                                <button id="recognizeBtn" class="btn btn-primary"><i class="fas fa-magic me-2"></i>智能识别</button>
-                            </div>
-                        </div>
-
-                        <div id="ocrResultBox" class="card shadow-sm border-success" style="display:none;">
-                            <div class="card-header bg-success text-white fw-bold">
-                                <i class="fas fa-check-circle me-2"></i>识别成功
-                            </div>
-                            <div class="card-body" id="ocrDetail"></div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="demo-carbon" class="page-section" style="display:none;">
-                    <div class="container py-4">
-                        <h3 class="mb-4"><i class="fas fa-leaf text-success me-2"></i>自动化碳核算</h3>
-                        <button id="carbonBtn" class="btn btn-success mb-4"><i class="fas fa-calculator me-2"></i>开始核算</button>
-                        
-                        <div id="carbonTotalCard" class="card shadow-sm mb-4 border-success" style="display:none;">
-                            <div class="card-body text-center py-4 bg-success bg-opacity-10 rounded">
-                                <h5 class="text-success mb-3">本期总碳排放量</h5>
-                                <h1 class="text-success display-4 fw-bold"><span id="totalCarbonValue">--</span> <small class="fs-5 text-muted">tCO₂e</small></h1>
-                            </div>
-                        </div>
-                        
-                        <div id="carbonResultBox" class="row" style="display:none;">
-                            <div class="col-md-6 mb-3">
-                                <div class="card shadow-sm h-100 border-0">
-                                    <div class="card-header bg-light fw-bold">核算明细 Breakdown</div>
-                                    <ul id="carbonBreakdownList" class="list-group list-group-flush"></ul>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="card shadow-sm h-100 border-0">
-                                    <div class="card-header bg-light fw-bold">行业基准对比 Benchmark</div>
-                                    <div class="card-body" id="benchmarkCompareBox" style="min-height: 250px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="demo-risk" class="page-section" style="display:none;">
-                    <div class="container py-4">
-                        <h3 class="mb-4"><i class="fas fa-shield-alt text-warning me-2"></i>绿色金融风控</h3>
-                        <button id="riskBtn" class="btn btn-warning text-dark fw-bold mb-4"><i class="fas fa-search-dollar me-2"></i>执行风控检测</button>
-                        
-                        <div id="riskResultBox" class="card shadow-sm border-warning" style="display:none;">
-                            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center fw-bold">
-                                <span><i class="fas fa-link me-2"></i>区块链存证哈希: <code id="hashValueText" class="user-select-all text-dark ms-2 bg-white px-2 py-1 rounded">--</code></span>
-                                <span id="riskStatusBadge" class="badge bg-secondary fs-6 px-3 py-2">等待检测</span>
-                            </div>
-                            <div class="card-body bg-light">
-                                <h5 class="card-title fw-bold border-bottom pb-2">风险异常清单</h5>
-                                <div id="riskReasonList" class="mt-3">
-                                    <p class="text-muted">点击检测获取风控报告...</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="demo-report" class="page-section" style="display:none;">
-                    <div class="container py-4">
-                        <h3 class="mb-4"><i class="fas fa-file-alt text-primary me-2"></i>AI 智能诊断报告</h3>
-                        <button id="reportBtn" class="btn btn-primary mb-4"><i class="fas fa-robot me-2"></i>生成 AI 报告</button>
-                        
-                        <div id="reportResultBox" class="card shadow-lg border-primary border-top border-4" style="display:none;">
-                            <div class="card-body p-4">
-                                <h5 class="text-primary border-bottom pb-3 fw-bold"><i class="fas fa-stethoscope me-2"></i>总体诊断</h5>
-                                <p id="reportSummaryText" class="lead text-dark mb-4 mt-3">--</p>
-                                
-                                <h6 class="text-success fw-bold"><i class="fas fa-lightbulb me-2"></i>减排建议</h6>
-                                <ul id="reportSuggestionList" class="mb-4 text-muted lh-lg"></ul>
-                                
-                                <h6 class="text-info fw-bold"><i class="fas fa-coins me-2"></i>融资建议</h6>
-                                <p id="financeSuggestionText" class="text-dark fw-bold p-3 bg-info bg-opacity-10 rounded border border-info"></p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
                 <section id="settings" class="page-section section-padding">
                     <div class="container">
                         <div class="section-header text-center mb-5">
@@ -1812,6 +1723,95 @@
                                         </form>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="demo-upload" class="page-section" style="display:none;">
+                    <div class="container py-4">
+                        <h3 class="mb-4"><i class="fas fa-file-invoice me-2"></i>票据智能识别</h3>
+                        
+                        <div class="card shadow-sm mb-4 border-0">
+                            <div class="card-body bg-light rounded">
+                                <label class="form-label fw-bold">请上传能耗票据（电费、水费、发票等）</label>
+                                <input type="file" id="fileInput" class="form-control mb-3" accept="image/*,.pdf">
+                                <button id="recognizeBtn" class="btn btn-primary"><i class="fas fa-magic me-2"></i>智能识别</button>
+                            </div>
+                        </div>
+
+                        <div id="ocrResultBox" class="card shadow-sm border-success" style="display:none;">
+                            <div class="card-header bg-success text-white fw-bold">
+                                <i class="fas fa-check-circle me-2"></i>识别成功
+                            </div>
+                            <div class="card-body" id="ocrDetail"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="demo-carbon" class="page-section" style="display:none;">
+                    <div class="container py-4">
+                        <h3 class="mb-4"><i class="fas fa-leaf text-success me-2"></i>自动化碳核算</h3>
+                        <button id="carbonBtn" class="btn btn-success mb-4"><i class="fas fa-calculator me-2"></i>开始核算</button>
+                        
+                        <div id="carbonTotalCard" class="card shadow-sm mb-4 border-success" style="display:none;">
+                            <div class="card-body text-center py-4 bg-success bg-opacity-10 rounded">
+                                <h5 class="text-success mb-3">本期总碳排放量</h5>
+                                <h1 class="text-success display-4 fw-bold"><span id="totalCarbonValue">--</span> <small class="fs-5 text-muted">tCO₂e</small></h1>
+                            </div>
+                        </div>
+                        
+                        <div id="carbonResultBox" class="row" style="display:none;">
+                            <div class="col-md-6 mb-3">
+                                <div class="card shadow-sm h-100 border-0">
+                                    <div class="card-header bg-light fw-bold">核算明细 Breakdown</div>
+                                    <ul id="carbonBreakdownList" class="list-group list-group-flush"></ul>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card shadow-sm h-100 border-0">
+                                    <div class="card-header bg-light fw-bold">行业基准对比 Benchmark</div>
+                                    <div class="card-body" id="benchmarkCompareBox" style="min-height: 250px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="demo-risk" class="page-section" style="display:none;">
+                    <div class="container py-4">
+                        <h3 class="mb-4"><i class="fas fa-shield-alt text-warning me-2"></i>绿色金融风控</h3>
+                        <button id="riskBtn" class="btn btn-warning text-dark fw-bold mb-4"><i class="fas fa-search-dollar me-2"></i>执行风控检测</button>
+                        
+                        <div id="riskResultBox" class="card shadow-sm border-warning" style="display:none;">
+                            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center fw-bold">
+                                <span><i class="fas fa-link me-2"></i>区块链存证哈希: <code id="hashValueText" class="user-select-all text-dark ms-2 bg-white px-2 py-1 rounded">--</code></span>
+                                <span id="riskStatusBadge" class="badge bg-secondary fs-6 px-3 py-2">等待检测</span>
+                            </div>
+                            <div class="card-body bg-light">
+                                <h5 class="card-title fw-bold border-bottom pb-2">风险异常清单</h5>
+                                <div id="riskReasonList" class="mt-3">
+                                    <p class="text-muted">点击检测获取风控报告...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="demo-report" class="page-section" style="display:none;">
+                    <div class="container py-4">
+                        <h3 class="mb-4"><i class="fas fa-file-alt text-primary me-2"></i>AI 智能诊断报告</h3>
+                        <button id="reportBtn" class="btn btn-primary mb-4"><i class="fas fa-robot me-2"></i>生成 AI 报告</button>
+                        
+                        <div id="reportResultBox" class="card shadow-lg border-primary border-top border-4" style="display:none;">
+                            <div class="card-body p-4">
+                                <h5 class="text-primary border-bottom pb-3 fw-bold"><i class="fas fa-stethoscope me-2"></i>总体诊断</h5>
+                                <p id="reportSummaryText" class="lead text-dark mb-4 mt-3">--</p>
+                                
+                                <h6 class="text-success fw-bold"><i class="fas fa-lightbulb me-2"></i>减排建议</h6>
+                                <ul id="reportSuggestionList" class="mb-4 text-muted lh-lg"></ul>
+                                
+                                <h6 class="text-info fw-bold"><i class="fas fa-coins me-2"></i>融资建议</h6>
+                                <p id="financeSuggestionText" class="text-dark fw-bold p-3 bg-info bg-opacity-10 rounded border border-info"></p>
                             </div>
                         </div>
                     </div>

@@ -82,7 +82,6 @@ function initLoginForm() {
         
         // 调用后端API登录
         API.login(email, password).then(data => {
-            localStorage.setItem('carbon_platform_logged_in', 'true');
             PlatformState.user = {
                 id: data.user.id,
                 email: data.user.email,
@@ -297,16 +296,16 @@ function initLoginPage() {
     
     // 退出登录
     const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            API.logout();
-            localStorage.removeItem('carbon_platform_logged_in');
-            PlatformState.user = null;
-            checkLoginStatus();
-            showToast('已成功退出登录', 'success');
-        });
-    }
+    // 统一退出登录逻辑 [cite: 126-131]
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) { 
+        e.preventDefault();
+        API.logout(); // 调用 api.js 中的清除 Token 逻辑 [cite: 128]
+        PlatformState.user = null; // 重置全局状态 [cite: 130]
+        showLoginPage(); // 返回登录界面 [cite: 131]
+        showToast('已成功退出登录', 'success');
+    });
+}
 }
 function loadUserInfo() {
     if (!PlatformState.user) return;
@@ -322,36 +321,44 @@ function loadUserInfo() {
     if (companyNameEl) companyNameEl.value = PlatformState.user.company;
 }
 // 新增 auth.js 核心函数 restoreSession() (来自任务文档 2.3)
+/**
+ * 2.1 优化目标：只信任 token，不依赖本地布尔值 [cite: 71, 72]
+ */
 async function restoreSession() {
-    // 假设 API.getToken() 已经存在于你的 api.js 中
-    const token = typeof API !== 'undefined' ? API.getToken() : localStorage.getItem('carbon_platform_logged_in');
+    const token = API.getToken();
     const loginPage = document.getElementById('loginPage');
     const appMain = document.getElementById('appMain');
 
+    // 1. 如果连 Token 都没有，直接展示登录页 [cite: 84, 85]
     if (!token) {
-        if(loginPage) loginPage.style.display = 'flex';
-        if(appMain) appMain.style.display = 'none';
+        showLoginPage();
         return;
     }
 
     try {
-        // 如果有真实后端，这里应该是 const me = await API.getMe();
-        // 目前为了防止前端卡死，可以先做本地兜底
-        if (typeof API !== 'undefined' && API.getMe) {
-            const me = await API.getMe();
-            PlatformState.user = me;
-        } else {
-            // 兼容你目前的本地存储逻辑
-            const savedUser = localStorage.getItem(CONFIG.USER_KEY);
-            if (savedUser) PlatformState.user = JSON.parse(savedUser);
-        }
-
-        if(loginPage) loginPage.style.display = 'none';
-        if(appMain) appMain.style.display = 'flex';
-        loadUserInfo();
+        // 2. 页面刷新调用 /api/auth/me 校验 token 有效性 
+        const me = await API.getMe();
+        
+        // 3. 校验成功：存入全局状态，并进入主系统 [cite: 115, 116, 117]
+        PlatformState.user = me;
+        loginPage.style.display = 'none';
+        appMain.style.display = 'flex';
+        
+        // 4. 回填用户信息界面 [cite: 118]
+        loadUserInfo(); 
+        
     } catch (error) {
-        if (typeof API !== 'undefined' && API.clearToken) API.clearToken();
-        if(loginPage) loginPage.style.display = 'flex';
-        if(appMain) appMain.style.display = 'none';
+        // 5. 校验失败（Token 过期或伪造）：自动清除并跳转登录 [cite: 75, 120, 121]
+        console.error('登录校验失败:', error);
+        API.clearToken();
+        showLoginPage();
     }
+}
+
+// 辅助函数：统一显示登录页的逻辑
+function showLoginPage() {
+    const loginPage = document.getElementById('loginPage');
+    const appMain = document.getElementById('appMain');
+    if (loginPage) loginPage.style.display = 'flex';
+    if (appMain) appMain.style.display = 'none';
 }
