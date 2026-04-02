@@ -22,3 +22,5 @@ Thumbs.db
 # 其他
 三创赛/
 *.log
+backend/models/risk_model.pkl
+*.pkl

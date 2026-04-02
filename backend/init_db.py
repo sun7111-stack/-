@@ -13,6 +13,7 @@ from models.carbon import EmissionFactor, IndustryBenchmark, CarbonRecord, Emiss
 from models.esg import EsgScore
 from models.finance import FinancialProduct, FinanceApplication
 from models.report import Report, Policy, CaseStudy, ContactMessage
+from models.trace import DataTraceRecord
 from models.enterprise import EnterpriseProfile, EnterpriseCertification, EnterpriseActivity
 from models.data_upload import DataUpload, ApplicationMaterial
 

@@ -1,7 +1,13 @@
-﻿from typing import Optional, Dict, Any
-from fastapi import APIRouter, UploadFile, File, HTTPException
+﻿from datetime import datetime
+from typing import Optional, Dict, Any
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+
+from database import get_db
 from services.vlm_parser import parse_document_wrapper, settings
+from services.security import save_data_trace
+from utils.auth import get_current_user_optional
 
 router = APIRouter(prefix='/api/ocr', tags=['OCR票据识别'])
 
@@ -28,7 +34,11 @@ async def health_check():
     }
 
 @router.post('/recognize', response_model=OCRResponse, summary='票据结构化识别')
-async def recognize(file: UploadFile = File(...)):
+async def recognize(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_optional),
+):
     # 1. 校验
     if file.content_type not in settings.SUPPORTED_TYPES:
         raise HTTPException(status_code=400, detail="文件格式不支持，仅支持JPG/PNG/PDF")
@@ -42,6 +52,19 @@ async def recognize(file: UploadFile = File(...)):
     # 2. 调用业务逻辑
     try:
         result_data = await parse_document_wrapper(file)
+        try:
+            save_data_trace(
+                db=db,
+                raw_text=result_data.get("raw_text", ""),
+                structured_fields=result_data.get("fields", {}),
+                user_id=current_user.id if current_user else 0,
+                bill_id=f"ocr-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                doc_type=result_data.get("doc_type", "unknown"),
+            )
+        except Exception:
+            # 留痕失败不影响主识别流程
+            pass
+
         return OCRResponse(
             success=True,
             data=OCRParseResult(**result_data),

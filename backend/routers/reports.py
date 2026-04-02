@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models.user import User
+from models.carbon import CarbonRecord
 from models.report import Report, Policy, CaseStudy, ContactMessage
+from services.report_llm import report_generator, ReportInputData
 from schemas.report import (
     ReportGenerate,
     ReportOut,
@@ -108,6 +110,61 @@ def list_reports(
         .all()
     )
     return records
+
+
+@router.post("/reports/generate-ai", summary="生成AIGC诊断报告")
+def generate_ai_report(
+    body: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_optional),
+):
+    """兼容前端快捷调用与完整量化指标调用。"""
+    latest = None
+    if current_user is not None:
+        latest = (
+            db.query(CarbonRecord)
+            .filter(CarbonRecord.user_id == current_user.id)
+            .order_by(CarbonRecord.created_at.desc())
+            .first()
+        )
+
+    risk_result = body.get("risk_result") or {
+        "is_anomaly": False,
+        "risk_score": 35,
+        "anomaly_labels": ["未发现显著异常"],
+    }
+
+    report_input = ReportInputData(
+        company_name=(current_user.company if current_user else "Demo企业") or "Demo企业",
+        period=body.get("period") or time.strftime("%Y-%m"),
+        total_emission=float(body.get("total_emission") or (latest.total_emission if latest else 0.0)),
+        carbon_intensity=float(body.get("carbon_intensity") or (latest.carbon_intensity if latest else 0.6)),
+        industry_avg_intensity=float(body.get("industry_avg_intensity") or 0.8),
+        emission_breakdown=body.get("emission_breakdown") or [],
+        risk_result=risk_result,
+        esg_score=float(body.get("esg_score") or 75.0),
+        prompt=body.get("prompt"),
+    )
+
+    output = report_generator.generate(report_input)
+    full_text = output.report_text.strip()
+    summary = full_text.split("\n")[0][:220] if full_text else "暂无报告内容"
+
+    suggestions = [
+        "优先优化高耗能环节并建立月度复盘机制",
+        "结合绿色电力替代与设备节能改造",
+        "将风险高的运营环节纳入专项整改计划",
+    ]
+
+    return {
+        "success": True,
+        "summary": summary,
+        "suggestions": suggestions,
+        "finance": "建议优先申请绿色信贷与技改贴息产品，并附近期碳强度改善曲线。",
+        "report_text": full_text,
+        "is_mock": output.is_mock,
+        "model_used": output.model_used,
+    }
 
 
 # ========== 政策法规 ==========
