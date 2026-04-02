@@ -1,4 +1,6 @@
 """应用配置"""
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
 from typing import List
 
@@ -36,7 +38,7 @@ class Settings(BaseSettings):
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
 
     class Config:
-        env_file = ".env"
+        env_file = str(Path(__file__).resolve().with_name(".env"))
         env_file_encoding = "utf-8"
 
 
