@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.carbon import CarbonRecord
 from services.risk_detector import RiskInputData, risk_detector
-from services.security import save_data_trace
+from services.security import generate_data_hash, save_data_trace
 from utils.auth import get_current_user_optional
 
 router = APIRouter(prefix="/api/risk", tags=["风控检测"])
@@ -59,26 +59,39 @@ def detect_risk(
     try:
         latest = None
         if current_user is not None:
-            latest = (
-                db.query(CarbonRecord)
-                .filter(CarbonRecord.user_id == current_user.id)
-                .order_by(CarbonRecord.created_at.desc())
-                .first()
-            )
+            try:
+                latest = (
+                    db.query(CarbonRecord)
+                    .filter(CarbonRecord.user_id == current_user.id)
+                    .order_by(CarbonRecord.created_at.desc())
+                    .first()
+                )
+            except Exception:
+                # DB 不可用时继续执行风控，保证演示链路可用
+                latest = None
 
         detector_input = _build_input_from_request(body, latest)
         risk_result = risk_detector.detect(detector_input)
 
         trace_payload = body.structured_fields or detector_input.model_dump()
         user_id = current_user.id if current_user is not None else 0
-        trace_record = save_data_trace(
-            db=db,
-            raw_text=body.raw_text or "risk-detect-payload",
-            structured_fields=trace_payload,
-            user_id=user_id,
-            bill_id=body.bill_id or body.task_id or f"risk-{datetime.now().strftime('%Y%m%d%H%M%S')}",
-            doc_type="risk_input",
-        )
+        raw_text = body.raw_text or "risk-detect-payload"
+        bill_id = body.bill_id or body.task_id or f"risk-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+        trace_saved = True
+        try:
+            trace_record = save_data_trace(
+                db=db,
+                raw_text=raw_text,
+                structured_fields=trace_payload,
+                user_id=user_id,
+                bill_id=bill_id,
+                doc_type="risk_input",
+            )
+            blockchain_hash = trace_record.data_hash
+        except Exception:
+            blockchain_hash, _ = generate_data_hash(raw_text, trace_payload, user_id)
+            trace_saved = False
 
         return {
             "success": True,
@@ -87,7 +100,8 @@ def detect_risk(
             "risk_score": risk_result.risk_score,
             "anomaly_labels": risk_result.anomaly_labels,
             "details": risk_result.anomaly_labels,
-            "blockchain_hash": trace_record.data_hash,
+            "blockchain_hash": blockchain_hash,
+            "trace_saved": trace_saved,
             "model_version": risk_result.model_version,
         }
     except Exception as e:
