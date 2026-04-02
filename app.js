@@ -129,32 +129,47 @@ function showWelcomeMessage() {
     }
 }
 // 修改 js/app.js 最后的启动入口
+// 确保 js/app.js 底部只有这一个入口
 document.addEventListener('DOMContentLoaded', async function () {
     console.log('🚀 系统启动中...');
     
-    // 1. 基础 UI 初始化
     initTheme();
     initTools();
     initEventListeners();
     initForms();
 
-    // 2. 核心业务流程初始化
+    // 核心业务按序启动
     await restoreSession(); 
     initSidebar();
-    initPageRouter();
+    initPageRouter(); // 这里名称必须与 router.js 保持一致
     initDemoFlow();
 
-    // 3. 收尾工作
     loadSampleData();
     showWelcomeMessage();
-    PlatformState.isInitialized = true;
-
-    // ★ 关键新增：初始化完成后隐藏加载遮罩层
+    
+    // 隐藏加载层
     const loader = document.getElementById('loadingOverlay');
     if (loader) {
         loader.style.opacity = '0';
-        setTimeout(() => {
-            loader.style.display = 'none';
-        }, 500); // 配合 CSS 中的 0.5s 过渡动画
+        setTimeout(() => loader.style.display = 'none', 500);
     }
 });
+// ==================================================
+// 补全缺失的 toggleTheme 函数（解决报错）
+// ==================================================
+function toggleTheme() {
+    // 切换HTML根元素的dark类
+    document.documentElement.classList.toggle('dark');
+    
+    // 保存主题状态到本地存储
+    const isDark = document.documentElement.classList.contains('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+// 页面加载时，自动应用之前保存的主题
+(function initSavedTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+    }
+})();

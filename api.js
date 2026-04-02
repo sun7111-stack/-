@@ -259,7 +259,22 @@ const API = {
     async submitContact(contactData) {
         return this.post('/contact', contactData);
     },
+// ========== 任务 6：演示主流程核心接口 ==========
+    
+    // 碳核算接口 [对接真实计算引擎]
+    async calculateCarbon(data) {
+        return this.post('/carbon/calculate', data);
+    },
 
+    // 风险检测接口 [对接区块链存证逻辑]
+    async detectRisk(data) {
+        return this.post('/risk/detect', data);
+    },
+
+    // AI 诊断报告接口 [对接大模型分析逻辑]
+    async generateAIReport(data) {
+        return this.post('/reports/generate-ai', data);
+    },
     // ========== OCR相关 ==========
 
     async recognizeOCR(file) {
