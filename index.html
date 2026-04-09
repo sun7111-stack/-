@@ -253,6 +253,7 @@
                         <a href="#home" class="menu-link">
                             <i class="fas fa-home"></i>
                             <span>首页概览</span>
+                            
                         </a>
                     </li>
                     <li class="menu-title text-success fw-bold">★ 比赛演示主流程</li>
@@ -356,99 +357,130 @@
             <!-- 页面容器 - 所有原有功能模块完整保留 -->
             <div class="page-container">
                 <!-- 首页模块 -->
-                <section id="home" class="page-section active">
-                    <div class="hero-section">
-                        <div class="container">
-                            <div class="row align-items-center">
-                                <div class="col-lg-6">
-                                    <h1 class="display-4 fw-bold mb-4 animate-text">
-                                        让每一吨碳<br>
-                                        <span class="text-gradient">都有信用价值</span>
-                                    </h1>
-                                    <p class="lead mb-4">
-                                        专为中小企业打造的ESG数据自动化平台，整合碳核算、信用评级、绿色金融对接，助力企业实现低成本绿色转型。
-                                    </p>
-                                    
-                                    <div class="hero-stats mb-5">
-                                        <div class="row g-3">
-                                            <div class="col-4">
-                                                <div class="stat-item">
-                                                    <div class="stat-value" data-count="5000">0</div>
-                                                    <div class="stat-label">服务企业</div>
-                                                </div>
-                                            </div>
-                                            <div class="col-4">
-                                                <div class="stat-item">
-                                                    <div class="stat-value" data-count="70">0</div>
-                                                    <div class="stat-label">成本降低%</div>
-                                                </div>
-                                            </div>
-                                            <div class="col-4">
-                                                <div class="stat-item">
-                                                    <div class="stat-value" data-count="24">0</div>
-                                                    <div class="stat-label">报告生成(小时)</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="d-flex flex-wrap gap-3 mb-5">
-                                        <a href="#solutions" class="btn btn-primary btn-lg page-link" data-page="solutions">
-                                            <i class="fas fa-rocket me-2"></i>立即体验
-                                        </a>
-                                        <a href="#features" class="btn btn-outline-light btn-lg page-link" data-page="features">
-                                            <i class="fas fa-play-circle me-2"></i>观看演示
-                                        </a>
-                                        <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#contactModal">
-                                            <i class="fas fa-phone-alt me-2"></i>联系我们
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- 合作伙伴展示 -->
-                                    <div class="partners-section">
-                                        <p class="text-light mb-3"><small>已获得以下机构认可</small></p>
-                                        <div class="partners-logos">
-                                            <div class="partner-logo">中国人民银行</div>
-                                            <div class="partner-logo">生态环境部</div>
-                                            <div class="partner-logo">上海环境能源交易所</div>
-                                            <div class="partner-logo">中国工商银行</div>
-                                            <div class="partner-logo">阿里巴巴集团</div>
-                                        </div>
-                                    </div>
+             <section id="home" class="page-section active">
+    
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4 animate-text">
+                        让每一吨碳<br>
+                        <span class="text-gradient">都有信用价值</span>
+                    </h1>
+                    <p class="lead mb-4">
+                        专为中小企业打造的ESG数据自动化平台，整合碳核算、信用评级、绿色金融对接，助力企业实现低成本绿色转型。
+                    </p>
+                    
+                    <div class="hero-stats mb-5">
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-value" data-count="5000">0</div>
+                                    <div class="stat-label">服务企业</div>
                                 </div>
-                                <div class="col-lg-6">
-                                    <div class="hero-visual">
-                                        <div class="visual-main">
-                                            <div class="dashboard-preview">
-                                                <!-- 这里将放置交互式数据可视化 -->
-                                                <div id="heroDashboard" style="height: 400px;"></div>
-                                            </div>
-                                            <div class="floating-card card1">
-                                                <i class="fas fa-chart-line"></i>
-                                                <span>实时监控</span>
-                                            </div>
-                                            <div class="floating-card card2">
-                                                <i class="fas fa-robot"></i>
-                                                <span>AI分析</span>
-                                            </div>
-                                            <div class="floating-card card3">
-                                                <i class="fas fa-shield-alt"></i>
-                                                <span>数据安全</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-value" data-count="70">0</div>
+                                    <div class="stat-label">成本降低%</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-value" data-count="24">0</div>
+                                    <div class="stat-label">报告生成(小时)</div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- 波浪装饰 -->
-                        <div class="wave-divider">
-                            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-                                <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" fill="currentColor"></path>
-                            </svg>
-                        </div>
                     </div>
-                </section>
+                    
+                    <div class="d-flex flex-wrap gap-3 mb-5">
+                        <a href="#solutions" class="btn btn-primary btn-lg page-link" data-page="solutions">
+                            <i class="fas fa-rocket me-2"></i>立即体验
+                        </a>
+                        <a href="#features" class="btn btn-outline-light btn-lg page-link" data-page="features">
+                            <i class="fas fa-play-circle me-2"></i>观看演示
+                        </a>
+                        <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#contactModal">
+                            <i class="fas fa-phone-alt me-2"></i>联系我们
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        
+        <div class="stat-cards-row">
+            <div class="stat-card" onclick="document.querySelector('[data-page=\'demo-upload\'] a').click()">
+                <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">累计处理文件</div>
+                    <div class="stat-number" data-target="1256">0</div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="document.querySelector('[data-page=\'demo-calc\'] a').click()">
+                <div class="stat-icon"><i class="fas fa-leaf"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">总碳核算量 (吨)</div>
+                    <div class="stat-number" data-target="45820">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">企业平均 ESG 得分</div>
+                    <div class="stat-number" data-target="86">0</div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="document.querySelector('[data-page=\'finance-match\'] a').click()">
+                <div class="stat-icon"><i class="fas fa-handshake"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">成功对接金融产品</div>
+                    <div class="stat-number" data-target="32">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-main-row">
+            <div class="recent-records-panel">
+                <h3><i class="fas fa-history"></i> 最近核算记录</h3>
+                <table class="recent-table">
+                    <thead>
+                        <tr>
+                            <th>企业名称</th>
+                            <th>核算时间</th>
+                            <th>ESG 评级</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>绿能科技股份有限公司</td>
+                            <td>2023-10-25 14:30</td>
+                            <td><span class="badge badge-a">A级</span></td>
+                            <td><span class="status success">已完成</span></td>
+                        </tr>
+                        <tr>
+                            <td>环宇制造工厂</td>
+                            <td>2023-10-24 09:15</td>
+                            <td><span class="badge badge-b">B级</span></td>
+                            <td><span class="status success">已完成</span></td>
+                        </tr>
+                        <tr>
+                            <td>未来出行物流公司</td>
+                            <td>2023-10-24 16:45</td>
+                            <td><span class="badge badge-c">C级</span></td>
+                            <td><span class="status warning">需复核</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</section>
 
                 <!-- 产品功能模块 -->
                 <section id="features" class="page-section section-padding">
@@ -586,6 +618,103 @@
 
                 <!-- ESG计算器模块 -->
                 <section id="esg-calculator" class="page-section section-padding bg-light">
+                    <section id="esg-calc" class="page-section">
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-calculator text-success me-2"></i>ESG 智能评价中心</h2>
+            <button class="btn btn-outline-success btn-sm" onclick="triggerESGAnimation()">
+                <i class="fas fa-sync-alt me-1"></i> 重新计算
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card shadow-sm text-center mb-4 score-card">
+                    <div class="card-body">
+                        <h5 class="text-muted">ESG 综合评分</h5>
+                        <div class="display-1 fw-bold text-success my-3" id="esg-total-score">0</div>
+                        <div class="badge bg-success fs-6 px-3 py-2">评级：A (极佳)</div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="fw-bold">E</div>
+                                <div class="text-success" id="score-e">0</div>
+                            </div>
+                            <div class="col-4 border-start border-end">
+                                <div class="fw-bold">S</div>
+                                <div class="text-primary" id="score-s">0</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold">G</div>
+                                <div class="text-info" id="score-g">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6><i class="fas fa-info-circle text-muted me-2"></i>维度权重说明</h6>
+                        <ul class="list-unstyled small mb-0 mt-3">
+                            <li class="mb-2"><span class="dot bg-success"></span> <strong>环境 (E):</strong> 碳排放、资源消耗 (40%)</li>
+                            <li class="mb-2"><span class="dot bg-primary"></span> <strong>社会 (S):</strong> 员工权益、供应链管理 (30%)</li>
+                            <li><span class="dot bg-info"></span> <strong>治理 (G):</strong> 合规性、透明度 (30%)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">核心改进建议</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="suggestion-item d-flex align-items-start mb-3 p-3 border rounded">
+                            <div class="suggestion-icon bg-light-success text-success me-3">
+                                <i class="fas fa-leaf"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold">优化碳排管理</h6>
+                                <p class="text-muted small mb-0">您当前的单位产值碳强高于行业平均水平 12%，建议引入光伏屋顶降低电耗。</p>
+                            </div>
+                            <button class="btn btn-sm btn-link ms-auto">查看方案</button>
+                        </div>
+                        <div class="suggestion-item d-flex align-items-start mb-3 p-3 border rounded">
+                            <div class="suggestion-icon bg-light-primary text-primary me-3">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold">完善供应链审核</h6>
+                                <p class="text-muted small mb-0">建议对二级供应商进行 ESG 问卷调查，提高社会责任维度分值。</p>
+                            </div>
+                            <button class="btn btn-sm btn-link ms-auto">下载模板</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <h5>ESG 维度分布图</h5>
+                        <div class="mock-radar-chart">
+                            <div class="radar-bar-wrapper d-flex align-items-end justify-content-center gap-4">
+                                <div class="radar-bar" style="height: 85%; background: #28a745; width: 40px; border-radius: 4px 4px 0 0; position: relative;">
+                                    <span style="position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 12px;">E</span>
+                                </div>
+                                <div class="radar-bar" style="height: 72%; background: #007bff; width: 40px; border-radius: 4px 4px 0 0; position: relative;">
+                                    <span style="position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 12px;">S</span>
+                                </div>
+                                <div class="radar-bar" style="height: 90%; background: #17a2b8; width: 40px; border-radius: 4px 4px 0 0; position: relative;">
+                                    <span style="position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 12px;">G</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
                     <div class="container">
                         <div class="section-header text-center mb-5">
                             <h2 class="section-title">ESG智能计算器</h2>
@@ -1053,142 +1182,159 @@
                 </section>
 
                 <!-- 绿色金融对接模块（新增独立页面） -->
-                <section id="finance-match" class="page-section section-padding bg-light">
-                    <div class="container">
-                        <div class="section-header text-center mb-5">
-                            <h2 class="section-title">绿色金融对接中心</h2>
-                            <p class="section-subtitle">连接金融机构与中小企业，助力绿色融资</p>
+             <section id="finance-match" class="page-section">
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-handshake text-primary me-2"></i>绿色金融智能匹配</h2>
+            <span class="badge bg-light text-dark border"><i class="fas fa-check-circle text-success me-1"></i> 已基于您的 ESG A级 评级为您推荐</span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 finance-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold">ESG 挂钩信用贷</h5>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">极度匹配</span>
                         </div>
+                        <p class="text-muted small"><i class="fas fa-building me-1"></i> 绿水建设银行</p>
                         
-                        <div class="row g-4">
-                            <div class="col-lg-8">
-                                <div class="finance-products-list">
-                                    <div class="row g-4">
-                                        <div class="col-md-6">
-                                            <div class="product-card featured">
-                                                <div class="product-badge">热门</div>
-                                                <h5>绿色信贷优惠包</h5>
-                                                <div class="product-details">
-                                                    <p><i class="fas fa-university text-success me-2"></i>发行机构：中国工商银行</p>
-                                                    <p><i class="fas fa-percentage text-success me-2"></i>利率优惠：LPR-50BP</p>
-                                                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i>最高额度：500万元</p>
-                                                    <p><i class="fas fa-clock text-warning me-2"></i>贷款期限：1-3年</p>
-                                                    <p><i class="fas fa-check-circle text-info me-2"></i>申请要求：ESG评分≥70分</p>
-                                                </div>
-                                                <button class="btn btn-success w-100 mt-3" onclick="applyProduct(1)">
-                                                    立即申请
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="product-card">
-                                                <h5>供应链绿色金融</h5>
-                                                <div class="product-details">
-                                                    <p><i class="fas fa-university text-success me-2"></i>发行机构：中国建设银行</p>
-                                                    <p><i class="fas fa-percentage text-success me-2"></i>账期延长至90天</p>
-                                                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i>最高额度：300万元</p>
-                                                    <p><i class="fas fa-clock text-warning me-2"></i>贷款期限：按需定制</p>
-                                                    <p><i class="fas fa-check-circle text-info me-2"></i>申请要求：ESG评分≥75分</p>
-                                                </div>
-                                                <button class="btn btn-outline-primary w-100 mt-3" onclick="applyProduct(2)">
-                                                    查看详情
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="product-card">
-                                                <h5>碳减排项目贷款</h5>
-                                                <div class="product-details">
-                                                    <p><i class="fas fa-university text-success me-2"></i>发行机构：国家开发银行</p>
-                                                    <p><i class="fas fa-percentage text-success me-2"></i>利率优惠：LPR-80BP</p>
-                                                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i>最高额度：1000万元</p>
-                                                    <p><i class="fas fa-clock text-warning me-2"></i>贷款期限：3-5年</p>
-                                                    <p><i class="fas fa-check-circle text-info me-2"></i>申请要求：有明确减排项目</p>
-                                                </div>
-                                                <button class="btn btn-outline-primary w-100 mt-3" onclick="applyProduct(3)">
-                                                    查看详情
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="product-card">
-                                                <h5>绿色企业信用贷</h5>
-                                                <div class="product-details">
-                                                    <p><i class="fas fa-university text-success me-2"></i>发行机构：招商银行</p>
-                                                    <p><i class="fas fa-percentage text-success me-2"></i>年化利率低至3.85%</p>
-                                                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i>最高额度：200万元</p>
-                                                    <p><i class="fas fa-clock text-warning me-2"></i>贷款期限：1年</p>
-                                                    <p><i class="fas fa-check-circle text-info me-2"></i>申请要求：无抵押纯信用</p>
-                                                </div>
-                                                <button class="btn btn-outline-primary w-100 mt-3" onclick="applyProduct(4)">
-                                                    查看详情
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="mb-3 mt-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>智能匹配度</span>
+                                <span class="fw-bold text-primary match-rate-text" data-target="98">0%</span>
                             </div>
-                            <div class="col-lg-4">
-                                <div class="finance-sidebar">
-                                    <div class="finance-filter">
-                                        <h5 class="mb-3">产品筛选</h5>
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">金融机构</label>
-                                            <select class="form-select">
-                                                <option value="">全部机构</option>
-                                                <option value="icbc">中国工商银行</option>
-                                                <option value="ccb">中国建设银行</option>
-                                                <option value="cdb">国家开发银行</option>
-                                                <option value="cmb">招商银行</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">贷款额度</label>
-                                            <select class="form-select">
-                                                <option value="">全部额度</option>
-                                                <option value="100">100万以下</option>
-                                                <option value="500">100-500万</option>
-                                                <option value="1000">500-1000万</option>
-                                                <option value="more">1000万以上</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">贷款期限</label>
-                                            <select class="form-select">
-                                                <option value="">全部期限</option>
-                                                <option value="1">1年以内</option>
-                                                <option value="3">1-3年</option>
-                                                <option value="5">3-5年</option>
-                                                <option value="more">5年以上</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">ESG评分要求</label>
-                                            <select class="form-select">
-                                                <option value="">全部</option>
-                                                <option value="60">≥60分</option>
-                                                <option value="70">≥70分</option>
-                                                <option value="80">≥80分</option>
-                                            </select>
-                                        </div>
-                                        <button class="btn btn-primary w-100">
-                                            <i class="fas fa-filter me-2"></i>筛选产品
-                                        </button>
-                                    </div>
-                                    <div class="finance-notice mt-4">
-                                        <h5 class="mb-3">申请须知</h5>
-                                        <ul class="list-unstyled">
-                                            <li class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>需完成企业ESG评分认证</li>
-                                            <li class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>提供企业营业执照等基础资料</li>
-                                            <li class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>平台可协助生成申请报告</li>
-                                            <li class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>最快3个工作日完成审批</li>
-                                        </ul>
-                                    </div>
-                                </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-primary match-rate-bar" role="progressbar" style="width: 0%;" data-target="98"></div>
                             </div>
+                            <p class="text-muted small mt-1" style="font-size: 0.75rem;">匹配理由：企业碳强降幅达标，治理架构完善。</p>
+                        </div>
+
+                        <div class="row text-center border-top border-bottom py-2 mb-3 bg-light rounded">
+                            <div class="col-6 border-end">
+                                <div class="text-muted small">预计年化利率</div>
+                                <div class="fw-bold text-danger">3.65% <i class="fas fa-arrow-down small"></i></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">最高授信额度</div>
+                                <div class="fw-bold text-dark">500万</div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="applyFinance('ESG 挂钩信用贷')">一键申请额度</button>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#financeDetailModal">查看产品详情</button>
                         </div>
                     </div>
-                </section>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 finance-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold">零碳工厂专项补贴贷</h5>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">高度匹配</span>
+                        </div>
+                        <p class="text-muted small"><i class="fas fa-building me-1"></i> 蓝天商业银行</p>
+                        
+                        <div class="mb-3 mt-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>智能匹配度</span>
+                                <span class="fw-bold text-primary match-rate-text" data-target="85">0%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-primary match-rate-bar" role="progressbar" style="width: 0%;" data-target="85"></div>
+                            </div>
+                            <p class="text-muted small mt-1" style="font-size: 0.75rem;">匹配理由：企业近期有光伏改造计划，符合专项支持。</p>
+                        </div>
+
+                        <div class="row text-center border-top border-bottom py-2 mb-3 bg-light rounded">
+                            <div class="col-6 border-end">
+                                <div class="text-muted small">预计年化利率</div>
+                                <div class="fw-bold text-danger">3.80%</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">最高授信额度</div>
+                                <div class="fw-bold text-dark">300万</div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="applyFinance('零碳工厂专项补贴贷')">一键申请额度</button>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#financeDetailModal">查看产品详情</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 finance-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold">绿链供应商快贷</h5>
+                            <span class="badge bg-info-subtle text-info border border-info-subtle">符合条件</span>
+                        </div>
+                        <p class="text-muted small"><i class="fas fa-building me-1"></i> 普惠发展银行</p>
+                        
+                        <div class="mb-3 mt-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>智能匹配度</span>
+                                <span class="fw-bold text-primary match-rate-text" data-target="72">0%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info match-rate-bar" role="progressbar" style="width: 0%;" data-target="72"></div>
+                            </div>
+                            <p class="text-muted small mt-1" style="font-size: 0.75rem;">匹配理由：核心企业信用传递，供应商ESG数据完整。</p>
+                        </div>
+
+                        <div class="row text-center border-top border-bottom py-2 mb-3 bg-light rounded">
+                            <div class="col-6 border-end">
+                                <div class="text-muted small">预计年化利率</div>
+                                <div class="fw-bold text-danger">4.10%</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">最高授信额度</div>
+                                <div class="fw-bold text-dark">100万</div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="applyFinance('绿链供应商快贷')">一键申请额度</button>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#financeDetailModal">查看产品详情</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="financeDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title"><i class="fas fa-file-contract me-2 text-primary"></i>金融产品详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3"><i class="fas fa-info-circle"></i> 演示模式下，此处展示通用模版数据。</p>
+                    <h6>申请条件：</h6>
+                    <ul class="small text-muted">
+                        <li>企业连续经营2年以上。</li>
+                        <li>平台 ESG 综合评级达到 B 级及以上。</li>
+                        <li>近一年内无重大环境违规记录。</li>
+                    </ul>
+                    <h6>资金用途：</h6>
+                    <p class="small text-muted">仅限用于企业节能减排改造、清洁能源采购、绿色供应链建设等符合《绿色产业指导目录》的项目。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="showToast('已从详情页发起申请！', 'success')">立即申请</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
                 <!-- 解决方案模块 -->
                 <section id="solutions" class="page-section section-padding bg-light">
@@ -1732,26 +1878,74 @@
                         </div>
                     </div>
                 </section>
-                <section id="demo-upload" class="page-section" style="display:none;">
-                    <div class="container py-4">
-                        <h3 class="mb-4"><i class="fas fa-file-invoice me-2"></i>票据智能识别</h3>
-                        
-                        <div class="card shadow-sm mb-4 border-0">
-                            <div class="card-body bg-light rounded">
-                                <label class="form-label fw-bold">请上传能耗票据（电费、水费、发票等）</label>
-                                <input type="file" id="fileInput" class="form-control mb-3" accept="image/*,.pdf">
-                                <button id="recognizeBtn" class="btn btn-primary"><i class="fas fa-magic me-2"></i>智能识别</button>
-                            </div>
+              <section id="demo-upload" class="page-section">
+    <div class="container mt-4">
+        <h2 class="mb-4"><i class="fas fa-file-upload text-primary me-2"></i>ESG 数据凭证上传</h2>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div id="upload-zone" class="upload-zone">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <h4>拖拽文件至此处，或点击上传</h4>
+                            <p class="text-muted small">支持 PDF, JPG, PNG 格式，单个文件不超过 10MB</p>
+                            <input type="file" id="file-input" style="display: none;">
+                            <button class="btn btn-outline-primary mt-2" onclick="document.getElementById('file-input').click()">选择文件</button>
                         </div>
-
-                        <div id="ocrResultBox" class="card shadow-sm border-success" style="display:none;">
-                            <div class="card-header bg-success text-white fw-bold">
-                                <i class="fas fa-check-circle me-2"></i>识别成功
-                            </div>
-                            <div class="card-body" id="ocrDetail"></div>
+                        
+                        <div class="text-center mt-3 border-top pt-3">
+                            <p class="text-muted small mb-2"><i class="fas fa-info-circle"></i> 演示模式专用捷径</p>
+                            <button id="btn-demo-case" class="btn btn-warning w-100 fw-bold">
+                                <i class="fas fa-bolt me-1"></i> 使用示例案例一键填充 (绿能科技)
+                            </button>
                         </div>
                     </div>
-                </section>
+                </div>
+
+                <div id="upload-progress-area" class="card shadow-sm mb-4" style="display: none;">
+                    <div class="card-body text-center">
+                        <h5 id="progress-text" class="mb-3">文件上传中...</h5>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;">0%</div>
+                        </div>
+                        <p id="file-name-preview" class="text-muted small mb-0"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div id="recognition-result-area" class="card shadow-sm" style="display: none;">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-check-circle text-success me-2"></i>AI 智能识别结果</h5>
+                        <span class="badge bg-success">识别完成</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info py-2" role="alert">
+                            <i class="fas fa-robot me-1"></i> 已自动提取关键字段，请核对。
+                        </div>
+                        <table class="table table-bordered table-sm mt-3">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>字段名称</th>
+                                    <th>识别内容</th>
+                                    <th>可信度</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recognition-tbody">
+                                </tbody>
+                        </table>
+                        
+                        <div class="d-flex justify-content-end mt-4 gap-2">
+                            <button class="btn btn-outline-secondary" onclick="resetUpload()">重新上传</button>
+                            <button class="btn btn-primary" onclick="goToNextStep()">确认无误，下一步 <i class="fas fa-arrow-right ms-1"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
                 <section id="demo-carbon" class="page-section" style="display:none;">
                       <div class="container py-4">
