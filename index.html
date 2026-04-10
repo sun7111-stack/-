@@ -1299,10 +1299,11 @@
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary" onclick="applyFinance('绿链供应商快贷')">一键申请额度</button>
-                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#financeDetailModal">查看产品详情</button>
-                        </div>
+<div class="d-grid gap-2">
+    <button class="btn btn-primary" onclick="applyFinance('绿链供应商快贷')">一键申请额度</button>
+    
+    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#financeDetailModal">查看产品详情</button>
+</div>
                     </div>
                 </div>
             </div>
@@ -1948,6 +1949,7 @@
 </section>
 
                 <section id="demo-carbon" class="page-section" style="display:none;">
+                    
                       <div class="container py-4">
                           <h3 class="mb-2"><i class="fas fa-leaf text-success me-2"></i>自动化碳核算与数字孪生分析</h3>
                           <p class="text-muted mb-4 small">基于票据识别与业务活动数据，自动完成碳排放核算、结构分析与可视化监测。</p>
@@ -1957,7 +1959,34 @@
                               <button class="btn btn-outline-secondary me-2"><i class="fas fa-database me-2"></i>查看示例数据</button>
                               <button class="btn btn-outline-primary"><i class="fas fa-download me-2"></i>导出分析结果</button>
                           </div>
-
+<div class="col-12 mt-4" id="carbonSummaryBox" style="display: none; animation: fadeIn 0.8s forwards;">
+    <div class="card shadow-sm border-0 bg-light">
+        <div class="card-header bg-white fw-bold border-bottom">
+            <i class="fas fa-clipboard-check text-primary me-2"></i>核算结论与优化建议
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 border-end pe-4">
+                    <h6 class="text-dark fw-bold mb-3"><i class="fas fa-chart-line text-success me-2"></i>核算结论</h6>
+                    <p class="text-muted small mb-2">1. 本期企业总碳排放量为 <strong class="text-dark">7.26 tCO₂e</strong>，整体水平略高于行业平均。</p>
+                    <p class="text-muted small mb-2">2. 排放主要集中于<strong class="text-dark">电力消耗与燃料使用环节</strong>，是当前减排的重点方向。</p>
+                    <p class="text-muted small mb-0">3. 运输活动数据波动较明显，存在进一步核验与优化空间。</p>
+                </div>
+                <div class="col-md-6 ps-4">
+                    <h6 class="text-dark fw-bold mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>系统建议</h6>
+                    <p class="text-muted small mb-2">1. 优先优化高负载设备的用电结构，提高能源利用效率。</p>
+                    <p class="text-muted small mb-2">2. 对运输环节进行分项记录，提升活动数据的完整性与准确性。</p>
+                    <p class="text-muted small mb-0">3. 结合行业基准值制定分阶段减排目标，并生成专项分析报告。</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-white border-top-0 text-end py-3">
+            <button class="btn btn-warning btn-lg shadow-sm fw-bold" onclick="goToRiskDetection()">
+                进入绿色金融风控检测 <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+        </div>
+    </div>
+</div>
                           <!-- 顶部 4 张核心指标卡 -->
                           <div id="carbonTotalCard" class="row g-3 mb-4" style="display:none;">
                               <div class="col-md-3">
@@ -2110,25 +2139,143 @@
                       </div>
                   </section>
 
-                <section id="demo-risk" class="page-section" style="display:none;">
-                    <div class="container py-4">
-                        <h3 class="mb-4"><i class="fas fa-shield-alt text-warning me-2"></i>绿色金融风控</h3>
-                        <button id="riskBtn" class="btn btn-warning text-dark fw-bold mb-4"><i class="fas fa-search-dollar me-2"></i>执行风控检测</button>
-                        
-                        <div id="riskResultBox" class="card shadow-sm border-warning" style="display:none;">
-                            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center fw-bold">
-                                <span><i class="fas fa-link me-2"></i>区块链存证哈希: <code id="hashValueText" class="user-select-all text-dark ms-2 bg-white px-2 py-1 rounded">--</code></span>
-                                <span id="riskStatusBadge" class="badge bg-secondary fs-6 px-3 py-2">等待检测</span>
-                            </div>
-                            <div class="card-body bg-light">
-                                <h5 class="card-title fw-bold border-bottom pb-2">风险异常清单</h5>
-                                <div id="riskReasonList" class="mt-3">
-                                    <p class="text-muted">点击检测获取风控报告...</p>
+<section id="demo-risk" class="page-section" style="display:none;">
+    <div class="container py-4">
+        <h3 class="mb-2"><i class="fas fa-shield-alt text-warning me-2"></i>绿色金融风控检测</h3>
+        <p class="text-muted mb-4 small">基于多维度数据交叉验证与区块链防篡改技术，对企业碳排放与经营数据进行合规性与真实性排查，拦截“洗绿”风险。</p>
+        
+        <div class="mb-4">
+            <button id="riskBtn" class="btn btn-warning text-dark fw-bold me-2"><i class="fas fa-search-dollar me-2"></i>执行全域风控扫描</button>
+        </div>
+        
+        <div id="riskPreScanBox" class="card shadow-sm border-0 bg-light mb-4">
+            <div class="card-body text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-fingerprint fa-4x text-muted opacity-50"></i>
+                </div>
+                <h5 class="text-muted">等待执行风控检测</h5>
+                <p class="text-muted small">系统将对以下维度进行深度扫描：<br>历史数据异常波动 | 跨源数据逻辑校验 | 区块链存证比对</p>
+            </div>
+        </div>
+
+        <div id="riskResultBox" style="display:none;">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100 border-start border-success border-4 risk-hover-card">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted mb-3">综合风险评分</h6>
+                            <h2 class="text-success fw-bold mb-0" id="riskScoreAnim" data-target="92">0</h2>
+                            <small class="text-muted">满分100，分数越高越安全</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100 border-start border-info border-4 risk-hover-card">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted mb-3">风险等级</h6>
+                            <h2 class="mb-0"><span class="badge bg-success px-4 py-2" id="riskLevelBadge">低风险</span></h2>
+                            <small class="text-muted mt-2 d-block">未发现重大违规项</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100 border-start border-primary border-4 risk-hover-card">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted mb-3">数据完整性</h6>
+                            <h2 class="text-primary fw-bold mb-0" id="dataIntegrityAnim" data-target="98">0%</h2>
+                            <small class="text-muted">核心溯源字段已全部上链</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 h-100 risk-hover-card">
+                        <div class="card-header bg-white fw-bold">风险构成分析图</div>
+                        <div class="card-body" style="position: relative; height:250px;">
+                            <canvas id="riskChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 h-100 risk-hover-card">
+                        <div class="card-header bg-white fw-bold">风险来源详细列表</div>
+                        <div class="card-body p-0">
+                            <div class="accordion accordion-flush" id="riskAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#risk1">
+                                            <i class="fas fa-check-circle text-success me-2"></i> 历史碳排数据波动 (正常)
+                                        </button>
+                                    </h2>
+                                    <div id="risk1" class="accordion-collapse collapse" data-bs-parent="#riskAccordion">
+                                        <div class="accordion-body small text-muted">企业近三年碳排放量呈平稳下降趋势，未见突发性异常断崖下跌，符合行业技改规律。</div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#risk2">
+                                            <i class="fas fa-exclamation-triangle text-warning me-2"></i> 供应链间接排放溯源 (需关注)
+                                        </button>
+                                    </h2>
+                                    <div id="risk2" class="accordion-collapse collapse" data-bs-parent="#riskAccordion">
+                                        <div class="accordion-body small text-muted">部分二级供应商未提供直接能耗凭证，采用了行业默认排放因子估算，存在一定的数据偏差风险。</div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#risk3">
+                                            <i class="fas fa-check-circle text-success me-2"></i> 区块链存证比对 (通过)
+                                        </button>
+                                    </h2>
+                                    <div id="risk3" class="accordion-collapse collapse" data-bs-parent="#riskAccordion">
+                                        <div class="accordion-body small text-muted">发票信息哈希值与税务链数据100%匹配，不存在篡改或一票多报情况。</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4 bg-light">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 border-end">
+                            <h6 class="fw-bold text-dark"><i class="fas fa-search me-2 text-primary"></i>主要风险原因分析</h6>
+                            <ul class="small text-muted mb-0 mt-2">
+                                <li>主体经营数据健康，无重大洗绿嫌疑。</li>
+                                <li>核心风险来源于“范围3”的供应链数据不够透明。</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6 ps-4">
+                            <h6 class="fw-bold text-dark"><i class="fas fa-lightbulb me-2 text-warning"></i>系统风险建议</h6>
+                            <ul class="small text-muted mb-0 mt-2">
+                                <li>建议向核心供应商下发标准化数据采集模板。</li>
+                                <li>当前状态符合绿色信贷入门标准，可继续推进流程。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-success d-flex align-items-center mb-4 border-0 shadow-sm" role="alert">
+                <i class="fas fa-link fa-2x me-3"></i>
+                <div>
+                    <h6 class="alert-heading mb-1 fw-bold">区块链存证校验成功</h6>
+                    <small>当前快照哈希: <code id="hashValueText" class="text-dark bg-transparent">--</code></small>
+                </div>
+            </div>
+        </div>
+
+        <div id="riskNextStepBox" class="text-end" style="display:none;">
+            <button class="btn btn-primary btn-lg shadow" onclick="goToAIReport()">
+                数据无误，生成 AI 诊断报告 <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+        </div>
+    </div>
+</section>
 
                 <section id="demo-report" class="page-section" style="display:none;">
                     <div class="container py-4">

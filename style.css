@@ -5273,3 +5273,11 @@ h1, h2, h3, h4, h5, h6, .card-title {
 .bg-success-subtle { background-color: #d1e7dd !important; }
 .bg-primary-subtle { background-color: #cfe2ff !important; }
 .bg-info-subtle { background-color: #cff4fc !important; }
+/* 风险页卡片悬浮效果 */
+.risk-hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.risk-hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}

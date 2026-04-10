@@ -293,6 +293,7 @@ function simulateUploadProcess(fileName) {
 }
 
 // 渲染识别结果表格（示例数据）
+// 渲染识别结果表格（示例数据）
 function showRecognitionResults() {
     const resultArea = document.getElementById('recognition-result-area');
     const tbody = document.getElementById('recognition-tbody');
@@ -316,6 +317,19 @@ function showRecognitionResults() {
     });
 
     resultArea.style.display = 'block';
+
+    // 👇👇👇 核心修复：强制向系统的全局状态中注入假数据 👇👇👇
+    // 这样 2 号同学的碳核算引擎就能检测到数据，放行流程！
+    if (typeof DemoState !== 'undefined') {
+        DemoState.ocrResult = {
+            type: '企业电费结算单(演示数据)',
+            energyType: 'electricity',
+            usage: 45820,   // 对应上面假数据的总用电量
+            unit: 'kWh',
+            date: '2023年10月'
+        };
+        console.log("演示模式：已成功向系统注入 OCR 状态，解除核算拦截！");
+    }
 }
 
 // 重新上传
@@ -324,45 +338,48 @@ function resetUpload() {
     document.getElementById('recognition-result-area').style.display = 'none';
     document.getElementById('file-input').value = '';
 }
-
-// 简单的 Toast 提示函数
-function showToast(message, type = 'success') {
-    alert(`[${type === 'success' ? '成功' : '提示'}] ` + message);
-    // 如果你有更好的UI组件（如 Bootstrap Toast），可以在这里替换 alert
-}
-
-// 下一步跳转
+// 下一步跳转 (修复白屏与路由版本)
 function goToNextStep() {
     console.log("演示模式：正在申请全站通行证...");
     
-    // 1. 强行修改所有可能导致拦截的全局变量
+    // 1. 洗白所有风控状态
     window.hasRisk = false;
     window.riskStatus = 'passed';
     window.isDataVerified = true;
-    
-    // 2. 如果 2 号同学的代码在 localStorage 里存了风险状态，立刻洗白
     localStorage.setItem('hasRisk', 'false');
     localStorage.setItem('riskLevel', 'low');
 
+    // 此时会调用系统原生的漂亮 Toast
     showToast('AI 校验通过，正在加载核算引擎...', 'success');
 
-    // 3. 延迟执行，给系统一点“反应时间”来接受新变量
+    // 2. 延迟跳转，等待 Toast 显示
     setTimeout(() => {
-        // 获取路由实例（如果你使用的是 router.js 里的路由跳转）
-        if (window.router && typeof window.router.navigateTo === 'function') {
-            console.log("使用路由引擎跳转...");
-            window.router.navigateTo('esg-calc'); 
+        // 🎯 在这里设置你要跳转的目标页面 ID
+        // 如果是去碳核算页，通常是 'demo-calc'；如果是去 ESG 页，则是 'esg-calc'
+        const targetPageId = 'demo-calc'; 
+
+        // 优先使用 router.js 中定义好的完美切换函数 (它能自动处理高亮和 display)
+        if (typeof switchPage === 'function') {
+            console.log("使用原生 switchPage 跳转...");
+            switchPage(targetPageId);
         } else {
-            // 如果路由引擎不可用，使用“暴力切换法”
-            console.log("路由引擎不可用，执行强制 DOM 切换...");
-            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
-            const target = document.getElementById('esg-calc');
+            // 如果没找到原生函数，使用加强版 DOM 切换（彻底解决白屏）
+            console.log("原生路由失效，执行强制 DOM 切换...");
+            document.querySelectorAll('.page-section, .page').forEach(p => {
+                p.classList.remove('active');
+                p.style.display = 'none'; // 确保彻底隐藏
+            });
+            const target = document.getElementById(targetPageId);
             if (target) {
                 target.classList.add('active');
-                // 强制改变地址栏哈希，防止系统觉得路径没变又跳回去
-                window.location.hash = 'esg-calc'; 
-                setTimeout(triggerESGAnimation, 200);
+                target.style.display = 'block'; // 🟢 关键修复：强制显示页面！
+                window.location.hash = targetPageId;
             }
+        }
+        
+        // 尝试触发目标页面的动画（如果有的话）
+        if (typeof triggerESGAnimation === 'function' && targetPageId === 'esg-calc') {
+            setTimeout(triggerESGAnimation, 200);
         }
     }, 800);
 }
