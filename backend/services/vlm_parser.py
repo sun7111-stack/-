@@ -179,7 +179,11 @@ class VLMParser:
         if settings.USE_MOCK:
             return cls._parse_mock(filename, raw_text)
         else:
-            return cls._parse_llm(content, suffix, mime_type)
+            try:
+                return cls._parse_llm(content, suffix, mime_type)
+            except Exception:
+                # 在线模型不可用或参数异常时，自动降级到Mock，保证主链路稳定。
+                return cls._parse_mock(filename, raw_text)
 
 async def parse_document_wrapper(file_obj) -> dict:
     """��¶��·�ɲ���õ��첽��װ"""

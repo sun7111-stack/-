@@ -1,5 +1,5 @@
 """ESG评分相关的Pydantic模型"""
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
@@ -59,8 +59,7 @@ class EsgScoreOut(BaseModel):
     recommendations: Optional[List[str]] = []
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class EsgDimensionResult(BaseModel):

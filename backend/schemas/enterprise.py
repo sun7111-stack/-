@@ -1,5 +1,5 @@
 """企业中心相关Pydantic模型"""
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
@@ -48,8 +48,7 @@ class EnterpriseProfileResponse(EnterpriseProfileBase):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ========== 企业概览面板 ==========
@@ -105,8 +104,7 @@ class CertificationResponse(BaseModel):
     description: str
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ========== 最近活动 ==========
@@ -119,8 +117,7 @@ class ActivityResponse(BaseModel):
     ip_address: str
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ========== 账号设置 ==========
@@ -148,8 +145,7 @@ class AccountSettingsResponse(BaseModel):
     is_active: bool
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ========== 数据权限 ==========

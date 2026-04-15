@@ -18,7 +18,9 @@ class DefaultStrategy(CarbonStrategy):
                     "item": act,
                     "amount": amount,
                     "factor": factor_info["value"],
-                    "emission": round(emission, 2)
+                    "emission": round(emission, 2),
+                    "unit": factor_info.get("unit", ""),
+                    "source": factor_info.get("source", ""),
                 })
                 
         return {"total_emission": round(total, 2), "breakdown": breakdown}
@@ -44,7 +46,9 @@ class CrossBorderStrategy(DefaultStrategy):
                     "item": act,
                     "amount": amount,
                     "factor": factor_info["value"],
-                    "emission": round(emission, 2)
+                    "emission": round(emission, 2),
+                    "unit": factor_info.get("unit", ""),
+                    "source": factor_info.get("source", ""),
                 })
         
         return {"total_emission": round(total, 2), "breakdown": breakdown}
@@ -70,7 +74,9 @@ class DailyGoodsStrategy(DefaultStrategy):
                     "item": act,
                     "amount": amount,
                     "factor": factor_info["value"],
-                    "emission": round(emission, 2)
+                    "emission": round(emission, 2),
+                    "unit": factor_info.get("unit", ""),
+                    "source": factor_info.get("source", ""),
                 })
         
         return {"total_emission": round(total, 2), "breakdown": breakdown}

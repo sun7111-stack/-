@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import joblib
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sklearn.ensemble import IsolationForest
 
 
@@ -17,6 +17,8 @@ class RiskInputData(BaseModel):
 
 
 class RiskOutputData(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     is_anomaly: bool
     risk_score: float
     anomaly_labels: List[str]
@@ -101,3 +103,91 @@ class IsolationForestRiskDetector:
 
 
 risk_detector = IsolationForestRiskDetector()
+
+
+def calculate_risk_score(
+    carbon_risk: float,
+    esg_risk: float,
+    governance_risk: float,
+    w1: float = 0.5,
+    w2: float = 0.3,
+    w3: float = 0.2,
+) -> float:
+    """规则型组合风险分: R = w1*Rc + w2*Re + w3*Rg"""
+    score = w1 * carbon_risk + w2 * esg_risk + w3 * governance_risk
+    return round(max(0.0, min(100.0, score)), 2)
+
+
+def calculate_risk_score_v2(
+    carbon_risk: float,
+    esg_risk: float,
+    governance_risk: float,
+    trust_score: float,
+    anomaly_risk: float,
+    l1: float = 0.30,
+    l2: float = 0.20,
+    l3: float = 0.15,
+    l4: float = 0.20,
+    l5: float = 0.15,
+) -> float:
+    """融合可信度与异常项的综合风险分。
+
+    R = l1*Rc + l2*Resg + l3*Rg + l4*(1-T)*100 + l5*Ranomaly
+    trust_score 取值区间 [0, 1]。
+    """
+    t = max(0.0, min(1.0, trust_score))
+    trust_penalty = (1.0 - t) * 100.0
+    score = (
+        l1 * carbon_risk
+        + l2 * esg_risk
+        + l3 * governance_risk
+        + l4 * trust_penalty
+        + l5 * anomaly_risk
+    )
+    return round(max(0.0, min(100.0, score)), 2)
+
+
+def classify_risk_level(risk_score: float) -> str:
+    if risk_score >= 80:
+        return "high"
+    if risk_score >= 60:
+        return "medium"
+    return "low"
+
+
+def generate_risk_reasons(
+    carbon_risk: float,
+    esg_risk: float,
+    governance_risk: float,
+    anomaly_labels: List[str],
+) -> List[str]:
+    reasons: List[str] = []
+    if carbon_risk >= 70:
+        reasons.append("碳排风险偏高：总排放或碳强度超出安全区间")
+    if esg_risk >= 60:
+        reasons.append("ESG风险偏高：环境或治理指标存在短板")
+    if governance_risk >= 60:
+        reasons.append("治理/信用风险偏高：退货率或运营稳定性需关注")
+    for label in anomaly_labels:
+        if label not in reasons:
+            reasons.append(label)
+    return reasons or ["未发现显著风险原因"]
+
+
+def generate_risk_advice(risk_level: str, reasons: List[str]) -> List[str]:
+    advice: List[str] = []
+    if risk_level == "high":
+        advice.append("立即启动专项整改，优先治理高耗能与高波动业务环节")
+        advice.append("建立周度风控复盘和阈值预警机制")
+    elif risk_level == "medium":
+        advice.append("按月跟踪碳强度与退货率，优化异常环节")
+        advice.append("补齐ESG披露与内控流程，降低治理不确定性")
+    else:
+        advice.append("保持现有管理策略，持续监控关键风险指标")
+
+    if any("碳排" in r or "碳强度" in r for r in reasons):
+        advice.append("推进节能改造与绿色电力替代，降低碳排放暴露")
+    if any("治理" in r or "信用" in r for r in reasons):
+        advice.append("完善内控与审计流程，提升治理透明度")
+
+    return advice

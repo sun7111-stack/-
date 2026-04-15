@@ -16,6 +16,20 @@ from models.report import Report, Policy, CaseStudy, ContactMessage
 from models.trace import DataTraceRecord
 from models.enterprise import EnterpriseProfile, EnterpriseCertification, EnterpriseActivity
 from models.data_upload import DataUpload, ApplicationMaterial
+from models.flow import (
+    EventStream,
+    EvidenceChainRecord,
+    EvidenceObject,
+    EvidenceChainStep,
+    EvidenceAnchor,
+    EvidenceProof,
+    TrustScoreRecord,
+)
+from models.report_record import ReportRecord
+from models.analysis import AnalysisResult, AnalysisBreakdown, RiskResult
+from models.data_pipeline import RawDataRecord, ParsedDataRecord, ActivityRecord
+from models.factor_match_log import FactorMatchLog
+from models.analysis_v2 import AnalysisResultV2Snapshot
 
 from utils.auth import hash_password
 
@@ -398,6 +412,67 @@ def seed_data():
                 ),
             ]
             db.add_all(materials)
+
+        # ---------- 11. 首页事件流种子数据 ----------
+        if db.query(EventStream).count() == 0:
+            print("插入事件流种子数据...")
+            db.add_all([
+                EventStream(enterprise_name="绿创制造", event_type="ocr_done", event_desc="OCR识别完成", event_status="done"),
+                EventStream(enterprise_name="绿创制造", event_type="govern_done", event_desc="数据治理完成", event_status="done"),
+                EventStream(enterprise_name="绿创制造", event_type="carbon_done", event_desc="碳核算完成", event_status="done"),
+                EventStream(enterprise_name="绿创制造", event_type="risk_alert", event_desc="风控预警已生成", event_status="warning"),
+                EventStream(enterprise_name="绿创制造", event_type="report_done", event_desc="报告预览生成完成", event_status="done"),
+            ])
+
+        # ---------- 12. 报告导出记录种子数据 ----------
+        if ent_user and db.query(ReportRecord).filter(ReportRecord.user_id == ent_user.id).count() == 0:
+            print("插入报告导出记录种子数据...")
+            db.add(
+                ReportRecord(
+                    user_id=ent_user.id,
+                    analysis_id="analysis-demo-001",
+                    report_type="esg",
+                    report_title="2025年度ESG报告",
+                    export_status="exported",
+                    file_path="/reports/2025-esg-demo.pdf",
+                    report_context={"enterprise_name": "绿创制造", "analysis_date": "2026-04-14"},
+                    report_preview={"summary": "示例导出记录", "risk_level": "medium"},
+                )
+            )
+
+        # ---------- 13. 核算结果与风控结果种子数据 ----------
+        if ent_user and db.query(AnalysisResult).filter(AnalysisResult.user_id == ent_user.id).count() == 0:
+            print("插入核算结果种子数据...")
+            ar = AnalysisResult(
+                user_id=ent_user.id,
+                enterprise_name="绿创制造",
+                total_emission=486.0,
+                carbon_intensity=0.13,
+                industry_deviation=-0.08,
+                risk_level="medium",
+                major_source="electricity",
+                advice_text="优先优化电力与运输环节排放。",
+            )
+            db.add(ar)
+            db.flush()
+            db.add_all([
+                AnalysisBreakdown(analysis_id=ar.id, source_type="electricity", emission_value=260.0, proportion=53.5),
+                AnalysisBreakdown(analysis_id=ar.id, source_type="diesel", emission_value=120.0, proportion=24.7),
+                AnalysisBreakdown(analysis_id=ar.id, source_type="waste", emission_value=106.0, proportion=21.8),
+            ])
+
+        if ent_user and db.query(RiskResult).filter(RiskResult.user_id == ent_user.id).count() == 0:
+            print("插入风控结果种子数据...")
+            db.add(
+                RiskResult(
+                    user_id=ent_user.id,
+                    analysis_id=1,
+                    risk_score=64.5,
+                    risk_level="medium",
+                    risk_reason="碳强度偏高且物流波动较大",
+                    risk_advice="加强运输排程与能耗管理，按月复盘风险阈值。",
+                )
+            )
 
         db.commit()
         print("种子数据插入完成！")

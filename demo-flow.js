@@ -2,7 +2,8 @@ const DemoState = {
     ocrResult: null,
     carbonResult: null,
     riskResult: null,
-    reportResult: null
+    reportResult: null,
+    evidenceContext: null
 };
  /* 处理文件上传
  */
@@ -2182,69 +2183,374 @@ function bindExportCarbonButton() {
         });
     }
 }
-// 3. 风控检测按钮逻辑 (修复版：增加 UI 交互与下一步)
-// 3. 风控检测按钮逻辑 (完整强化版)
+// 3. 风控检测按钮逻辑
 function bindRiskButton() {
     const btn = document.getElementById('riskBtn');
     if (!btn) return;
 
     btn.addEventListener('click', async () => {
-        // 演示模式容错：如果没有碳核算数据也可以直接看动画
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>区块链上链与全域核验中...';
         btn.disabled = true;
 
-        // 隐藏占位图
         const preScanBox = document.getElementById('riskPreScanBox');
         if (preScanBox) preScanBox.style.display = 'none';
 
-        // 模拟网络请求和计算延迟
-        setTimeout(() => {
-            // 显示主要结果区
-            const resultBox = document.getElementById('riskResultBox');
-            if(resultBox) resultBox.style.display = 'block';
-            
-            // 显示下一步按钮
-            const nextStepBox = document.getElementById('riskNextStepBox');
-            if(nextStepBox) nextStepBox.style.display = 'block';
+        try {
+            const riskPayload = buildRiskPayloadFromState();
+            const riskRes = await API.detectRisk(riskPayload);
 
-            // 写入虚拟区块链哈希
-            const hashText = document.getElementById('hashValueText');
-            if(hashText) hashText.innerText = '0x' + Math.random().toString(16).substr(2, 40) + '...';
+            const fallbackAnalysisId = `AN-${Date.now()}`;
+            const analysisId = (riskRes.task_id || DemoState.carbonResult?.analysis_id || fallbackAnalysisId).toString();
 
-            // 触发数字滚动动画
-            const scoreAnim = document.getElementById('riskScoreAnim');
-            if (typeof animateValue === 'function') animateValue(scoreAnim, 0, 92, 1500);
+            const evidenceObjects = [
+                {
+                    object_type: 'ocr',
+                    step_name: 'ocr_done',
+                    payload: DemoState.ocrResult || {},
+                    blob_ref: ''
+                },
+                {
+                    object_type: 'carbon',
+                    step_name: 'carbon_done',
+                    payload: DemoState.carbonResult || {},
+                    blob_ref: ''
+                },
+                {
+                    object_type: 'risk',
+                    step_name: 'risk_done',
+                    payload: {
+                        risk_score: riskRes.risk_score,
+                        risk_score_explain_v2: riskRes.risk_score_explain_v2,
+                        risk_level: riskRes.risk_level,
+                        risk_reasons: riskRes.risk_reasons,
+                        blockchain_hash: riskRes.blockchain_hash,
+                    },
+                    blob_ref: ''
+                }
+            ];
 
-            // 触发百分比动画
-            const integrityAnim = document.getElementById('dataIntegrityAnim');
-            if (integrityAnim) {
-                let start = 0, end = 98, duration = 1500, startTime = null;
-                const step = (timestamp) => {
-                    if (!startTime) startTime = timestamp;
-                    let progress = Math.min((timestamp - startTime) / duration, 1);
-                    integrityAnim.innerHTML = Math.floor(progress * end) + '%';
-                    if (progress < 1) window.requestAnimationFrame(step);
-                };
-                window.requestAnimationFrame(step);
-            }
+            const storeRes = await apiStoreEvidence({
+                analysis_id: analysisId,
+                step_name: 'risk_done',
+                payload: evidenceObjects[2].payload,
+                evidence_objects: evidenceObjects,
+            });
 
-            // 渲染中间的风险构成图表
-            renderRiskChart();
+            const chainRes = await apiGetEvidenceChain(analysisId);
 
-            // 恢复按钮状态
+            DemoState.riskResult = riskRes;
+            DemoState.evidenceContext = {
+                analysisId,
+                riskRes,
+                storeRes,
+                chainRes,
+                proofRes: null,
+                verifyRes: null,
+            };
+
+            renderRiskMainResult(riskRes, chainRes);
+            renderRiskChart(riskRes);
+            renderRiskNarratives(riskRes);
+            renderEvidenceTimeline(chainRes);
+            renderEvidenceDetail(chainRes, storeRes, null, null);
+            bindEvidenceVerifyButton();
+
+            if(typeof showToast === 'function') showToast('风控检测完成，证据链已生成并可验真', 'success');
+        } catch (err) {
+            console.error('风控联调失败:', err);
+            if(typeof showToast === 'function') showToast(err.message || '风控检测失败，请检查后端服务', 'error');
+        } finally {
             btn.innerHTML = '<i class="fas fa-shield-alt me-2"></i>重新检测';
             btn.disabled = false;
-            
-            if(typeof showToast === 'function') showToast('风控检测完成，评级：低风险', 'success');
-
-        }, 1500);
+        }
     });
 }
 
+function buildRiskPayloadFromState() {
+    const totalEmission = Number(DemoState.carbonResult?.totalValue || DemoState.carbonResult?.total_emission || 50);
+    const electricityUsage = Number(DemoState.ocrResult?.usage || DemoState.ocrResult?.electricity_usage || 5000);
+    return {
+        task_id: `task-${Date.now()}`,
+        total_emission: Number.isFinite(totalEmission) ? totalEmission : 50,
+        electricity_usage: Number.isFinite(electricityUsage) ? electricityUsage : 5000,
+        structured_fields: {
+            esg_score: Number(DemoState.carbonResult?.esg_score || 75),
+        },
+    };
+}
+
+async function apiStoreEvidence(payload) {
+    if (API && typeof API.storeEvidence === 'function') {
+        return API.storeEvidence(payload);
+    }
+    if (API && typeof API.post === 'function') {
+        return API.post('/evidence/store', payload);
+    }
+    throw new Error('当前页面 API 对象缺少 storeEvidence/post 方法，请刷新页面后重试');
+}
+
+async function apiGetEvidenceChain(recordId) {
+    if (API && typeof API.getEvidenceChain === 'function') {
+        return API.getEvidenceChain(recordId);
+    }
+    if (API && typeof API.get === 'function') {
+        return API.get(`/evidence/chain/${recordId}`);
+    }
+    throw new Error('当前页面 API 对象缺少 getEvidenceChain/get 方法，请刷新页面后重试');
+}
+
+async function apiVerifyEvidence(payload) {
+    if (API && typeof API.verifyEvidence === 'function') {
+        return API.verifyEvidence(payload);
+    }
+    if (API && typeof API.post === 'function') {
+        return API.post('/evidence/verify', payload);
+    }
+    throw new Error('当前页面 API 对象缺少 verifyEvidence/post 方法，请刷新页面后重试');
+}
+
+async function apiGetEvidenceProof(leafId) {
+    if (API && typeof API.getEvidenceProof === 'function') {
+        return API.getEvidenceProof(leafId);
+    }
+    if (API && typeof API.get === 'function') {
+        return API.get(`/evidence/proof/${leafId}`);
+    }
+    throw new Error('当前页面 API 对象缺少 getEvidenceProof/get 方法，请刷新页面后重试');
+}
+
+function renderRiskMainResult(riskRes, chainRes) {
+    const resultBox = document.getElementById('riskResultBox');
+    if (resultBox) resultBox.style.display = 'block';
+
+    const nextStepBox = document.getElementById('riskNextStepBox');
+    if (nextStepBox) nextStepBox.style.display = 'block';
+
+    const hashText = document.getElementById('hashValueText');
+    if (hashText) {
+        hashText.innerText = riskRes.blockchain_hash || chainRes?.anchor?.merkle_root || '--';
+    }
+
+    const scoreAnim = document.getElementById('riskScoreAnim');
+    const finalScore = Math.max(0, Math.min(100, Number(riskRes.risk_score_explain_v2 || riskRes.risk_score || 0)));
+    animateNumber(scoreAnim, 0, Math.round(finalScore), '', 1200);
+
+    setRiskLevelBadge(riskRes.risk_level || 'medium');
+
+    const trustRaw = Number(chainRes?.trust_score ?? riskRes.trust_score ?? 0);
+    const trustScorePercent = Math.max(0, Math.min(100, trustRaw <= 1 ? trustRaw * 100 : trustRaw));
+    const trustScoreText = document.getElementById('trustScoreText');
+    if (trustScoreText) trustScoreText.textContent = Number(trustScorePercent).toFixed(1);
+
+    const trustPenaltyText = document.getElementById('trustPenaltyText');
+    const penaltyValue = Math.max(0, Math.min(100, Number(riskRes.trust_penalty ?? (100 - trustScorePercent))));
+    if (trustPenaltyText) trustPenaltyText.textContent = `${penaltyValue.toFixed(2)}%`;
+
+    const integrity = calcIntegrityPercent(chainRes?.verify);
+    const integrityAnim = document.getElementById('dataIntegrityAnim');
+    animateNumber(integrityAnim, 0, integrity, '%', 1000);
+}
+
+function renderRiskNarratives(riskRes) {
+    const reasonList = document.getElementById('riskReasonList');
+    const adviceList = document.getElementById('riskAdviceList');
+    if (!reasonList || !adviceList) return;
+
+    const reasons = Array.isArray(riskRes?.risk_reasons) && riskRes.risk_reasons.length
+        ? riskRes.risk_reasons
+        : ['主体经营数据健康，无重大洗绿嫌疑。'];
+    const advices = Array.isArray(riskRes?.risk_advice) && riskRes.risk_advice.length
+        ? riskRes.risk_advice
+        : ['建议按月复盘风控指标并持续优化数据治理流程。'];
+
+    reasonList.innerHTML = reasons.map((item) => `<li>${item}</li>`).join('');
+    adviceList.innerHTML = advices.map((item) => `<li>${item}</li>`).join('');
+}
+
+function setRiskLevelBadge(level) {
+    const levelBadge = document.getElementById('riskLevelBadge');
+    if (!levelBadge) return;
+
+    levelBadge.className = 'badge px-4 py-2';
+    if (level === 'low') {
+        levelBadge.classList.add('bg-success');
+        levelBadge.textContent = '低风险';
+    } else if (level === 'medium') {
+        levelBadge.classList.add('bg-warning', 'text-dark');
+        levelBadge.textContent = '中风险';
+    } else {
+        levelBadge.classList.add('bg-danger');
+        levelBadge.textContent = '高风险';
+    }
+}
+
+function calcIntegrityPercent(verify) {
+    if (!verify || typeof verify !== 'object') return 0;
+    const keys = ['hash_chain', 'merkle_inclusion', 'timestamp'];
+    const passed = keys.filter((key) => verify[key] === 'pass').length;
+    return Math.round((passed / keys.length) * 100);
+}
+
+function animateNumber(el, start, end, suffix = '', duration = 1000) {
+    if (!el) return;
+    let startTime = null;
+    const loop = (ts) => {
+        if (!startTime) startTime = ts;
+        const progress = Math.min((ts - startTime) / duration, 1);
+        const value = Math.round(start + (end - start) * progress);
+        el.textContent = `${value}${suffix}`;
+        if (progress < 1) {
+            window.requestAnimationFrame(loop);
+        }
+    };
+    window.requestAnimationFrame(loop);
+}
+
+function renderEvidenceTimeline(chainRes) {
+    const container = document.getElementById('evidenceTimeline');
+    if (!container) return;
+
+    const timeline = Array.isArray(chainRes?.timeline) ? chainRes.timeline : [];
+    if (!timeline.length) {
+        container.innerHTML = '<span class="text-muted">暂无证据链步骤</span>';
+        return;
+    }
+
+    container.innerHTML = timeline.map((item, idx) => {
+        const stateClass = item.ok ? 'success' : 'warning';
+        const shortHash = item.hash ? `${item.hash.slice(0, 18)}...` : '--';
+        return `
+            <div class="d-flex align-items-start mb-3">
+                <span class="badge bg-${stateClass} me-2 mt-1">${idx + 1}</span>
+                <div class="flex-grow-1">
+                    <div class="fw-bold text-dark">${item.step || '--'}</div>
+                    <div class="text-muted">${item.time || '--'}</div>
+                    <div class="font-monospace text-break">${shortHash}</div>
+                    <button class="btn btn-link btn-sm p-0 mt-1 evidence-step-detail" data-step-index="${idx}" data-bs-toggle="offcanvas" data-bs-target="#evidenceDetailDrawer">查看该步详情</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.querySelectorAll('.evidence-step-detail').forEach((el) => {
+        el.addEventListener('click', (e) => {
+            const index = Number(e.currentTarget.getAttribute('data-step-index') || -1);
+            const ctx = DemoState.evidenceContext;
+            if (!ctx) return;
+            renderEvidenceDetail(ctx.chainRes, ctx.storeRes, ctx.verifyRes, ctx.proofRes, index);
+        });
+    });
+}
+
+function bindEvidenceVerifyButton() {
+    const verifyBtn = document.getElementById('evidenceVerifyBtn');
+    if (!verifyBtn) return;
+
+    verifyBtn.onclick = async () => {
+        const ctx = DemoState.evidenceContext;
+        if (!ctx || !ctx.analysisId) {
+            if(typeof showToast === 'function') showToast('请先执行风控扫描，生成证据链', 'warning');
+            return;
+        }
+
+        const original = verifyBtn.innerHTML;
+        verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>验真中';
+        verifyBtn.disabled = true;
+
+        try {
+            const verifyRes = await apiVerifyEvidence({ analysis_id: ctx.analysisId });
+            ctx.verifyRes = verifyRes;
+
+            let proofRes = null;
+            const leafId = ctx.storeRes?.leaf_ids?.[0];
+            if (leafId) {
+                proofRes = await apiGetEvidenceProof(leafId);
+                ctx.proofRes = proofRes;
+            }
+
+            renderEvidenceVerifyStatus(verifyRes, proofRes);
+            renderEvidenceDetail(ctx.chainRes, ctx.storeRes, verifyRes, proofRes);
+            if(typeof showToast === 'function') showToast('证据链验真完成', 'success');
+        } catch (err) {
+            console.error('证据链验真失败:', err);
+            if(typeof showToast === 'function') showToast(err.message || '证据链验真失败', 'error');
+        } finally {
+            verifyBtn.innerHTML = original;
+            verifyBtn.disabled = false;
+        }
+    };
+}
+
+function renderEvidenceVerifyStatus(verifyRes, proofRes) {
+    const box = document.getElementById('evidenceVerifyStatus');
+    if (!box) return;
+
+    const chainVerify = verifyRes?.verify || {};
+    const verifyMessage = verifyRes?.message ? `<div class="small text-muted mt-2">${verifyRes.message}</div>` : '';
+    const line = (label, value) => {
+        const pass = value === 'pass';
+        return `<span class="badge ${pass ? 'bg-success' : 'bg-danger'} me-2">${label}: ${value || 'n/a'}</span>`;
+    };
+
+    const proofLine = proofRes ? line('Leaf Proof', proofRes.verify) : '<span class="badge bg-secondary me-2">Leaf Proof: n/a</span>';
+    box.innerHTML = `
+        <div class="small mb-2">验真结果</div>
+        ${line('Hash Chain', chainVerify.hash_chain)}
+        ${line('Merkle', chainVerify.merkle_inclusion)}
+        ${line('Timestamp', chainVerify.timestamp)}
+        ${proofLine}
+        ${verifyMessage}
+    `;
+}
+
+function renderEvidenceDetail(chainRes, storeRes, verifyRes, proofRes, focusIndex = 0) {
+    const detail = document.getElementById('evidenceDetailContent');
+    if (!detail) return;
+
+    const timeline = Array.isArray(chainRes?.timeline) ? chainRes.timeline : [];
+    const step = timeline[Math.max(0, Math.min(focusIndex, timeline.length - 1))] || null;
+    const anchor = chainRes?.anchor || {};
+    const verify = verifyRes?.verify || chainRes?.verify || {};
+    const leafId = Array.isArray(storeRes?.leaf_ids) ? (storeRes.leaf_ids[focusIndex] || storeRes.leaf_ids[0] || '--') : '--';
+
+    detail.innerHTML = `
+        <div class="mb-3">
+            <div class="fw-bold mb-2">链锚信息</div>
+            <div>Analysis ID: <code>${chainRes?.analysis_id || '--'}</code></div>
+            <div>Tx ID: <code>${anchor.tx_id || '--'}</code></div>
+            <div>Merkle Root: <code>${anchor.merkle_root || '--'}</code></div>
+            <div>Block Time: <code>${anchor.block_time || '--'}</code></div>
+        </div>
+        <hr>
+        <div class="mb-3">
+            <div class="fw-bold mb-2">步骤详情</div>
+            <div>Step: <code>${step?.step || '--'}</code></div>
+            <div>Time: <code>${step?.time || '--'}</code></div>
+            <div>Hash: <code class="text-break">${step?.hash || '--'}</code></div>
+            <div>Leaf ID: <code>${leafId}</code></div>
+        </div>
+        <hr>
+        <div>
+            <div class="fw-bold mb-2">验真摘要</div>
+            <div>Hash Chain: <code>${verify.hash_chain || '--'}</code></div>
+            <div>Merkle Inclusion: <code>${verify.merkle_inclusion || '--'}</code></div>
+            <div>Timestamp: <code>${verify.timestamp || '--'}</code></div>
+            <div>Leaf Proof: <code>${proofRes?.verify || '--'}</code></div>
+        </div>
+    `;
+}
+
 // 渲染风险构成分析图
-function renderRiskChart() {
+function renderRiskChart(riskRes) {
     const ctx = document.getElementById('riskChart');
     if (!ctx) return;
+
+    const trustRaw = Number(riskRes?.trust_score ?? 0.6);
+    const trust = trustRaw <= 1 ? trustRaw * 100 : trustRaw;
+    const anomaly = Math.max(0, Math.min(100, Number(riskRes?.risk_score || 20)));
+    const governance = Math.max(0, Math.min(100, Number(riskRes?.trust_penalty || 20)));
+    const supplyChain = Math.max(5, 100 - trust);
+    const compliance = Math.max(5, Math.min(100, 100 - anomaly));
     
     // 如果已经有图表实例则销毁，防止重叠重绘
     if (window.myRiskChart) {
@@ -2257,7 +2563,7 @@ function renderRiskChart() {
         data: {
             labels: ['数据造假风险', '经营合规风险', '供应链溯源风险', '环保处罚风险'],
             datasets: [{
-                data: [5, 10, 75, 10], // 突出显示供应链风险
+                data: [anomaly, compliance, supplyChain, governance],
                 backgroundColor: [
                     '#4CAF50', // 绿
                     '#2196F3', // 蓝

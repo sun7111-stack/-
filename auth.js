@@ -82,6 +82,7 @@ function initLoginForm() {
         
         // 调用后端API登录
         API.login(email, password).then(data => {
+            localStorage.setItem('carbon_platform_logged_in', 'true');
             PlatformState.user = {
                 id: data.user.id,
                 email: data.user.email,

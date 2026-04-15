@@ -2323,9 +2323,10 @@
                 <div class="col-md-4">
                     <div class="card shadow-sm border-0 h-100 border-start border-primary border-4 risk-hover-card">
                         <div class="card-body text-center">
-                            <h6 class="text-muted mb-3">数据完整性</h6>
-                            <h2 class="text-primary fw-bold mb-0" id="dataIntegrityAnim" data-target="98">0%</h2>
-                            <small class="text-muted">核心溯源字段已全部上链</small>
+                            <h6 class="text-muted mb-3">可信度评分</h6>
+                            <h2 class="text-primary fw-bold mb-0"><span id="trustScoreText">--</span>%</h2>
+                            <small class="text-muted d-block">Trust Penalty <span id="trustPenaltyText">--</span></small>
+                            <small class="text-muted d-block">链路完整性 <span id="dataIntegrityAnim" data-target="98">0%</span></small>
                         </div>
                     </div>
                 </div>
@@ -2386,19 +2387,37 @@
                     <div class="row">
                         <div class="col-md-6 border-end">
                             <h6 class="fw-bold text-dark"><i class="fas fa-search me-2 text-primary"></i>主要风险原因分析</h6>
-                            <ul class="small text-muted mb-0 mt-2">
+                            <ul id="riskReasonList" class="small text-muted mb-0 mt-2">
                                 <li>主体经营数据健康，无重大洗绿嫌疑。</li>
                                 <li>核心风险来源于“范围3”的供应链数据不够透明。</li>
                             </ul>
                         </div>
                         <div class="col-md-6 ps-4">
                             <h6 class="fw-bold text-dark"><i class="fas fa-lightbulb me-2 text-warning"></i>系统风险建议</h6>
-                            <ul class="small text-muted mb-0 mt-2">
+                            <ul id="riskAdviceList" class="small text-muted mb-0 mt-2">
                                 <li>建议向核心供应商下发标准化数据采集模板。</li>
                                 <li>当前状态符合绿色信贷入门标准，可继续推进流程。</li>
                             </ul>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4 risk-hover-card">
+                <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-link me-2 text-primary"></i>证据链时间轴</span>
+                    <div>
+                        <button id="evidenceVerifyBtn" class="btn btn-sm btn-outline-success me-2">
+                            <i class="fas fa-shield-check me-1"></i>一键验真
+                        </button>
+                        <button id="openEvidenceDrawerBtn" class="btn btn-sm btn-outline-primary" data-bs-toggle="offcanvas" data-bs-target="#evidenceDetailDrawer">
+                            <i class="fas fa-list-ul me-1"></i>查看详情
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="evidenceTimeline" class="small text-muted">等待生成证据链...</div>
+                    <div id="evidenceVerifyStatus" class="mt-3"></div>
                 </div>
             </div>
             
@@ -2415,6 +2434,16 @@
             <button class="btn btn-primary btn-lg shadow" onclick="goToAIReport()">
                 数据无误，生成 AI 诊断报告 <i class="fas fa-arrow-right ms-2"></i>
             </button>
+        </div>
+
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="evidenceDetailDrawer" aria-labelledby="evidenceDetailDrawerLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="evidenceDetailDrawerLabel">证据链详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div id="evidenceDetailContent" class="small text-muted">暂无证据链详情</div>
+            </div>
         </div>
     </div>
 </section>
@@ -2975,7 +3004,7 @@
     <!-- Three.js 用于3D可视化 -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/examples/js/controls/OrbitControls.js"></script>
-            <script src="api.js"></script>
+            <script src="api.js?v=20260415a"></script>
         <script src="auth.js"></script>
              <script src="router.js"></script>
              <script src="demo-flow.js"></script>

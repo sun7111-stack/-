@@ -1,5 +1,5 @@
 """金融产品相关的Pydantic模型"""
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -17,8 +17,7 @@ class FinancialProductOut(BaseModel):
     popularity: int
     category: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FinanceApplicationCreate(BaseModel):
@@ -36,5 +35,4 @@ class FinanceApplicationOut(BaseModel):
     status: str
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

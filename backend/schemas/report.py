@@ -1,5 +1,5 @@
 """报告及其他相关的Pydantic模型"""
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Any
 from datetime import datetime
 
@@ -24,8 +24,7 @@ class ReportOut(BaseModel):
     review_comment: Optional[str] = ""
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ReportReview(BaseModel):
@@ -48,8 +47,7 @@ class PolicyOut(BaseModel):
     summary: str
     relevance: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CaseStudyOut(BaseModel):
@@ -61,8 +59,7 @@ class CaseStudyOut(BaseModel):
     results: Any
     testimonial: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ContactMessageCreate(BaseModel):
@@ -83,8 +80,7 @@ class ContactMessageOut(BaseModel):
     status: str
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ApiResponse(BaseModel):

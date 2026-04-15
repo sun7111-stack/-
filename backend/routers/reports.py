@@ -10,6 +10,7 @@ from database import get_db
 from models.user import User
 from models.carbon import CarbonRecord
 from models.report import Report, Policy, CaseStudy, ContactMessage
+from models.report_record import ReportRecord
 from services.report_llm import report_generator, ReportInputData
 from schemas.report import (
     ReportGenerate,
@@ -25,6 +26,41 @@ from schemas.report import (
 from utils.auth import get_current_user, get_current_user_optional
 
 router = APIRouter(prefix="/api", tags=["报告与数据"])
+
+
+def build_report_context(body: dict, company_name: str) -> dict:
+    return {
+        "enterprise_name": company_name,
+        "analysis_date": body.get("period") or time.strftime("%Y-%m-%d"),
+        "total_emission": float(body.get("total_emission") or 0.0),
+        "breakdown": body.get("emission_breakdown") or [],
+        "esg_score": float(body.get("esg_score") or 75.0),
+        "risk_level": body.get("risk_level") or "medium",
+        "risk_reasons": body.get("risk_reasons") or [],
+        "advice": body.get("suggestions") or ["持续优化高耗能环节"],
+    }
+
+
+def generate_ai_summary(context: dict) -> str:
+    return (
+        f"{context['enterprise_name']}在{context['analysis_date']}总碳排为{context['total_emission']}，"
+        f"ESG得分{context['esg_score']}，风险等级{context['risk_level']}。"
+        "建议优先治理高排放环节并保持月度复盘。"
+    )
+
+
+def render_report_template(context: dict) -> dict:
+    return {
+        "enterprise_name": context["enterprise_name"],
+        "analysis_date": context["analysis_date"],
+        "executive_summary": generate_ai_summary(context),
+        "total_emission": context["total_emission"],
+        "breakdown": context["breakdown"],
+        "esg_score": context["esg_score"],
+        "risk_level": context["risk_level"],
+        "risk_reasons": context["risk_reasons"],
+        "advice": context["advice"],
+    }
 
 # ============== 报告模板配置（与前端DataService.reportTemplates一致） ==============
 REPORT_TEMPLATES = {
@@ -164,6 +200,92 @@ def generate_ai_report(
         "report_text": full_text,
         "is_mock": output.is_mock,
         "model_used": output.model_used,
+    }
+
+
+@router.post("/reports/preview-context", summary="构建报告上下文与预览")
+def report_preview_context(
+    body: dict,
+    current_user: User = Depends(get_current_user_optional),
+):
+    company_name = (current_user.company if current_user else "Demo企业") or "Demo企业"
+    context = build_report_context(body, company_name)
+    preview = render_report_template(context)
+    return {"success": True, "context": context, "preview": preview}
+
+
+@router.post("/reports/export", summary="导出报告并记录")
+def export_report(
+    body: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    report_id = body.get("report_id")
+    report = None
+    if report_id:
+        report = (
+            db.query(Report)
+            .filter(Report.id == int(report_id), Report.user_id == current_user.id)
+            .first()
+        )
+
+    title = body.get("report_title") or (report.title if report else "导出报告")
+    context = build_report_context(body, current_user.company or "Demo企业")
+    preview = render_report_template(context)
+    file_path = body.get("file_path") or f"/reports/export-{int(time.time())}.pdf"
+
+    export_record = ReportRecord(
+        user_id=current_user.id,
+        analysis_id=str(body.get("analysis_id") or ""),
+        report_type=str(body.get("report_type") or (report.template_type if report else "basic")),
+        report_title=title,
+        export_status="exported",
+        file_path=file_path,
+        report_context=context,
+        report_preview=preview,
+    )
+    db.add(export_record)
+
+    if report is not None:
+        report.status = "exported"
+
+    db.commit()
+    db.refresh(export_record)
+
+    return {
+        "success": True,
+        "record_id": export_record.id,
+        "report_title": export_record.report_title,
+        "export_status": export_record.export_status,
+        "file_path": export_record.file_path,
+    }
+
+
+@router.get("/reports/export-records", summary="导出记录列表")
+def list_export_records(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    rows = (
+        db.query(ReportRecord)
+        .filter(ReportRecord.user_id == current_user.id)
+        .order_by(ReportRecord.generate_time.desc())
+        .limit(50)
+        .all()
+    )
+    return {
+        "records": [
+            {
+                "id": r.id,
+                "analysis_id": r.analysis_id,
+                "report_type": r.report_type,
+                "report_title": r.report_title,
+                "generate_time": r.generate_time.isoformat() if r.generate_time else "",
+                "export_status": r.export_status,
+                "file_path": r.file_path,
+            }
+            for r in rows
+        ]
     }
 
 

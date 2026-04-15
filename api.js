@@ -271,6 +271,26 @@ const API = {
         return this.post('/risk/detect', data);
     },
 
+    // 证据链写入
+    async storeEvidence(data) {
+        return this.post('/evidence/store', data);
+    },
+
+    // 查询证据链
+    async getEvidenceChain(recordId) {
+        return this.get(`/evidence/chain/${recordId}`);
+    },
+
+    // 证据链验真
+    async verifyEvidence(data) {
+        return this.post('/evidence/verify', data);
+    },
+
+    // 获取单叶子默克尔证明
+    async getEvidenceProof(leafId) {
+        return this.get(`/evidence/proof/${leafId}`);
+    },
+
     // AI 诊断报告接口 [对接大模型分析逻辑]
     async generateAIReport(data) {
         return this.post('/reports/generate-ai', data);

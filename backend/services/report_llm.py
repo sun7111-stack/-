@@ -3,7 +3,7 @@ import os
 from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 load_dotenv()
 
@@ -21,6 +21,8 @@ class ReportInputData(BaseModel):
 
 
 class ReportOutputData(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     report_text: str
     is_mock: bool
     model_used: str

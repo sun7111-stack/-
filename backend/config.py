@@ -1,11 +1,16 @@
 """应用配置"""
 from pathlib import Path
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=str(Path(__file__).resolve().with_name(".env")),
+        env_file_encoding="utf-8",
+    )
+
     # 数据库
     DB_HOST: str = "localhost"
     DB_PORT: int = 3306
@@ -36,10 +41,5 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> List[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
-
-    class Config:
-        env_file = str(Path(__file__).resolve().with_name(".env"))
-        env_file_encoding = "utf-8"
-
 
 settings = Settings()
