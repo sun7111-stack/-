@@ -177,14 +177,21 @@ def generate_ai_report(
         carbon_intensity=float(body.get("carbon_intensity") or (latest.carbon_intensity if latest else 0.6)),
         industry_avg_intensity=float(body.get("industry_avg_intensity") or 0.8),
         emission_breakdown=body.get("emission_breakdown") or [],
-        risk_result=risk_result,
         esg_score=float(body.get("esg_score") or 75.0),
         prompt=body.get("prompt"),
+        # P0新增：风控与证据链信息
+        risk_level=body.get("risk_level", "low"),
+        risk_score=float(body.get("risk_score", 0.0)),
+        anomaly_reasons=body.get("anomaly_reasons", []) or risk_result.get("anomaly_labels", []),
+        trust_score=float(body.get("trust_score", 0.95)),
+        evidence_confidence=float(body.get("evidence_confidence", 0.95)),
+        evidence_chain_length=int(body.get("evidence_chain_length", 0)),
+        yoy_change=float(body.get("yoy_change", 0.0)),
+        trend=body.get("trend", "stable"),
     )
 
+    # P0：生成结构化报告
     output = report_generator.generate(report_input)
-    full_text = output.report_text.strip()
-    summary = full_text.split("\n")[0][:220] if full_text else "暂无报告内容"
 
     suggestions = [
         "优先优化高耗能环节并建立月度复盘机制",
@@ -192,12 +199,16 @@ def generate_ai_report(
         "将风险高的运营环节纳入专项整改计划",
     ]
 
+    # P0：返回结构化的5章节报告
     return {
         "success": True,
-        "summary": summary,
-        "suggestions": suggestions,
-        "finance": "建议优先申请绿色信贷与技改贴息产品，并附近期碳强度改善曲线。",
-        "report_text": full_text,
+        "executive_summary": output.summary,
+        "key_findings": output.key_findings,
+        "risk_explanation": output.risk_explanation,
+        "trust_statement": output.trust_statement,
+        "optimization_suggestions": output.optimization_suggestions,
+        "legacy_suggestions": suggestions,
+        "legacy_report_text": output.full_report,
         "is_mock": output.is_mock,
         "model_used": output.model_used,
     }

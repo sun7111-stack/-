@@ -301,6 +301,11 @@ const API = {
         return this.upload('/ocr/recognize', file);
     },
 
+    // 月度碳排时序预测 + Conformal 区间
+    async forecastMonthlyCarbon(data) {
+        return this.post('/forecast/monthly-carbon', data);
+    },
+
     async getOCRSample(type) {
         return this.get(`/ocr/sample/${type}`);
     },

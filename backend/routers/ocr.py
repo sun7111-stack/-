@@ -28,6 +28,11 @@ class OCRParseResult(BaseModel):
     cleaned_record: Optional[Dict[str, Any]] = None
     chain_ids: Optional[Dict[str, Any]] = None
     message: Optional[str] = None
+    # P0新增：复杂票据兜底字段
+    parse_method: Optional[str] = Field(None, description="解析方法(mock/simple_heuristic/vlm_advanced)")
+    complexity: Optional[str] = Field(None, description="文档复杂度(simple/standard/complex)")
+    complexity_notes: Optional[str] = Field(None, description="复杂度相关说明")
+    parse_warning: Optional[str] = Field(None, description="解析警告或降级信息")
 
 class OCRResponse(BaseModel):
     success: bool

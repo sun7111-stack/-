@@ -1903,7 +1903,7 @@ function initDemoFlow() {
     bindCarbonButton();
     bindRiskButton();
     bindReportButton();
-    bindExportPdfButton();
+    bindForecastButton();
     bindExportPdfButton();
     bindViewSampleDataButton();
     bindExportCarbonButton();
@@ -1980,7 +1980,10 @@ function bindRecognizeButton() {
                     unit: response.data.fields.usage_unit || 'kWh',
 
 
-                    date: response.data.fields.billing_period || new Date().toLocaleDateString()
+                    date: response.data.fields.billing_period || new Date().toLocaleDateString(),
+                    confidence: Number(response.data.confidence || 0),
+                    parseMethod: response.data.parse_method || 'unknown',
+                    complexity: response.data.complexity || 'standard'
 
 
                 };
@@ -2004,7 +2007,10 @@ function bindRecognizeButton() {
                 <div class="alert alert-success mb-0 border-0 bg-success bg-opacity-10">
                     <p class="mb-2"><i class="fas fa-tag me-2 text-success"></i><strong>单据类型:</strong> ${DemoState.ocrResult.type}</p>
                     <p class="mb-2"><i class="fas fa-bolt me-2 text-success"></i><strong>提取用量:</strong> <span class="fs-4 fw-bold text-success">${DemoState.ocrResult.usage}</span> ${DemoState.ocrResult.unit}</p>
-                    <p class="mb-0"><i class="fas fa-calendar-alt me-2 text-success"></i><strong>单据日期:</strong> ${DemoState.ocrResult.date}</p>
+                    <p class="mb-2"><i class="fas fa-calendar-alt me-2 text-success"></i><strong>单据日期:</strong> ${DemoState.ocrResult.date}</p>
+                    <p class="mb-2"><i class="fas fa-layer-group me-2 text-success"></i><strong>解析路径:</strong> ${DemoState.ocrResult.parseMethod}</p>
+                    <p class="mb-2"><i class="fas fa-project-diagram me-2 text-success"></i><strong>版式复杂度:</strong> ${DemoState.ocrResult.complexity}</p>
+                    <p class="mb-0"><i class="fas fa-check-circle me-2 text-success"></i><strong>识别置信度:</strong> ${(DemoState.ocrResult.confidence * 100).toFixed(1)}%</p>
                 </div>
             `;
         } catch (error) {
@@ -2016,7 +2022,10 @@ function bindRecognizeButton() {
          energyType: 'electricity',
          usage: 12500,
          unit: 'kWh',
-         date: new Date().toLocaleDateString()
+         date: new Date().toLocaleDateString(),
+         confidence: 0.8,
+         parseMethod: 'mock',
+         complexity: 'standard'
      };
      
      // 渲染数据到对应的 HTML 容器中
@@ -2025,7 +2034,10 @@ function bindRecognizeButton() {
         <div class="alert alert-warning mb-0 border-0">
             <p class="mb-2"><i class="fas fa-tag me-2"></i><strong>单据类型:</strong> ${DemoState.ocrResult.type} <span class="badge bg-info text-dark ms-2">AI真实识别</span></p>
             <p class="mb-2"><i class="fas fa-bolt me-2"></i><strong>提取用量:</strong> <span class="fs-4 fw-bold">${DemoState.ocrResult.usage}</span> ${DemoState.ocrResult.unit}</p>
-            <p class="mb-0"><i class="fas fa-calendar-alt me-2"></i><strong>单据日期:</strong> ${DemoState.ocrResult.date}</p>
+            <p class="mb-2"><i class="fas fa-calendar-alt me-2"></i><strong>单据日期:</strong> ${DemoState.ocrResult.date}</p>
+            <p class="mb-2"><i class="fas fa-layer-group me-2"></i><strong>解析路径:</strong> ${DemoState.ocrResult.parseMethod}</p>
+            <p class="mb-2"><i class="fas fa-project-diagram me-2"></i><strong>版式复杂度:</strong> ${DemoState.ocrResult.complexity}</p>
+            <p class="mb-0"><i class="fas fa-check-circle me-2"></i><strong>识别置信度:</strong> ${(DemoState.ocrResult.confidence * 100).toFixed(1)}%</p>
         </div>
     `;
  } finally {
@@ -2269,10 +2281,23 @@ function bindRiskButton() {
 function buildRiskPayloadFromState() {
     const totalEmission = Number(DemoState.carbonResult?.totalValue || DemoState.carbonResult?.total_emission || 50);
     const electricityUsage = Number(DemoState.ocrResult?.usage || DemoState.ocrResult?.electricity_usage || 5000);
+    const logisticsDistance = Number(DemoState.carbonResult?.logistics_distance || 10000);
+    const returnRate = Number(DemoState.carbonResult?.return_rate || 0.08);
+    const carbonIntensity = Number(DemoState.carbonResult?.carbon_intensity || 0.6);
+
     return {
         task_id: `task-${Date.now()}`,
         total_emission: Number.isFinite(totalEmission) ? totalEmission : 50,
         electricity_usage: Number.isFinite(electricityUsage) ? electricityUsage : 5000,
+        logistics_distance: Number.isFinite(logisticsDistance) ? logisticsDistance : 10000,
+        return_rate: Number.isFinite(returnRate) ? returnRate : 0.08,
+        carbon_intensity: Number.isFinite(carbonIntensity) ? carbonIntensity : 0.6,
+        energy_intensity: 0.8,
+        transport_emission_ratio: 0.3,
+        monthly_variation: 0.2,
+        warehouse_energy_ratio: 0.15,
+        scope3_share: 0.35,
+        benchmark_deviation: 0.1,
         structured_fields: {
             esg_score: Number(DemoState.carbonResult?.esg_score || 75),
         },
@@ -2356,10 +2381,14 @@ function renderRiskNarratives(riskRes) {
     const adviceList = document.getElementById('riskAdviceList');
     if (!reasonList || !adviceList) return;
 
-    const reasons = Array.isArray(riskRes?.risk_reasons) && riskRes.risk_reasons.length
+    const reasons = Array.isArray(riskRes?.anomaly_reasons) && riskRes.anomaly_reasons.length
+        ? riskRes.anomaly_reasons
+        : Array.isArray(riskRes?.risk_reasons) && riskRes.risk_reasons.length
         ? riskRes.risk_reasons
         : ['主体经营数据健康，无重大洗绿嫌疑。'];
-    const advices = Array.isArray(riskRes?.risk_advice) && riskRes.risk_advice.length
+    const advices = Array.isArray(riskRes?.optimization_advice) && riskRes.optimization_advice.length
+        ? riskRes.optimization_advice
+        : Array.isArray(riskRes?.risk_advice) && riskRes.risk_advice.length
         ? riskRes.risk_advice
         : ['建议按月复盘风控指标并持续优化数据治理流程。'];
 
@@ -2663,7 +2692,7 @@ function bindReportButton() {
         }
 
         // 2. 按钮进入思考状态
-        btn.innerHTML = '<i class="fas fa-brain fa-pulse me-2"></i>AI 大模型正在深度推理与撰写中...';
+        btn.innerHTML = '<i class="fas fa-brain fa-pulse me-2"></i>AI 大模型正在生成结构化报告...';
         btn.classList.add('btn-warning', 'text-dark');
         btn.classList.remove('btn-primary');
         btn.disabled = true;
@@ -2672,71 +2701,298 @@ function bindReportButton() {
         document.getElementById('reportResultBox').style.display = 'none';
         document.getElementById('exportBtnContainer').style.display = 'none';
 
-        // 3. 动态提取前序流程的真实数据，让报告显得极其专业
-        const totalCarbon = DemoState.carbonResult?.totalValue || DemoState.carbonResult?.total_emissions || '7.26';
-        const energyUsage = DemoState.ocrResult?.usage || '12,500';
-        const hashStr = DemoState.riskResult?.blockchain_hash || ('0x' + Math.random().toString(16).substr(2, 40));
-        const riskScore = DemoState.riskResult?.score || 92;
+        const totalCarbon = Number(DemoState.carbonResult?.totalValue || DemoState.carbonResult?.total_emission || 0);
+        const riskScore = Number(DemoState.riskResult?.risk_score_explain_v2 || DemoState.riskResult?.risk_score || 0);
+        const trustScore = Number(DemoState.riskResult?.trust_score || 0.95);
 
-        // 构造高度逼真的 AI 报告文案
-        const dynamicSummary = `<strong>尊贵的企业用户：</strong><br><br>基于 <code>Carbon-LLM-v2</code> 行业大模型深度分析，贵企业本期外购电力总量为 <strong>${energyUsage} kWh</strong>，折合总碳排放量为 <strong class="text-danger">${totalCarbon} tCO₂e</strong>。<br><br>您的数据已完成多节点区块链防篡改存证（溯源哈希：<code class="text-primary">${hashStr.substring(0, 18)}...</code>）。当前综合风控评分为 <strong>${riskScore}分</strong>，达到 <span class="badge bg-success">A级（优秀）</span> 标准，未见洗绿风险。模型预测，您的碳资产健康度在同行业中处于前 15% 的领先水平。`;
+        const reportPayload = {
+            period: new Date().toISOString().slice(0, 7),
+            total_emission: Number.isFinite(totalCarbon) ? totalCarbon : 0,
+            carbon_intensity: Number(DemoState.carbonResult?.carbon_intensity || 0.6),
+            industry_avg_intensity: 0.8,
+            emission_breakdown: buildEmissionBreakdownForReport(),
+            risk_level: DemoState.riskResult?.risk_level || 'medium',
+            risk_score: Number.isFinite(riskScore) ? riskScore : 0,
+            anomaly_reasons: DemoState.riskResult?.anomaly_reasons || DemoState.riskResult?.risk_reasons || [],
+            trust_score: Number.isFinite(trustScore) ? trustScore : 0.95,
+            evidence_confidence: Number.isFinite(trustScore) ? trustScore : 0.95,
+            evidence_chain_length: Array.isArray(DemoState.evidenceContext?.chainRes?.timeline)
+                ? DemoState.evidenceContext.chainRes.timeline.length
+                : 0,
+            yoy_change: Number(DemoState.carbonResult?.yoy_change || 0),
+            trend: DemoState.carbonResult?.trend || 'stable',
+            esg_score: Number(DemoState.carbonResult?.esg_score || 75),
+        };
 
-        const dynamicSuggestions = [
-            `【能效优化】AI 监测到生产高峰期（14:00-16:00）用电负荷存在 12% 冗余，建议部署边缘侧动态变频系统。`,
-            `【结构转型】厂区闲置屋顶约 800㎡，建议铺设分布式光伏，预计年产绿电 18 万度，可抵消约 104 吨碳排。`,
-            `【范围3溯源】二级供应商“包装材料”环节碳排缺乏直采数据，建议通过本平台下发 ESG 核查问卷，完善全生命周期溯源。`
-        ];
-        
-        const dynamicFinance = `<strong>AI 智能匹配推荐：</strong><br>您的优质 ESG 数据已满足绿色金融准入基准。系统强烈推荐对接【蓝天商业银行-零碳工厂专项补贴贷】或【绿水建设银行-ESG挂钩信用贷】，预计可获最高 <strong>500万</strong> 授信额度，并享受 <strong>LPR-50BP</strong> 的绿色通道利率下浮优惠。`;
+        const summaryDOM = document.getElementById('reportSummaryText');
+        const suggestDOM = document.getElementById('reportSuggestionList');
+        const financeDOM = document.getElementById('financeSuggestionText');
 
-        // 4. 模拟大模型思考的延迟 (2秒)
-        setTimeout(() => {
-            // 显示外框
+        try {
+            const res = await API.generateAIReport(reportPayload);
             document.getElementById('reportResultBox').style.display = 'block';
-            
-            // 先把内容清空
-            const summaryDOM = document.getElementById('reportSummaryText');
-            const suggestDOM = document.getElementById('reportSuggestionList');
-            const financeDOM = document.getElementById('financeSuggestionText');
-            
+
+            const executiveSummary = res.executive_summary || '暂无摘要';
+            const keyFindings = Array.isArray(res.key_findings) ? res.key_findings : [];
+            const riskExplanation = res.risk_explanation || '';
+            const trustStatement = res.trust_statement || '';
+            const optimization = Array.isArray(res.optimization_suggestions) ? res.optimization_suggestions : [];
+
+            const summaryHtml = [
+                `<strong>执行摘要</strong><br>${executiveSummary}`,
+                keyFindings.length ? `<br><br><strong>关键发现</strong><br>${keyFindings.map((item) => `• ${item}`).join('<br>')}` : '',
+                riskExplanation ? `<br><br><strong>风险解释</strong><br>${riskExplanation}` : '',
+                trustStatement ? `<br><br><strong>可信度说明</strong><br>${trustStatement}` : ''
+            ].join('');
+
             summaryDOM.innerHTML = '';
             suggestDOM.innerHTML = '';
             financeDOM.innerHTML = '';
             financeDOM.style.display = 'none';
 
-            // 5. 执行安全且炫酷的 HTML 打字机效果
-            typeHTML(summaryDOM, dynamicSummary, 20, () => {
-                // 摘要打字完成后，逐条淡入建议列表
-                let delay = 0;
-                dynamicSuggestions.forEach((item, index) => {
-                    setTimeout(() => {
-                        suggestDOM.innerHTML += `<li class="mb-3" style="animation: fadeIn 0.5s forwards;"><i class="fas fa-check-circle text-success me-2"></i>${item}</li>`;
-                    }, delay);
-                    delay += 600; // 每条建议间隔 0.6 秒出来
+            typeHTML(summaryDOM, summaryHtml, 14, () => {
+                const list = optimization.length
+                    ? optimization
+                    : (Array.isArray(res.legacy_suggestions) ? res.legacy_suggestions : []);
+                list.forEach((item) => {
+                    suggestDOM.innerHTML += `<li class="mb-3" style="animation: fadeIn 0.5s forwards;"><i class="fas fa-check-circle text-success me-2"></i>${item}</li>`;
                 });
 
-                // 建议列表出完后，打字输出金融对接建议
-                setTimeout(() => {
-                    financeDOM.style.display = 'block';
-                    typeHTML(financeDOM, dynamicFinance, 25, () => {
-                        
-                        // 报告全部生成完毕，恢复按钮并显示导出 PDF
-                        btn.innerHTML = '<i class="fas fa-redo me-2"></i>重新生成报告';
-                        btn.classList.remove('btn-warning', 'text-dark');
-                        btn.classList.add('btn-primary');
-                        btn.disabled = false;
-                        
-                        document.getElementById('exportBtnContainer').style.display = 'block';
-                        document.getElementById('exportBtnContainer').style.animation = 'fadeIn 1s forwards';
-                        
-                        if(typeof showToast === 'function') showToast('报告撰写完毕！', 'success');
-
-                    });
-                }, delay + 500);
+                financeDOM.style.display = 'block';
+                const financeText = `模型：${res.model_used || 'unknown'} ｜ ${res.is_mock ? 'Mock模式' : '真实模型'}。建议同步准备绿色信贷材料（减排计划、证据链摘要、季度改进目标）。`;
+                typeHTML(financeDOM, financeText, 18, () => {
+                    btn.innerHTML = '<i class="fas fa-redo me-2"></i>重新生成报告';
+                    btn.classList.remove('btn-warning', 'text-dark');
+                    btn.classList.add('btn-primary');
+                    btn.disabled = false;
+                    document.getElementById('exportBtnContainer').style.display = 'block';
+                    document.getElementById('exportBtnContainer').style.animation = 'fadeIn 1s forwards';
+                    if(typeof showToast === 'function') showToast('结构化报告生成完成', 'success');
+                });
             });
-            
-        }, 2000);
+        } catch (err) {
+            console.error('生成报告失败:', err);
+            if(typeof showToast === 'function') showToast(err.message || '生成报告失败，请检查后端服务', 'error');
+            btn.innerHTML = '<i class="fas fa-redo me-2"></i>重新生成报告';
+            btn.classList.remove('btn-warning', 'text-dark');
+            btn.classList.add('btn-primary');
+            btn.disabled = false;
+        }
     });
+}
+
+let forecastIntervalMode = 'conformal';
+
+async function callForecastMonthlyCarbon(payload) {
+    if (typeof API !== 'undefined' && typeof API.forecastMonthlyCarbon === 'function') {
+        return API.forecastMonthlyCarbon(payload);
+    }
+
+    const base = (typeof API !== 'undefined' && API.BASE_URL)
+        ? API.BASE_URL
+        : 'http://127.0.0.1:8000/api';
+    const token = (typeof API !== 'undefined' && typeof API.getToken === 'function')
+        ? API.getToken()
+        : localStorage.getItem('carbon_platform_token');
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const response = await fetch(`${base}/forecast/monthly-carbon`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data?.detail || '预测接口调用失败');
+    }
+    return data;
+}
+
+function bindForecastButton() {
+    const btn = document.getElementById('forecastBtn');
+    const toggleBtn = document.getElementById('toggleIntervalModeBtn');
+    if (!btn) return;
+    if (btn.dataset.bound === '1') return;
+    btn.dataset.bound = '1';
+
+    if (toggleBtn && toggleBtn.dataset.bound !== '1') {
+        toggleBtn.dataset.bound = '1';
+        toggleBtn.addEventListener('click', () => {
+            forecastIntervalMode = forecastIntervalMode === 'conformal' ? 'empirical' : 'conformal';
+            toggleBtn.innerHTML = forecastIntervalMode === 'conformal'
+                ? '<i class="fas fa-balance-scale me-2"></i>区间模式: Conformal'
+                : '<i class="fas fa-balance-scale me-2"></i>区间模式: 经验区间';
+
+            const latest = (typeof DemoState !== 'undefined') ? DemoState.forecastResult : null;
+            if (latest && Array.isArray(latest.forecast) && latest.forecast.length) {
+                renderForecastChart(latest);
+            }
+        });
+    }
+
+    btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>正在预测...';
+        try {
+            const res = await callForecastMonthlyCarbon({
+                months_ahead: 6,
+                alpha: forecastIntervalMode === 'conformal' ? 0.1 : 0.2,
+                use_demo_if_empty: true,
+            });
+
+            if (!res || !res.success) {
+                throw new Error('预测接口返回异常');
+            }
+
+            if (typeof DemoState !== 'undefined') {
+                DemoState.forecastResult = res;
+            }
+            const box = document.getElementById('forecastResultBox');
+            if (box) box.style.display = 'block';
+            // 先显示容器再渲染，避免 ECharts 在隐藏容器里初始化为 0x0 导致空白。
+            requestAnimationFrame(() => {
+                renderForecastChart(res);
+            });
+            if (typeof showToast === 'function') showToast('预测与预警已生成', 'success');
+        } catch (err) {
+            console.error('预测失败:', err);
+            if (typeof showToast === 'function') showToast(err.message || '预测失败，请检查后端服务', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-chart-line me-2"></i>预测未来 6 个月';
+        }
+    });
+}
+
+function renderForecastChart(result) {
+    const chartDom = document.getElementById('forecastChart');
+    if (!chartDom || typeof echarts === 'undefined') return;
+
+    const history = Array.isArray(result.history) ? result.history : [];
+    const forecast = Array.isArray(result.forecast) ? result.forecast : [];
+    const months = history.map(p => p.month).concat(forecast.map(p => p.month));
+
+    const historyValues = history.map(p => Number(p.value || 0));
+    const forecastValues = new Array(history.length).fill(null).concat(forecast.map(p => Number(p.value || 0)));
+    const lowerValuesRaw = forecast.map(p => Number(p.lower || 0));
+    const upperValuesRaw = forecast.map(p => Number(p.upper || 0));
+    const empiricalLower = forecast.map(p => Number(p.value || 0) * 0.9);
+    const empiricalUpper = forecast.map(p => Number(p.value || 0) * 1.1);
+
+    const lowerValues = new Array(history.length).fill(null).concat(
+        forecastIntervalMode === 'conformal' ? lowerValuesRaw : empiricalLower
+    );
+    const upperValues = new Array(history.length).fill(null).concat(
+        forecastIntervalMode === 'conformal' ? upperValuesRaw : empiricalUpper
+    );
+
+    const threshold = Number(result.dynamic_threshold || 0);
+    const highRiskSet = new Set((result.high_risk_months || []).map(p => p.month));
+    const highRiskData = forecast
+        .filter(p => highRiskSet.has(p.month))
+        .map(p => ({ name: p.month, value: [p.month, Number(p.value || 0)] }));
+
+    const modelLabel = document.getElementById('forecastModelUsed');
+    if (modelLabel) {
+        modelLabel.textContent = `模型: ${result.model_used || '--'} | 区间: ${forecastIntervalMode === 'conformal' ? 'Conformal' : '经验区间'}`;
+    }
+
+    const riskList = document.getElementById('forecastRiskMonths');
+    if (riskList) {
+        const riskMonths = Array.isArray(result.high_risk_months) ? result.high_risk_months : [];
+        if (!riskMonths.length) {
+            riskList.innerHTML = '<li>未来 6 个月暂无明显超阈值风险。</li>';
+        } else {
+            riskList.innerHTML = riskMonths
+                .map(item => `<li>${item.month}：预测上界 ${Number(item.upper || 0).toFixed(2)}，阈值 ${Number(item.threshold || 0).toFixed(2)}</li>`)
+                .join('');
+        }
+    }
+
+    const old = echarts.getInstanceByDom(chartDom);
+    if (old) old.dispose();
+    const chart = echarts.init(chartDom);
+
+    chart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: {
+            top: 5,
+            data: ['历史碳排', '预测均值', forecastIntervalMode === 'conformal' ? 'Conformal下界' : '经验下界', forecastIntervalMode === 'conformal' ? 'Conformal上界' : '经验上界', '高风险点']
+        },
+        grid: { left: 45, right: 20, top: 45, bottom: 35 },
+        xAxis: { type: 'category', data: months },
+        yAxis: { type: 'value', name: 'tCO2e' },
+        series: [
+            {
+                name: '历史碳排',
+                type: 'line',
+                smooth: true,
+                symbol: 'circle',
+                symbolSize: 6,
+                lineStyle: { width: 3, color: '#2E7D32' },
+                data: historyValues
+            },
+            {
+                name: '预测均值',
+                type: 'line',
+                smooth: true,
+                symbol: 'diamond',
+                symbolSize: 6,
+                lineStyle: { width: 3, type: 'dashed', color: '#1565C0' },
+                data: forecastValues,
+                markLine: threshold > 0 ? {
+                    symbol: 'none',
+                    lineStyle: { color: '#D32F2F', type: 'dotted', width: 2 },
+                    label: { formatter: `动态阈值 ${threshold.toFixed(2)}` },
+                    data: [{ yAxis: threshold }]
+                } : undefined
+            },
+            {
+                name: forecastIntervalMode === 'conformal' ? 'Conformal下界' : '经验下界',
+                type: 'line',
+                symbol: 'none',
+                lineStyle: { type: 'dotted', color: '#90A4AE' },
+                data: lowerValues
+            },
+            {
+                name: forecastIntervalMode === 'conformal' ? 'Conformal上界' : '经验上界',
+                type: 'line',
+                symbol: 'none',
+                lineStyle: { type: 'dotted', color: '#90A4AE' },
+                areaStyle: { color: 'rgba(33, 150, 243, 0.12)' },
+                data: upperValues
+            },
+            {
+                name: '高风险点',
+                type: 'scatter',
+                symbolSize: 12,
+                itemStyle: { color: '#E53935' },
+                data: highRiskData
+            }
+        ]
+    });
+
+    if (window.__forecastChartResizeHandler) {
+        window.removeEventListener('resize', window.__forecastChartResizeHandler);
+    }
+    window.__forecastChartResizeHandler = () => chart.resize();
+    window.addEventListener('resize', window.__forecastChartResizeHandler);
+}
+
+function buildEmissionBreakdownForReport() {
+    const c = DemoState.carbonResult || {};
+    const scope1 = Number(c.scope1 || 0);
+    const scope2 = Number(c.scope2 || 0);
+    const scope3 = Number(c.scope3 || 0);
+    const total = Math.max(scope1 + scope2 + scope3, 1);
+    return [
+        { source: 'Scope1', value: scope1, proportion: scope1 / total },
+        { source: 'Scope2', value: scope2, proportion: scope2 / total },
+        { source: 'Scope3', value: scope3, proportion: scope3 / total },
+    ];
 }
 
 // 🟢 辅助工具：安全的 HTML 打字机效果函数
@@ -2834,60 +3090,8 @@ function typeHTML(element, htmlString, speed, callback) {
 function bindExportPdfButton() {
     const btn = document.getElementById('exportPdfBtn');
     if (!btn) return;
-
-    btn.addEventListener('click', async () => {
-        const reportElement = document.getElementById('reportResultBox');
-        if (!reportElement) return;
-
-        // Hide the button itself before generating PDF
-        const btnContainer = document.getElementById('exportBtnContainer');
-        if(btnContainer) btnContainer.style.display = 'none';
-        
-        if(typeof showToast === 'function') showToast('正在渲染企业级电子红头报告，请稍候...', 'info');
-
-        try {
-            // Setup a temporary header to look like a real document
-            const originalBody = reportElement.innerHTML;
-            const docHeader = `
-                <div style="text-align:center; color: red; margin-bottom: 20px;">
-                    <h1 style="font-size: 32px; font-weight: bold; border-bottom: 3px solid red; padding-bottom: 10px; margin-bottom: 20px;">★ 碳融智核大模型评估报告 ★</h1>
-                    <p style="color: black; text-align: right;">编号：CRZH-${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2,'0')}${String(new Date().getDate()).padStart(2,'0')}-${Math.floor(Math.random() * 9000 + 1000)}</p>
-                </div>
-            `;
-            
-            reportElement.style.padding = '40px 20px';
-            reportElement.style.backgroundColor = '#fff';
-            reportElement.innerHTML = docHeader + originalBody;
-
-            const opt = {
-                margin:       10,
-                filename:     `碳中和与ESG诊断红头报告_${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            
-            await html2pdf().set(opt).from(reportElement).save();
-            
-            if(typeof showToast === 'function') showToast('PDF 下载成功！', 'success');
-            
-            // Restore original DOM
-            reportElement.innerHTML = originalBody;
-            reportElement.style.padding = '';
-            reportElement.style.backgroundColor = '';
-        } catch(e) {
-            console.error('PDF生成失败:', e);
-            alert('PDF 生成失败，请检查浏览器权限。');
-        } finally {
-            if(btnContainer) btnContainer.style.display = 'block';
-        }
-    });
-}
-
-
-function bindExportPdfButton() {
-    const btn = document.getElementById('exportPdfBtn');
-    if (!btn) return;
+    if (btn.dataset.bound === '1') return;
+    btn.dataset.bound = '1';
 
     btn.addEventListener('click', async () => {
         const reportElement = document.getElementById('reportResultBox');

@@ -31,11 +31,21 @@ class RiskDetectRequest(BaseModel):
     raw_text: Optional[str] = ""
     structured_fields: Optional[dict] = None
 
+    # 基础特征
+
     electricity_usage: Optional[float] = None
     logistics_distance: Optional[float] = None
     return_rate: Optional[float] = None
     total_emission: Optional[float] = None
     carbon_intensity: Optional[float] = None
+    
+    # P0新增：6维特征工程字段
+    energy_intensity: Optional[float] = None  # 能耗强度(kWh/万元)
+    transport_emission_ratio: Optional[float] = None  # 物流排放占比(0-1)
+    monthly_variation: Optional[float] = None  # 月度变异系数(0-1)
+    warehouse_energy_ratio: Optional[float] = None  # 仓储能耗占比(0-1)
+    scope3_share: Optional[float] = None  # Scope3占比(0-1)
+    benchmark_deviation: Optional[float] = None  # 行业对标偏离度(0-1)
 
 
 def _build_input_from_request(body: RiskDetectRequest, latest: Optional[CarbonRecord]) -> RiskInputData:
@@ -51,12 +61,27 @@ def _build_input_from_request(body: RiskDetectRequest, latest: Optional[CarbonRe
         if carbon_intensity is None:
             carbon_intensity = latest.carbon_intensity
 
+    
+    # P0新增：补充6维新特征
+    energy_intensity = body.energy_intensity or 0.8
+    transport_emission_ratio = body.transport_emission_ratio or 0.2
+    monthly_variation = body.monthly_variation or 0.15
+    warehouse_energy_ratio = body.warehouse_energy_ratio or 0.1
+    scope3_share = body.scope3_share or 0.25
+    benchmark_deviation = body.benchmark_deviation or 0.05
+    
     return RiskInputData(
         electricity_usage=electricity_usage or 5000,
         logistics_distance=body.logistics_distance or 10000,
         return_rate=body.return_rate or 0.08,
         total_emission=total_emission or 50,
         carbon_intensity=carbon_intensity or 0.6,
+        energy_intensity=energy_intensity,
+        transport_emission_ratio=transport_emission_ratio,
+        monthly_variation=monthly_variation,
+        warehouse_energy_ratio=warehouse_energy_ratio,
+        scope3_share=scope3_share,
+        benchmark_deviation=benchmark_deviation,
     )
 
 
@@ -194,6 +219,9 @@ def detect_risk(
             "blockchain_hash": blockchain_hash,
             "trace_saved": trace_saved,
             "model_version": risk_result.model_version,
+                    "anomaly_reasons": risk_result.anomaly_reasons,
+                    "optimization_advice": risk_result.optimization_advice,
+                    "feature_importance": risk_result.feature_importance,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"风控检测失败: {str(e)}")
