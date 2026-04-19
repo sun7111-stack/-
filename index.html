@@ -242,99 +242,75 @@
             </div>
         </nav>
 <!-- ★ 新增 app-body 包裹层 -->
-    <div class="app-body">
-        <!-- 侧边栏遮罩（移动端） -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-        <!-- 左侧侧边栏 -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-menu">
-                <ul class="menu-list">
-                    <li class="menu-item active" data-page="home">
-                        <a href="#home" class="menu-link">
-                            <i class="fas fa-home"></i>
-                            <span>首页概览</span>
-                            
-                        </a>
-                    </li>
-                    <li class="menu-title text-success fw-bold">★ 比赛演示主流程</li>
-                    <li class="menu-item" data-page="demo-upload">
-                        <a href="#demo-upload" class="menu-link">
-                            <i class="fas fa-file-invoice"></i>
-                            <span>上传识别</span>
-                        </a>
-                    </li>
-                    <li class="menu-item" data-page="demo-carbon">
-                        <a href="#demo-carbon" class="menu-link">
-                            <i class="fas fa-calculator"></i>
-                            <span>自动化碳核算</span>
-                        </a>
-                    </li>
-                    <li class="menu-item" data-page="demo-risk">
-                        <a href="#demo-risk" class="menu-link">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>风控检测</span>
-                        </a>
-                    </li>
-                    <li class="menu-item" data-page="demo-report">
-                        <a href="#demo-report" class="menu-link">
-                            <i class="fas fa-robot"></i>
-                            <span>AI 诊断报告</span>
-                        </a>
-                    </li>
-                    <li class="menu-title">核心功能</li>
-                    <li class="menu-item" data-page="features">
-                        <a href="#features" class="menu-link">
-                            <i class="fas fa-cube"></i>
-                            <span>产品功能</span>
-                        </a>
-                    </li>
-                    <li class="menu-item" data-page="esg-calculator">
-                        <a href="#esg-calculator" class="menu-link">
-                            <i class="fas fa-calculator"></i>
-                            <span>ESG智能计算器</span>
-                        </a>
-                    </li>
-                    <li class="menu-item" data-page="data-center">
-                        <a href="#data-center" class="menu-link">
-                            <i class="fas fa-file-alt"></i>
-                            <span>数据报告中心</span>
-                        </a>
-                    </li>
-                    <li class="menu-item" data-page="finance-match">
-                        <a href="#finance-match" class="menu-link">
-                            <i class="fas fa-handshake"></i>
-                            <span>绿色金融对接</span>
-                        </a>
-                    </li>
-                    <li class="menu-title">行业服务</li>
-                    <li class="menu-item" data-page="solutions">
-                        <a href="#solutions" class="menu-link">
-                            <i class="fas fa-gem"></i>
-                            <span>行业解决方案</span>
-                        </a>
-                    </li>
-                    <li class="menu-item" data-page="cases">
-                        <a href="#cases" class="menu-link">
-                            <i class="fas fa-briefcase"></i>
-                            <span>客户成功案例</span>
-                        </a>
-                    </li>
-                    <li class="menu-title">平台管理</li>
-                    <li class="menu-item" data-page="about">
-                        <a href="#about" class="menu-link">
-                            <i class="fas fa-info-circle"></i>
-                            <span>关于我们</span>
-                        </a>
-                    </li>
-                    <li class="menu-item" data-page="settings">
-                        <a href="#settings" class="menu-link">
-                            <i class="fas fa-cog"></i>
-                            <span>系统设置</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </aside>
+<div class="app-body">
+    <!-- 侧边栏遮罩（移动端） -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <!-- 左侧侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+        <div style="padding: 10px 12px;">
+            <input 
+                id="searchInput" 
+                type="text" 
+                placeholder="搜索菜单" 
+                style="width:100%; padding:7px 10px; border:1px solid #ccc; border-radius:6px; background:#fff; font-size:14px; outline:none;"
+                onkeydown="if(event.keyCode===13){var t=this.value.trim().toLowerCase();var m={'首页':'#home','概览':'#home','上传':'#demo-upload','上传识别':'#demo-upload','碳核算':'#demo-carbon','自动化碳核算':'#demo-carbon','风控':'#demo-risk','风控检测':'#demo-risk','诊断':'#demo-report','ai诊断':'#demo-report','ai诊断报告':'#demo-report','产品功能':'#features','esg':'#esg-calculator','esg智能计算器':'#esg-calculator','数据报告':'#data-center','数据报告中心':'#data-center','绿色金融':'#finance-match','绿色金融对接':'#finance-match','解决方案':'#solutions','行业解决方案':'#solutions','案例':'#cases','客户成功案例':'#cases','关于我们':'#about','系统设置':'#settings'};if(m[t])window.location.hash=m[t];else alert('未找到菜单')}"
+            >
+        </div>
+
+        <div class="sidebar-menu">
+            <ul class="menu-list">
+                <li class="menu-item active">
+                    <a href="#home" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 首页概览'">
+                        <i class="fas fa-home"></i><span>首页概览</span>
+                    </a>
+                </li>
+
+                <li>
+                    <div class="menu-title text-success fw-bold" onclick="const sub=this.parentNode.querySelector('.sub');sub.style.display=sub.style.display=='none'?'block':'none'">
+                        ★ 核心业务流 <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <ul class="sub" style="padding-left:0; display:block;">
+                        <li class="menu-item"><a href="#demo-upload" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / 上传识别'"><i class="fas fa-file-invoice"></i><span>上传识别</span></a></li>
+                        <li class="menu-item"><a href="#demo-carbon" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / 自动化碳核算'"><i class="fas fa-calculator"></i><span>自动化碳核算</span></a></li>
+                        <li class="menu-item"><a href="#demo-risk" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / 风控检测'"><i class="fas fa-shield-alt"></i><span>风控检测</span></a></li>
+                        <li class="menu-item"><a href="#demo-report" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / AI诊断报告'"><i class="fas fa-robot"></i><span>AI 诊断报告</span></a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="menu-title" onclick="const sub=this.parentNode.querySelector('.sub');sub.style.display=sub.style.display=='none'?'block':'none'">
+                        数据管理 <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <ul class="sub" style="padding-left:0; display:block;">
+                        <li class="menu-item"><a href="#features" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / 产品功能'"><i class="fas fa-cube"></i><span>产品功能</span></a></li>
+                        <li class="menu-item"><a href="#esg-calculator" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / ESG智能计算器'"><i class="fas fa-calculator"></i><span>ESG智能计算器</span></a></li>
+                        <li class="menu-item"><a href="#data-center" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / 数据报告中心'"><i class="fas fa-file-alt"></i><span>数据报告中心</span></a></li>
+                        <li class="menu-item"><a href="#finance-match" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / 绿色金融对接'"><i class="fas fa-handshake"></i><span>绿色金融对接</span></a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="menu-title" onclick="const sub=this.parentNode.querySelector('.sub');sub.style.display=sub.style.display=='none'?'block':'none'">
+                        行业服务 <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <ul class="sub" style="padding-left:0; display:block;">
+                        <li class="menu-item"><a href="#solutions" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 行业服务 / 行业解决方案'"><i class="fas fa-gem"></i><span>行业解决方案</span></a></li>
+                        <li class="menu-item"><a href="#cases" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 行业服务 / 客户成功案例'"><i class="fas fa-briefcase"></i><span>客户成功案例</span></a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="menu-title" onclick="const sub=this.parentNode.querySelector('.sub');sub.style.display=sub.style.display=='none'?'block':'none'">
+                        系统设置 <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <ul class="sub" style="padding-left:0; display:block;">
+                        <li class="menu-item"><a href="#about" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 系统设置 / 关于我们'"><i class="fas fa-info-circle"></i><span>关于我们</span></a></li>
+                        <li class="menu-item"><a href="#settings" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 系统设置 / 系统设置'"><i class="fas fa-cog"></i><span>系统设置</span></a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </aside>
 
         <!-- 主内容区域 -->
         <main class="main-content" id="mainContent">
@@ -3063,3 +3039,42 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 </body>
 </html>
+<!-- 右下角悬浮预警弹窗 带关闭叉号 -->
+<div class="warning-popup-box" id="warningPopup">
+    <div class="popup-header">
+        <h4>🔔 待办事项 · 实时风险预警</h4>
+        <span class="popup-close" onclick="document.getElementById('warningPopup').style.display='none'">×</span>
+    </div>
+    <div class="popup-content">
+        <div class="stat-cards-row warning-row">
+            <div class="stat-card warning-card risk-card">
+                <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">待处理碳排放合规风险</div>
+                    <div class="stat-number" data-target="2">0</div>
+                    <div class="stat-desc">项待办结</div>
+                </div>
+            </div>
+            <div class="stat-card warning-card todo-card">
+                <div class="stat-icon"><i class="fas fa-file-image"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">OCR票据识别待办</div>
+                    <div class="stat-number" data-target="7">0</div>
+                    <div class="stat-desc">份待处理</div>
+                </div>
+            </div>
+            <div class="stat-card warning-card remind-card">
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">绿色金融产品到期预警</div>
+                    <div class="stat-number" data-target="3">0</div>
+                    <div class="stat-desc">项即将过期</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="breadcrumb" style="padding:8px 12px; font-size:13px; color:#555;">
+  <a href="#home" style="color:#009664; text-decoration:none;">首页</a> / 首页概览
+</div>

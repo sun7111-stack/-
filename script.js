@@ -3368,3 +3368,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+document.addEventListener("DOMContentLoaded", function () {
+    // 点击叉号 关闭右下角预警弹窗
+    const closeBtn = document.getElementById('closeWarning');
+    const popupBox = document.getElementById('warningPopup');
+    closeBtn.addEventListener('click', () => {
+        popupBox.style.display = 'none';
+    });
+
+    // 预警数字滚动动画 和上方卡片完全统一，彻底修复NaN
+    const stats = document.querySelectorAll(".warning-row .stat-number");
+    stats.forEach((num) => {
+        const target = Number(num.dataset.target) || 0;
+        const duration = 1200;
+        let start = 0;
+        const increment = target / (duration / 16);
+
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= target) {
+                num.innerText = target;
+                clearInterval(timer);
+            } else {
+                num.innerText = Math.floor(start);
+            }
+        }, 16);
+    });
+});

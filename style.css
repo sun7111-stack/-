@@ -5281,3 +5281,151 @@ h1, h2, h3, h4, h5, h6, .card-title {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
 }
+/* 右下角固定悬浮弹窗 和截图工具样式完全一致 */
+.warning-popup-box {
+    position: fixed;
+    right: 20px;
+    bottom: 80px;
+    width: 720px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border: 1px solid #eee;
+    z-index: 999;
+}
+
+/* 弹窗头部 标题+关闭叉号 */
+.popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.popup-header h4 {
+    margin: 0;
+    color: #007d5a;
+    font-size: 15px;
+}
+.popup-close {
+    font-size: 20px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.popup-close:hover {
+    color: #f53f3f;
+}
+
+.popup-content {
+    padding: 16px;
+}
+
+/* 预警卡片 和上方1256数据卡片样式1:1完全统一 */
+.warning-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+.warning-card {
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+.warning-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 140, 95, 0.12);
+}
+
+/* 三色风险等级区分 */
+.risk-card {border-left-color: #f53f3f;}
+.risk-card:hover {background-color: #fef2f0;}
+.risk-card .stat-number {color: #f53f3f;}
+
+.todo-card {border-left-color: #165dff;}
+.todo-card:hover {background-color: #f0f6ff;}
+.todo-card .stat-number {color: #165dff;}
+
+.remind-card {border-left-color: #ff7d00;}
+.remind-card:hover {background-color: #fff7e8;}
+.remind-card .stat-number {color: #ff7d00;}
+
+.stat-desc {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* 仅子菜单缩进，无其他影响 */
+.sub .menu-link {
+    padding-left: 30px !important;
+}
+
+
+:root {
+    --color-primary: #1B5E20;
+    --color-primary-light: #4CAF50;
+    --color-primary-bg: #E8F5E9;
+
+    --bg-page: #F8F9FA;
+    --bg-card: #ffffff;
+    --bg-sidebar: #ffffff;
+    --bg-hover: #f1f8f3;
+
+    --text-title: #1F2937;
+    --text-main: #4B5563;
+    --text-sub: #9CA3AF;
+
+    --border-color: #E5E7EB;
+
+    --gap-xs: 4px;
+    --gap-sm: 8px;
+    --gap-md: 12px;
+    --gap-lg: 16px;
+    --gap-xl: 24px;
+
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+}
+/* 统一卡片阴影 */
+.card {
+    box-shadow: 0 2px 12px rgba(0, 40, 20, 0.08);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    transition: all 0.25s ease;
+}
+.card:hover {
+    box-shadow: 0 4px 18px rgba(0, 40, 20, 0.12);
+}
+
+/* 按钮统一hover反馈 */
+.btn-primary {
+    background: var(--color-primary);
+    transition: all 0.2s ease;
+}
+.btn-primary:hover {
+    background: #0F4813;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(27, 94, 32, 0.25);
+}
+.btn-default:hover {
+    background: var(--bg-hover);
+}
+
+/* 全局加载、成功、错误提示 */
+.loading-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+}
+.tip-success {
+    background: #E8F5E9;
+    color: #1B5E20;
+    border-left: 4px solid #4CAF50;
+}
+.tip-error {
+    background: #FFF2F2;
+    color: #D32F2F;
+    border-left: 4px solid #F44336;
+}
