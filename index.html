@@ -47,6 +47,394 @@
             z-index: 9999;
             transition: opacity 0.5s ease;
         }
+
+        /* 自动化事务流样式 */
+        .event-stream-container {
+            background: #f8f9fa;
+            padding: 20px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .event-stream {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .event-node {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .event-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .event-icon i {
+            font-size: 24px;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .event-content {
+            text-align: center;
+        }
+
+        .event-content h6 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .event-content p {
+            margin: 0 0 10px 0;
+            font-size: 12px;
+        }
+
+        .event-status {
+            font-size: 12px;
+        }
+
+        .status-indicator {
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #e9ecef;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .event-connector {
+            flex: 1;
+            height: 2px;
+            background: #e9ecef;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        /* 完成状态样式 */
+        .event-node.completed .event-icon {
+            background: #28a745;
+        }
+
+        .event-node.completed .event-icon i {
+            color: white;
+        }
+
+        .event-node.completed .status-indicator {
+            background: #28a745;
+        }
+
+        /* 数据生命周期流水线样式 */
+        #demo-upload .event-flow-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            overflow: hidden;
+            padding: 20px 0;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        #demo-upload .event-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        #demo-upload .event-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #6c757d;
+            margin-bottom: 10px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        #demo-upload .event-icon.completed {
+            background: #28a745;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+        }
+
+        #demo-upload .event-icon.processing {
+            background: #007bff;
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.5);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #demo-upload .event-step h6 {
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        #demo-upload .event-step p {
+            margin-bottom: 8px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        #demo-upload .event-status {
+            margin-top: 5px;
+        }
+
+        #demo-upload .status-indicator {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #e9ecef;
+            color: #6c757d;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        #demo-upload .event-step.completed .status-indicator {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        #demo-upload .event-arrow {
+            margin-top: 25px;
+            width: 20px;
+            height: 2px;
+            background: #e9ecef;
+            position: relative;
+        }
+
+        #demo-upload .event-arrow::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -3px;
+            width: 0;
+            height: 0;
+            border-left: 6px solid #e9ecef;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+        }
+
+        /* 数据生命周期流水线样式 */
+        #demo-upload .event-stream-container {
+            padding: 0;
+            margin-bottom: 0;
+            border: none;
+            background: transparent;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        #demo-upload .event-stream {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            min-height: 100px;
+            padding: 0;
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        #demo-upload .event-stream-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e9ecef;
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+
+        #demo-upload .event-stream-line-glow {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #28a745, transparent);
+            z-index: 1;
+            transform: translateY(-50%);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0% {
+                background-position: -100% 0;
+            }
+            100% {
+                background-position: 100% 0;
+            }
+        }
+
+        #demo-upload .event-node {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        #demo-upload .event-node:hover {
+            transform: translateY(-5px);
+        }
+
+        #demo-upload .event-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #demo-upload .event-icon i {
+            font-size: 20px;
+            color: white;
+        }
+
+        #demo-upload .event-icon.completed {
+            background: #28a745;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+        }
+
+        #demo-upload .event-icon.completed::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #28a745, #20c997, #28a745);
+            z-index: -1;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #demo-upload .ripple {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        #demo-upload .event-icon.completed .ripple {
+            width: 100px;
+            height: 100px;
+            opacity: 0;
+            animation: ripple 2s ease-out infinite;
+        }
+
+        @keyframes ripple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 0.5;
+            }
+            100% {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+            }
+        }
+
+        #demo-upload .event-label {
+            font-size: 12px;
+            text-align: center;
+            font-weight: 500;
+            color: #495057;
+            transition: color 0.3s ease;
+        }
+
+        #demo-upload .event-node:hover .event-label {
+            color: #28a745;
+        }
+
+        .event-connector.completed {
+            background: #28a745;
+        }
+
+        /* 进行中状态样式 */
+        .event-node.processing .event-icon {
+            background: #007bff;
+            animation: pulse 1.5s infinite;
+        }
+
+        .event-node.processing .event-icon i {
+            color: white;
+        }
+
+        .event-node.processing .status-indicator {
+            background: #007bff;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+            }
+        }
         .loading-logo {
             width: 100px;
             height: 100px;
@@ -195,7 +583,7 @@
     </div>
 
     <!-- 主应用容器（登录后显示） -->
-   <div id="appMain" class="app-main" style="display:none;">
+   <div id="appMain" class="app-main">
         <!-- 顶部导航栏 -->
        <nav class="top-navbar" id="mainNavbar">
             <div class="navbar-left">
@@ -270,10 +658,10 @@
                         ★ 核心业务流 <i class="fas fa-chevron-down"></i>
                     </div>
                     <ul class="sub" style="padding-left:0; display:block;">
-                        <li class="menu-item"><a href="#demo-upload" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / 上传识别'"><i class="fas fa-file-invoice"></i><span>上传识别</span></a></li>
-                        <li class="menu-item"><a href="#demo-carbon" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / 自动化碳核算'"><i class="fas fa-calculator"></i><span>自动化碳核算</span></a></li>
-                        <li class="menu-item"><a href="#demo-risk" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / 风控检测'"><i class="fas fa-shield-alt"></i><span>风控检测</span></a></li>
-                        <li class="menu-item"><a href="#demo-report" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / AI诊断报告'"><i class="fas fa-robot"></i><span>AI 诊断报告</span></a></li>
+                        <li class="menu-item" data-page="demo-upload"><a href="#demo-upload" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / 上传识别'"><i class="fas fa-file-invoice"></i><span>上传识别</span></a></li>
+                        <li class="menu-item" data-page="demo-carbon"><a href="#demo-carbon" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / 自动化碳核算'"><i class="fas fa-calculator"></i><span>自动化碳核算</span></a></li>
+                        <li class="menu-item" data-page="demo-risk"><a href="#demo-risk" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / 风控检测'"><i class="fas fa-shield-alt"></i><span>风控检测</span></a></li>
+                        <li class="menu-item" data-page="demo-report"><a href="#demo-report" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 核心业务流 / AI诊断报告'"><i class="fas fa-robot"></i><span>AI 诊断报告</span></a></li>
                     </ul>
                 </li>
 
@@ -282,10 +670,10 @@
                         数据管理 <i class="fas fa-chevron-down"></i>
                     </div>
                     <ul class="sub" style="padding-left:0; display:block;">
-                        <li class="menu-item"><a href="#features" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / 产品功能'"><i class="fas fa-cube"></i><span>产品功能</span></a></li>
-                        <li class="menu-item"><a href="#esg-calculator" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / ESG智能计算器'"><i class="fas fa-calculator"></i><span>ESG智能计算器</span></a></li>
-                        <li class="menu-item"><a href="#data-center" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / 数据报告中心'"><i class="fas fa-file-alt"></i><span>数据报告中心</span></a></li>
-                        <li class="menu-item"><a href="#finance-match" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / 绿色金融对接'"><i class="fas fa-handshake"></i><span>绿色金融对接</span></a></li>
+                        <li class="menu-item" data-page="features"><a href="#features" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / 产品功能'"><i class="fas fa-cube"></i><span>产品功能</span></a></li>
+                        <li class="menu-item" data-page="esg-calculator"><a href="#esg-calculator" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / ESG智能计算器'"><i class="fas fa-calculator"></i><span>ESG智能计算器</span></a></li>
+                        <li class="menu-item" data-page="data-center"><a href="#data-center" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / 数据报告中心'"><i class="fas fa-file-alt"></i><span>数据报告中心</span></a></li>
+                        <li class="menu-item" data-page="finance-match"><a href="#finance-match" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 数据管理 / 绿色金融对接'"><i class="fas fa-handshake"></i><span>绿色金融对接</span></a></li>
                     </ul>
                 </li>
 
@@ -294,8 +682,8 @@
                         行业服务 <i class="fas fa-chevron-down"></i>
                     </div>
                     <ul class="sub" style="padding-left:0; display:block;">
-                        <li class="menu-item"><a href="#solutions" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 行业服务 / 行业解决方案'"><i class="fas fa-gem"></i><span>行业解决方案</span></a></li>
-                        <li class="menu-item"><a href="#cases" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 行业服务 / 客户成功案例'"><i class="fas fa-briefcase"></i><span>客户成功案例</span></a></li>
+                        <li class="menu-item" data-page="solutions"><a href="#solutions" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 行业服务 / 行业解决方案'"><i class="fas fa-gem"></i><span>行业解决方案</span></a></li>
+                        <li class="menu-item" data-page="cases"><a href="#cases" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 行业服务 / 客户成功案例'"><i class="fas fa-briefcase"></i><span>客户成功案例</span></a></li>
                     </ul>
                 </li>
 
@@ -304,8 +692,8 @@
                         系统设置 <i class="fas fa-chevron-down"></i>
                     </div>
                     <ul class="sub" style="padding-left:0; display:block;">
-                        <li class="menu-item"><a href="#about" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 系统设置 / 关于我们'"><i class="fas fa-info-circle"></i><span>关于我们</span></a></li>
-                        <li class="menu-item"><a href="#settings" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 系统设置 / 系统设置'"><i class="fas fa-cog"></i><span>系统设置</span></a></li>
+                        <li class="menu-item" data-page="about"><a href="#about" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 系统设置 / 关于我们'"><i class="fas fa-info-circle"></i><span>关于我们</span></a></li>
+                        <li class="menu-item" data-page="settings"><a href="#settings" class="menu-link" onclick="document.getElementById('breadcrumb').innerHTML='<a href=&quot;#home&quot; style=&quot;color:#009664; text-decoration:none;&quot;>首页</a> / 系统设置 / 系统设置'"><i class="fas fa-cog"></i><span>系统设置</span></a></li>
                     </ul>
                 </li>
             </ul>
@@ -329,6 +717,9 @@
                     <i class="fas fa-arrow-up"></i>
                 </button>
             </div>
+
+            <!-- 自动化事务流组件 -->
+
 
             <!-- 页面容器 - 所有原有功能模块完整保留 -->
             <div class="page-container">
@@ -454,6 +845,8 @@
                 </table>
             </div>
         </div>
+
+        
 
     </div>
 </section>
@@ -844,6 +1237,7 @@
                                                     <div class="col-md-6">
                                                         <div class="input-group">
                                                             <span class="input-group-text">供应商ESG评估</span>
+                                                            
                                                             <select class="form-select" id="supplierESG">
                                                                 <option value="0">未评估</option>
                                                                 <option value="30">部分评估</option>
@@ -2001,6 +2395,62 @@
     <div class="container mt-4">
         <h2 class="mb-4"><i class="fas fa-file-upload text-primary me-2"></i>ESG 数据凭证上传</h2>
         
+        <!-- 数据生命周期流水线 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-stream text-success me-2"></i>数据生命周期流水线</h5>
+                <span class="badge bg-info">实时处理</span>
+            </div>
+            <div class="card-body">
+                <div class="event-flow-container">
+                    <div class="event-step" id="step-upload">
+                        <div class="event-icon" id="event-upload"></div>
+                        <h6>文件上传</h6>
+                        <p class="text-muted small">拖拽或选择文件</p>
+                        <div class="event-status">
+                            <span class="status-indicator">待处理</span>
+                        </div>
+                    </div>
+                    <div class="event-arrow"></div>
+                    <div class="event-step" id="step-vlm">
+                        <div class="event-icon" id="event-vlm"></div>
+                        <h6>VLM 识别</h6>
+                        <p class="text-muted small">智能识别票据内容</p>
+                        <div class="event-status">
+                            <span class="status-indicator">待处理</span>
+                        </div>
+                    </div>
+                    <div class="event-arrow"></div>
+                    <div class="event-step" id="step-validation">
+                        <div class="event-icon" id="event-validation"></div>
+                        <h6>逻辑校验</h6>
+                        <p class="text-muted small">数据一致性检查</p>
+                        <div class="event-status">
+                            <span class="status-indicator">待处理</span>
+                        </div>
+                    </div>
+                    <div class="event-arrow"></div>
+                    <div class="event-step" id="step-blockchain">
+                        <div class="event-icon" id="event-blockchain"></div>
+                        <h6>区块链存证</h6>
+                        <p class="text-muted small">防篡改数据存储</p>
+                        <div class="event-status">
+                            <span class="status-indicator">待处理</span>
+                        </div>
+                    </div>
+                    <div class="event-arrow"></div>
+                    <div class="event-step" id="step-ai">
+                        <div class="event-icon" id="event-ai"></div>
+                        <h6>AI 撰写</h6>
+                        <p class="text-muted small">生成分析报告</p>
+                        <div class="event-status">
+                            <span class="status-indicator">待处理</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="row">
             <div class="col-md-6">
                 <div class="card shadow-sm mb-4">
@@ -2055,6 +2505,59 @@
                                 </tbody>
                         </table>
                         
+                        <!-- 数据生命周期流水线 -->
+                        <div class="mt-4">
+                            <h4 class="mb-3"><i class="fas fa-stream text-primary me-2"></i>数据生命周期流水线</h4>
+                            <div class="event-stream-container">
+                                <div class="event-stream">
+                                    <!-- 连接线 -->
+                                    <div class="event-stream-line"></div>
+                                    <div class="event-stream-line-glow"></div>
+                                    
+                                    <!-- 事件节点 -->
+                                    <div class="event-node" data-target="#demo-upload">
+                                        <div class="event-icon completed" id="event-upload">
+                                            <i class="fas fa-upload"></i>
+                                            <div class="ripple"></div>
+                                        </div>
+                                        <div class="event-label">上传</div>
+                                    </div>
+                                    
+                                    <div class="event-node" data-target="#demo-upload">
+                                        <div class="event-icon completed" id="event-vlm">
+                                            <i class="fas fa-robot"></i>
+                                            <div class="ripple"></div>
+                                        </div>
+                                        <div class="event-label">AI识别</div>
+                                    </div>
+                                    
+                                    <div class="event-node" data-target="#demo-carbon">
+                                        <div class="event-icon" id="event-calculation">
+                                            <i class="fas fa-calculator"></i>
+                                            <div class="ripple"></div>
+                                        </div>
+                                        <div class="event-label">核算</div>
+                                    </div>
+                                    
+                                    <div class="event-node" data-target="#demo-risk">
+                                        <div class="event-icon" id="event-risk">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <div class="ripple"></div>
+                                        </div>
+                                        <div class="event-label">风控</div>
+                                    </div>
+                                    
+                                    <div class="event-node" data-target="#demo-report">
+                                        <div class="event-icon" id="event-report">
+                                            <i class="fas fa-file-alt"></i>
+                                            <div class="ripple"></div>
+                                        </div>
+                                        <div class="event-label">报告</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="d-flex justify-content-end mt-4 gap-2">
                             <button class="btn btn-outline-secondary" onclick="resetUpload()">重新上传</button>
                             <button class="btn btn-primary" onclick="goToNextStep()">确认无误，下一步 <i class="fas fa-arrow-right ms-1"></i></button>
@@ -2066,7 +2569,7 @@
     </div>
 </section>
 
-                <section id="demo-carbon" class="page-section" style="display:none;">
+                <section id="demo-carbon" class="page-section">
                     
                       <div class="container py-4">
                           <h3 class="mb-2"><i class="fas fa-leaf text-success me-2"></i>自动化碳核算与数字孪生分析</h3>
@@ -2253,7 +2756,53 @@
                                   </div>
                               </div>
 
+                              <!-- 碳排放/供应链关系图谱模块 -->
+                              <div class="col-12 mt-4">
+                                  <div class="card shadow-sm border-0 mb-4">
+                                      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                          <h3 class="mb-0"><i class="fas fa-project-diagram text-primary me-2"></i>企业排放源关系图谱</h3>
+                                          <div class="graph-controls">
+                                              <button class="btn btn-sm btn-outline-primary me-2" onclick="switchGraph('emission')">
+                                                  <i class="fas fa-smog me-1"></i>排放源溯源
+                                              </button>
+                                              <button class="btn btn-sm btn-outline-success" onclick="switchGraph('supply')">
+                                                  <i class="fas fa-network-wired me-1"></i>供应链风险
+                                              </button>
+                                          </div>
+                                      </div>
+                                      <div class="card-body">
+                                          <div id="emissionGraph" style="height: 400px;"></div>
+                                          <div id="supplyGraph" style="height: 400px; display: none;"></div>
+                                      </div>
+                                  </div>
+                              </div>
+                              
+                              <!-- 供应链ESG影响可视化模块 -->
+                              <div class="col-12 mt-4">
+                                  <div class="card shadow-sm border-0 mb-4">
+                                      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                          <h3 class="mb-0"><i class="fas fa-link text-info me-2"></i>供应链ESG影响分析</h3>
+                                          <div class="graph-controls">
+                                              <button class="btn btn-sm btn-outline-info" onclick="initSupplyChainESGChart()">
+                                                  <i class="fas fa-sync-alt me-1"></i>刷新数据
+                                              </button>
+                                          </div>
+                                      </div>
+                                      <div class="card-body">
+                                          <p class="text-muted small mb-4">展示上游供应商的ESG评分如何影响下游企业的综合表现</p>
+                                          <div id="supplyChainESGChart" style="height: 400px;"></div>
+                                          <div class="mt-4 p-3 bg-light rounded">
+                                              <h6 class="text-dark fw-bold mb-2"><i class="fas fa-info-circle text-info me-2"></i>分析洞察</h6>
+                                              <p class="text-muted small mb-1">• 供应商ESG评分与企业综合表现呈正相关关系</p>
+                                              <p class="text-muted small mb-1">• 高ESG评分的供应商能够显著降低企业的范围3排放量</p>
+                                              <p class="text-muted small mb-0">• 优化供应链ESG管理可提升企业整体可持续发展水平</p>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+
                           </div>
+
                       </div>
                   </section>
 
@@ -2379,20 +2928,87 @@
                 </div>
             </div>
 
+            <!-- 区块链证据链展示 -->
             <div class="card shadow-sm border-0 mb-4 risk-hover-card">
                 <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
-                    <span><i class="fas fa-link me-2 text-primary"></i>证据链时间轴</span>
+                    <span><i class="fas fa-link me-2 text-primary"></i>穿透式证据链</span>
                     <div>
                         <button id="evidenceVerifyBtn" class="btn btn-sm btn-outline-success me-2">
                             <i class="fas fa-shield-check me-1"></i>一键验真
                         </button>
-                        <button id="openEvidenceDrawerBtn" class="btn btn-sm btn-outline-primary" data-bs-toggle="offcanvas" data-bs-target="#evidenceDetailDrawer">
-                            <i class="fas fa-list-ul me-1"></i>查看详情
+                        <button id="openBlockchainCertificateBtn" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#blockchainCertificateModal">
+                            <i class="fas fa-certificate me-1"></i>区块链证书
                         </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="evidenceTimeline" class="small text-muted">等待生成证据链...</div>
+                    <div id="evidencePanel" class="evidence-panel">
+                        <div class="row g-3">
+                            <!-- 票据原图 -->
+                            <div class="col-md-3">
+                                <div class="evidence-item">
+                                    <h6 class="evidence-title"><i class="fas fa-file-invoice me-2 text-primary"></i>票据原图</h6>
+                                    <div class="evidence-content">
+                                        <div class="invoice-image-container">
+                                            <img id="invoiceImage" src="https://via.placeholder.com/300x200?text=票据原图" alt="票据原图" class="img-fluid rounded">
+                                            <div class="image-overlay">
+                                                <button class="btn btn-sm btn-light" onclick="viewFullImage()">
+                                                    <i class="fas fa-search-plus"></i> 查看大图
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- OCR结构化数据 -->
+                            <div class="col-md-3">
+                                <div class="evidence-item">
+                                    <h6 class="evidence-title"><i class="fas fa-robot me-2 text-success"></i>OCR 结构化数据</h6>
+                                    <div class="evidence-content">
+                                        <table class="table table-sm table-bordered">
+                                            <tbody id="ocrDataTable">
+                                                <tr><td>发票号码</td><td>20250721001</td></tr>
+                                                <tr><td>开票日期</td><td>2025-07-21</td></tr>
+                                                <tr><td>金额</td><td>¥12,500.00</td></tr>
+                                                <tr><td>税率</td><td>13%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 核算公式 -->
+                            <div class="col-md-3">
+                                <div class="evidence-item">
+                                    <h6 class="evidence-title"><i class="fas fa-calculator me-2 text-warning"></i>核算公式</h6>
+                                    <div class="evidence-content">
+                                        <div class="formula-container">
+                                            <p class="formula">碳排放量 = 活动数据 × 排放因子</p>
+                                            <p class="formula-detail">1.25 tCO₂e = 2,150 kWh × 0.581 kgCO₂e/kWh</p>
+                                            <p class="formula-source small text-muted">来源: IPCC 2021 排放因子数据库</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 结果哈希 -->
+                            <div class="col-md-3">
+                                <div class="evidence-item">
+                                    <h6 class="evidence-title"><i class="fas fa-hashtag me-2 text-info"></i>结果哈希 (Hash)</h6>
+                                    <div class="evidence-content">
+                                        <div class="hash-container">
+                                            <code id="hashValueText" class="hash-code">0x7a1b9f8e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a</code>
+                                            <button class="btn btn-sm btn-outline-info mt-2 w-100" onclick="copyHash()">
+                                                <i class="fas fa-copy me-1"></i> 复制哈希
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div id="evidenceVerifyStatus" class="mt-3"></div>
                 </div>
             </div>
@@ -2401,7 +3017,82 @@
                 <i class="fas fa-link fa-2x me-3"></i>
                 <div>
                     <h6 class="alert-heading mb-1 fw-bold">区块链存证校验成功</h6>
-                    <small>当前快照哈希: <code id="hashValueText" class="text-dark bg-transparent">--</code></small>
+                    <small>数据已上链，不可篡改</small>
+                </div>
+            </div>
+            
+            <!-- 区块链证书弹窗 -->
+            <div class="modal fade" id="blockchainCertificateModal" tabindex="-1" aria-labelledby="blockchainCertificateModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="blockchainCertificateModalLabel">
+                                <i class="fas fa-certificate me-2"></i>区块链存证证书
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="certificate-container">
+                                <div class="certificate-header text-center">
+                                    <h3 class="certificate-title">数据存证证书</h3>
+                                    <p class="certificate-subtitle">BLOCKCHAIN CERTIFICATE OF AUTHENTICITY</p>
+                                </div>
+                                <div class="certificate-body">
+                                    <div class="certificate-content">
+                                        <p class="certificate-text">兹证明以下数据已通过区块链技术进行存证，具有不可篡改的特性：</p>
+                                        <div class="certificate-details">
+                                            <div class="detail-item">
+                                                <span class="detail-label">存证时间：</span>
+                                                <span id="certificateTimestamp" class="detail-value">2025-10-26 15:30:45</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">数据哈希：</span>
+                                                <span id="certificateHash" class="detail-value hash-code">0x7a1b9f8e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">存证区块：</span>
+                                                <span id="certificateBlock" class="detail-value">#1258743</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">验证状态：</span>
+                                                <span class="detail-value text-success"><i class="fas fa-check-circle me-1"></i>已验证</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="certificate-footer text-center">
+                                        <div class="certificate-seal">
+                                            <i class="fas fa-seal text-primary fa-3x"></i>
+                                        </div>
+                                        <p class="certificate-valid">此证书真实有效，可通过区块链浏览器验证</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary" onclick="downloadCertificate()">
+                                <i class="fas fa-download me-1"></i> 下载证书
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 图片查看弹窗 -->
+            <div class="modal fade" id="imageViewModal" tabindex="-1" aria-labelledby="imageViewModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="imageViewModalLabel">票据原图</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <img id="fullImageView" src="" alt="票据原图" class="img-fluid">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2433,13 +3124,31 @@
                             <button id="toggleIntervalModeBtn" class="btn btn-outline-secondary"><i class="fas fa-balance-scale me-2"></i>区间模式: Conformal</button>
                         </div>
                         
+                        <!-- AI 生成过程展示 -->
+                        <div id="reportLoadingBox" class="card shadow-sm border-0 mb-4" style="display:none;">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="spinner-border text-primary me-3" role="status">
+                                        <span class="visually-hidden">加载中...</span>
+                                    </div>
+                                    <h5 class="mb-0">AI 正在生成报告</h5>
+                                </div>
+                                <div id="aiThinkingProcess" class="mb-3">
+                                    <p class="text-muted"><i class="fas fa-brain me-2 text-primary"></i>AI 正在检索行业基准...</p>
+                                </div>
+                                <div class="progress">
+                                    <div id="reportProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div id="reportResultBox" class="card shadow-lg border-primary border-top border-4" style="display:none;">
                             <div class="card-body p-4">
                                 <h5 class="text-primary border-bottom pb-3 fw-bold"><i class="fas fa-stethoscope me-2"></i>总体诊断</h5>
                                 <p id="reportSummaryText" class="lead text-dark mb-4 mt-3">--</p>
                                 
                                 <h6 class="text-success fw-bold"><i class="fas fa-lightbulb me-2"></i>减排建议</h6>
-                                <ul id="reportSuggestionList" class="mb-4 text-muted lh-lg"></ul>
+                                <div id="reportSuggestionList" class="mb-4 d-grid gap-3"></div>
                                 
                                 <h6 class="text-info fw-bold"><i class="fas fa-coins me-2"></i>融资建议</h6>
                                 <p id="financeSuggestionText" class="text-dark fw-bold p-3 bg-info bg-opacity-10 rounded border border-info"></p>
@@ -2975,7 +3684,7 @@
     <!-- JavaScript 库 -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     
 
     <!-- 外部数据库连接状态指示器 修复默认隐藏 -->
@@ -3000,6 +3709,7 @@
              <script src="demo-flow.js?v=20260416c"></script>
              <script src="twin3d.js"></script>
              <script src="app.js"></script>
+             <script src="script.js"></script>
        
     
   <script>
@@ -3078,3 +3788,5 @@ document.addEventListener('DOMContentLoaded', function () {
 <div id="breadcrumb" style="padding:8px 12px; font-size:13px; color:#555;">
   <a href="#home" style="color:#009664; text-decoration:none;">首页</a> / 首页概览
 </div>
+
+

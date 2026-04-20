@@ -2012,7 +2012,133 @@ ESG计算器
 
 .upload-area:hover {
     border-color: var(--primary-green);
-    background: var(--primary-green-lightest);
+}
+
+/* ============================================
+
+事件流样式
+
+============================================ */
+
+.event-flow-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 20px 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+.event-step {
+    flex: 0 0 auto;
+    width: 180px;
+    text-align: center;
+}
+
+.event-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-size: 24px;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.event-step.active .event-icon {
+    background: var(--primary-green);
+    border-color: var(--primary-green);
+    color: white;
+}
+
+.event-step.completed .event-icon {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+.event-content h6 {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.event-content p {
+    margin-bottom: 10px;
+}
+
+.event-status {
+    font-size: 12px;
+}
+
+.status-indicator {
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.status-indicator.loading {
+    background: var(--warning);
+    color: white;
+    animation: pulse 1.5s infinite;
+}
+
+.status-indicator.completed {
+    background: var(--success);
+    color: white;
+}
+
+.event-arrow {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 2px;
+    background: #e9ecef;
+    margin-top: 30px;
+    position: relative;
+}
+
+.event-arrow::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -4px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid #e9ecef;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+}
+
+.event-step.active ~ .event-arrow,
+.event-step.completed ~ .event-arrow {
+    background: var(--success);
+}
+
+.event-step.active ~ .event-arrow::after,
+.event-step.completed ~ .event-arrow::after {
+    border-left-color: var(--success);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .event-flow-container {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .event-step {
+        width: 140px;
+    }
+    
+    .event-arrow {
+        display: none;
+    }
 }
 
 .upload-area i {
@@ -2372,11 +2498,219 @@ ESG计算器
     gap: 8px;
 }
 
+/* ============================================
+
+区块链证据链样式
+
+============================================ */
+
+.evidence-panel {
+    padding: 1rem 0;
+}
+
+.evidence-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.evidence-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.evidence-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #495057;
+}
+
+.evidence-content {
+    font-size: 0.875rem;
+}
+
+/* 票据原图样式 */
+.invoice-image-container {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.invoice-image-container img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+.invoice-image-container:hover img {
+    transform: scale(1.05);
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.invoice-image-container:hover .image-overlay {
+    opacity: 1;
+}
+
+/* 公式容器样式 */
+.formula-container {
+    background: white;
+    padding: 0.75rem;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.formula {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.formula-detail {
+    font-family: 'Courier New', monospace;
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+/* 哈希容器样式 */
+.hash-container {
+    background: white;
+    padding: 0.75rem;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.hash-code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    word-break: break-all;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* 区块链证书样式 */
+.certificate-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+}
+
+.certificate-header {
+    margin-bottom: 2rem;
+}
+
+.certificate-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.certificate-subtitle {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.certificate-body {
+    position: relative;
+}
+
+.certificate-content {
+    margin-bottom: 2rem;
+}
+
+.certificate-text {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    color: #495057;
+}
+
+.certificate-details {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.detail-item {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.detail-value {
+    color: #6c757d;
+}
+
+.certificate-footer {
+    border-top: 1px solid #dee2e6;
+    padding-top: 2rem;
+}
+
+.certificate-seal {
+    margin-bottom: 1rem;
+}
+
+.certificate-valid {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .evidence-item {
+        margin-bottom: 1rem;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+
 .quick-jump-btn:hover {
     background: var(--primary-green);
     color: var(--white);
     transform: translateY(-3px);
     box-shadow: var(--shadow-md);
+}
+
+/* 图谱模块样式 */
+.dashboard-graphs-row {
+    width: 100%;
+    display: block;
+    margin-top: 1rem;
 }
 
 /* 功能预览模态框 */
@@ -5428,4 +5762,98 @@ h1, h2, h3, h4, h5, h6, .card-title {
     background: #FFF2F2;
     color: #D32F2F;
     border-left: 4px solid #F44336;
+}
+/* ========== 碳融智核平台 - 深度可视化 ========== */
+/* 全局通用动画 */
+.flow-check-animate {animation: checkPulse 0.6s ease forwards;}
+@keyframes checkPulse {
+  0% {transform: scale(0.8); opacity: 0.5;}
+  50% {transform: scale(1.2);}
+  100% {transform: scale(1); opacity: 1;}
+}
+.stream-loading-text::after {
+  content: "";animation: streamDots 1.5s infinite;
+}
+@keyframes streamDots {
+  0%{content:"";}33%{content:".";}66%{content:"..";}100%{content:"...";}
+}
+
+/* 1.知识图谱/关系图谱容器样式 */
+.knowledge-graph-wrap {
+  width: 100%;min-height: 380px;background: rgba(255,255,255,0.02);
+  border-radius: 12px;border: 1px solid rgba(46, 125, 50, 0.15);
+  position: relative;overflow: hidden;
+}
+.graph-node {
+  position: absolute;padding: 6px 12px;border-radius: 20px;
+  font-size: 12px;font-weight: 500;cursor: pointer;
+  transition: all 0.3s ease;user-select: none;
+}
+.graph-node:hover {transform: scale(1.08);box-shadow: 0 4px 12px rgba(0,0,0,0.12);}
+.node-emission {background: #e8f5e9;color: #2e7d32;border:1px solid #c8e6c9;}
+.node-device {background: #e3f2fd;color: #1565c0;border:1px solid #bbdefb;}
+.node-supplier {background: #fff3e0;color: #f57c00;border:1px solid #ffe0b2;}
+.node-factor {background: #f3e5f5;color: #7b1fa2;border:1px solid #e1bee7;}
+.graph-link {position: absolute;background: #ccc;z-index: 1;transform-origin: left center;}
+
+/* 2.业务事件流水线样式 */
+.business-flow-timeline {
+  display: flex;align-items: center;justify-content: space-between;
+  gap: 8px;margin: 20px 0;flex-wrap: wrap;
+}
+.flow-step-item {
+  flex: 1;min-width: 140px;text-align: center;position: relative;
+}
+.flow-step-icon {
+  width: 44px;height: 44px;border-radius: 50%;display: flex;
+  align-items: center;justify-content: center;margin: 0 auto 8px;
+  background: #f5f5f5;border: 2px solid #ddd;transition: all 0.3s ease;
+}
+.flow-step-icon.active {border-color: #2e7d32;background: #e8f5e9;color:#2e7d32;}
+.flow-step-icon.success {border-color: #198754;background: #f0fff4;color:#198754;}
+.flow-line {
+  position: absolute;top: 22px;left: 50%;width: calc(100% - 44px);
+  height: 2px;background: #eee;z-index: 0;
+}
+
+/* 3.区块链穿透证据链面板 */
+.evidence-chain-card {
+  border: 1px solid #e0e0e0;border-radius: 12px;overflow: hidden;margin: 16px 0;
+}
+.evidence-chain-header {
+  background: linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+}
+.evidence-chain-body {padding:16px;display:grid;grid-template-columns: 1fr 1fr;gap:16px;}
+.evidence-block-item {
+  background: #f8f9fa;border-radius:8px;padding:12px;border-left:3px solid #2e7d32;
+}
+.hash-text {
+  font-family: 'Consolas',monospace;font-size:12px;
+  word-break: break-all;color:#666;
+}
+.sign-badge {
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:12px;background:#059669;color:#fff;
+}
+
+/* 4.AI流式打字机&交互式建议 */
+.ai-stream-text {overflow: hidden;}
+.ai-line-type {
+  display: block;white-space: nowrap;overflow: hidden;
+  animation: typeLine 0.4s steps(20) forwards;
+}
+@keyframes typeLine {from{width:0;}to{width:100%;}}
+.suggest-interactive-btn {
+  display: inline-block;padding:2px 6px;margin:0 4px;
+  color:#009664;border-bottom:1px dashed #009664;
+  cursor:pointer;background:transparent;transition:all 0.2s;
+}
+.suggest-interactive-btn:hover {background:#e8f5e9;border-radius:4px;}
+
+/* 5.下钻详情悬浮卡片 */
+.drill-down-card {
+  position: absolute;background:#fff;border-radius:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.15);padding:12px;
+  z-index:999;min-width:260px;display:none;
 }

@@ -1,4 +1,4 @@
-﻿// ============================================
+﻿﻿﻿﻿// ============================================
 // 碳融智核平台 - 主交互脚本
 // 版本: 2.0.0
 // 最后更新: 2024-01-18
@@ -247,35 +247,7 @@ function initPageRouter() {
     });
 }
 
-// 页面切换函数
-function switchPage(pageId) {
-    const pageSections = document.querySelectorAll('.page-section');
-    const targetPage = document.getElementById(pageId);
-    
-    if (!targetPage) return;
-    
-    // 隐藏所有页面
-    pageSections.forEach(section => {
-        section.classList.remove('active');
-    });
-    
-    // 显示目标页面
-    targetPage.classList.add('active');
-    
-    // 更新URL hash
-    window.history.pushState(null, null, `#${pageId}`);
-    
-    // 页面切换后重新初始化图表
-    setTimeout(() => {
-        if (pageId === 'home') initHeroDashboard();
-        if (pageId === 'features') initDashboardDemo();
-        if (pageId === 'esg-calculator') {
-            initESGRadarChart();
-            updateESGVisualization();
-        }
-        window.dispatchEvent(new Event('resize'));
-    }, 100);
-}
+
 
 // 加载用户信息
 function loadUserInfo() {
@@ -358,13 +330,16 @@ function quickCalculateCarbon() {
     
     document.getElementById('quickCalcResult').innerHTML = resultHtml;
 }
-const CONFIG = {
-    API_BASE_URL: 'https://api.carbon-ai.com/v1',
-    LOCAL_STORAGE_KEY: 'carbon_platform_data',
-    THEME_KEY: 'carbon_platform_theme',
-    USER_KEY: 'carbon_platform_user',
-    VERSION: '2.0.0'
-};
+// 配置对象
+if (!window.CONFIG) {
+    window.CONFIG = {
+        API_BASE_URL: 'https://api.carbon-ai.com/v1',
+        LOCAL_STORAGE_KEY: 'carbon_platform_data',
+        THEME_KEY: 'carbon_platform_theme',
+        USER_KEY: 'carbon_platform_user',
+        VERSION: '2.0.0'
+    };
+}
 
 // 平台状态管理
 // ============================================
@@ -609,35 +584,7 @@ function initPageRouter() {
     });
 }
 
-// 页面切换函数
-function switchPage(pageId) {
-    const pageSections = document.querySelectorAll('.page-section');
-    const targetPage = document.getElementById(pageId);
-    
-    if (!targetPage) return;
-    
-    // 隐藏所有页面
-    pageSections.forEach(section => {
-        section.classList.remove('active');
-    });
-    
-    // 显示目标页面
-    targetPage.classList.add('active');
-    
-    // 更新URL hash
-    window.history.pushState(null, null, `#${pageId}`);
-    
-    // 页面切换后重新初始化图表
-    setTimeout(() => {
-        if (pageId === 'home') initHeroDashboard();
-        if (pageId === 'features') initDashboardDemo();
-        if (pageId === 'esg-calculator') {
-            initESGRadarChart();
-            updateESGVisualization();
-        }
-        window.dispatchEvent(new Event('resize'));
-    }, 100);
-}
+
 
 // 加载用户信息
 function loadUserInfo() {
@@ -720,7 +667,9 @@ function quickCalculateCarbon() {
     
     document.getElementById('quickCalcResult').innerHTML = resultHtml;
 }
-const PlatformState = {
+// 平台状态管理
+if (!window.PlatformState) {
+    window.PlatformState = {
     user: null,
     theme: 'light',
     currentPage: 'home',
@@ -734,9 +683,11 @@ const PlatformState = {
     reportHistory: [],
     isInitialized: false
 };
+}
 
 // 模拟数据服务
-const DataService = {
+if (!window.DataService) {
+    window.DataService = {
     // 用户管理
     users: [
         { id: 1, email: 'demo@carbon-ai.com', password: 'demo123', name: '演示用户', company: '演示科技有限公司', type: 'ecommerce' }
@@ -1064,6 +1015,324 @@ function initPlatform() {
     
     // 显示欢迎消息
     showWelcomeMessage();
+}
+
+// ============================================
+// 碳排放/供应链关系图谱
+// ============================================
+
+/**
+ * 切换图谱类型
+ */
+function switchGraph(type) {
+    const emissionGraph = document.getElementById('emissionGraph');
+    const supplyGraph = document.getElementById('supplyGraph');
+    
+    if (type === 'emission') {
+        emissionGraph.style.display = 'block';
+        supplyGraph.style.display = 'none';
+        initEmissionGraph();
+    } else {
+        emissionGraph.style.display = 'none';
+        supplyGraph.style.display = 'block';
+        initSupplyGraph();
+    }
+}
+
+/**
+ * 初始化排放源溯源图谱
+ */
+function initEmissionGraph() {
+    const chart = echarts.init(document.getElementById('emissionGraph'));
+    
+    // 生成随机数据
+    const generateRandomData = () => {
+        // 生产线数据
+        const productionLines = [
+            { name: '生产线A', value: Math.floor(Math.random() * 1000) + 500, category: 0, symbolSize: 40 + Math.random() * 20 },
+            { name: '生产线B', value: Math.floor(Math.random() * 800) + 300, category: 0, symbolSize: 35 + Math.random() * 15 },
+            { name: '生产线C', value: Math.floor(Math.random() * 600) + 200, category: 0, symbolSize: 30 + Math.random() * 10 }
+        ];
+        
+        // 设备数据
+        const equipments = [
+            { name: '注塑机', value: Math.floor(Math.random() * 400) + 200, category: 1, symbolSize: 25 + Math.random() * 15 },
+            { name: '冷却塔', value: Math.floor(Math.random() * 300) + 150, category: 1, symbolSize: 20 + Math.random() * 10 },
+            { name: '锅炉', value: Math.floor(Math.random() * 500) + 250, category: 1, symbolSize: 30 + Math.random() * 15 },
+            { name: '空压机', value: Math.floor(Math.random() * 250) + 100, category: 1, symbolSize: 15 + Math.random() * 10 }
+        ];
+        
+        // 排放因子数据
+        const emissionFactors = [
+            { name: '电力', value: (0.5 + Math.random() * 0.3).toFixed(3), category: 2, symbolSize: 15 + Math.random() * 5 },
+            { name: '天然气', value: (1.5 + Math.random() * 0.5).toFixed(3), category: 2, symbolSize: 15 + Math.random() * 5 },
+            { name: '柴油', value: (2.3 + Math.random() * 0.5).toFixed(3), category: 2, symbolSize: 15 + Math.random() * 5 }
+        ];
+        
+        // 关联关系
+        const links = [
+            { source: '生产线A', target: '注塑机' },
+            { source: '生产线A', target: '冷却塔' },
+            { source: '生产线B', target: '锅炉' },
+            { source: '生产线C', target: '空压机' },
+            { source: '注塑机', target: '电力' },
+            { source: '冷却塔', target: '电力' },
+            { source: '锅炉', target: '天然气' },
+            { source: '空压机', target: '电力' }
+        ];
+        
+        return { productionLines, equipments, emissionFactors, links };
+    };
+    
+    const data = generateRandomData();
+    const allNodes = [...data.productionLines, ...data.equipments, ...data.emissionFactors];
+    
+    const option = {
+        title: {
+            text: '企业排放源关系图谱',
+            left: 'center',
+            textStyle: {
+                fontSize: 16,
+                fontWeight: 'bold'
+            }
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: function(params) {
+                if (params.dataType === 'node') {
+                    const categoryName = params.data.category === 0 ? '生产线' : params.data.category === 1 ? '设备' : '排放因子';
+                    const valueText = params.data.category === 2 ? `排放因子值: ${params.data.value} kgCO₂/单位` : `排放量: ${params.data.value} tCO₂`;
+                    return `${params.data.name}<br/>类型: ${categoryName}<br/>${valueText}`;
+                } else {
+                    return `关联关系`;
+                }
+            }
+        },
+        legend: {
+            data: ['生产线', '设备', '排放因子'],
+            orient: 'horizontal',
+            bottom: 10
+        },
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: 'quinticInOut',
+        series: [
+            {
+                type: 'graph',
+                layout: 'force',
+                force: {
+                    repulsion: 1500,
+                    edgeLength: [100, 200],
+                    gravity: 0.1
+                },
+                roam: true,
+                label: {
+                    show: true,
+                    position: 'right',
+                    formatter: '{b}',
+                    fontSize: 12
+                },
+                data: allNodes.map(node => ({
+                    ...node,
+                    itemStyle: {
+                        color: node.category === 0 ? '#409EFF' : node.category === 1 ? '#67C23A' : '#E6A23C'
+                    }
+                })),
+                links: data.links.map(link => ({
+                    ...link,
+                    lineStyle: { width: 2, color: '#999' }
+                })),
+                categories: [
+                    { name: '生产线', itemStyle: { color: '#409EFF' } },
+                    { name: '设备', itemStyle: { color: '#67C23A' } },
+                    { name: '排放因子', itemStyle: { color: '#E6A23C' } }
+                ],
+                emphasis: {
+                    focus: 'adjacency',
+                    lineStyle: {
+                        width: 4,
+                        color: '#409EFF'
+                    },
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowColor: 'rgba(64, 158, 255, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+    
+    chart.setOption(option);
+    
+    // 点击节点事件
+    chart.on('click', function(params) {
+        if (params.dataType === 'node') {
+            showEnergyCurve(params.data.name);
+        }
+    });
+    
+    window.addEventListener('resize', function() {
+        chart.resize();
+    });
+}
+
+/**
+ * 初始化供应链风险扩散图
+ */
+function initSupplyGraph() {
+    const chart = echarts.init(document.getElementById('supplyGraph'));
+    
+    const option = {
+        title: {
+            text: '供应链风险扩散图',
+            left: 'center',
+            textStyle: {
+                fontSize: 16,
+                fontWeight: 'bold'
+            }
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: function(params) {
+                if (params.dataType === 'node') {
+                    return `${params.data.name}<br/>ESG评分: ${params.data.value || 0}<br/>风险等级: ${getRiskLevel(params.data.value)}`;
+                } else {
+                    return `影响关系`;
+                }
+            }
+        },
+        legend: {
+            data: ['核心企业', '一级供应商', '二级供应商'],
+            orient: 'horizontal',
+            bottom: 10
+        },
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: 'quinticInOut',
+        series: [
+            {
+                type: 'graph',
+                layout: 'force',
+                force: {
+                    repulsion: 1500,
+                    edgeLength: [100, 200]
+                },
+                roam: true,
+                label: {
+                    show: true,
+                    position: 'right',
+                    formatter: '{b}'
+                },
+                data: [
+                    // 核心企业
+                    { name: '核心企业', value: 85, category: 0, symbolSize: 60 },
+                    // 一级供应商
+                    { name: '供应商A', value: 78, category: 1, symbolSize: 40 },
+                    { name: '供应商B', value: 65, category: 1, symbolSize: 35 },
+                    { name: '供应商C', value: 82, category: 1, symbolSize: 40 },
+                    // 二级供应商
+                    { name: '供应商A1', value: 70, category: 2, symbolSize: 25 },
+                    { name: '供应商A2', value: 60, category: 2, symbolSize: 20 },
+                    { name: '供应商B1', value: 55, category: 2, symbolSize: 15 },
+                    { name: '供应商C1', value: 75, category: 2, symbolSize: 30 }
+                ],
+                links: [
+                    { source: '核心企业', target: '供应商A' },
+                    { source: '核心企业', target: '供应商B' },
+                    { source: '核心企业', target: '供应商C' },
+                    { source: '供应商A', target: '供应商A1' },
+                    { source: '供应商A', target: '供应商A2' },
+                    { source: '供应商B', target: '供应商B1' },
+                    { source: '供应商C', target: '供应商C1' }
+                ],
+                categories: [
+                    { name: '核心企业', itemStyle: { color: '#409EFF' } },
+                    { name: '一级供应商', itemStyle: { color: '#67C23A' } },
+                    { name: '二级供应商', itemStyle: { color: '#E6A23C' } }
+                ],
+                emphasis: {
+                    focus: 'adjacency',
+                    lineStyle: {
+                        width: 4
+                    }
+                }
+            }
+        ]
+    };
+    
+    chart.setOption(option);
+    
+    window.addEventListener('resize', function() {
+        chart.resize();
+    });
+}
+
+/**
+ * 获取风险等级
+ */
+function getRiskLevel(score) {
+    if (score >= 80) return '低风险';
+    if (score >= 60) return '中风险';
+    return '高风险';
+}
+
+/**
+ * 显示能源曲线
+ */
+function showEnergyCurve(nodeName) {
+    // 模拟历史用能数据
+    const energyData = {
+        '生产线A': [120, 132, 101, 134, 90, 230, 210],
+        '生产线B': [82, 91, 95, 105, 92, 110, 108],
+        '生产线C': [60, 55, 65, 70, 68, 75, 72],
+        '注塑机': [40, 45, 42, 48, 45, 50, 48],
+        '冷却塔': [30, 32, 28, 35, 30, 38, 36],
+        '锅炉': [50, 55, 52, 60, 58, 65, 62],
+        '空压机': [25, 28, 26, 30, 28, 32, 30],
+        '电力': [200, 220, 180, 240, 190, 280, 260],
+        '天然气': [80, 85, 75, 90, 85, 95, 90],
+        '柴油': [30, 35, 32, 40, 38, 42, 40]
+    };
+    
+    const data = energyData[nodeName] || [50, 60, 55, 70, 65, 75, 70];
+    const isEmissionFactor = ['电力', '天然气', '柴油'].includes(nodeName);
+    const label = isEmissionFactor ? '使用量' : '能源消耗 (kWh)';
+    
+    showModal(
+        `${nodeName} 历史用能曲线`,
+        `
+        <div style="height: 300px;">
+            <canvas id="energyCurveChart"></canvas>
+        </div>
+        <p class="text-muted mt-3">显示过去7天的${isEmissionFactor ? '使用量' : '用能'}数据</p>
+        `,
+        'lg'
+    );
+    
+    setTimeout(() => {
+        const ctx = document.getElementById('energyCurveChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                datasets: [{
+                    label: label,
+                    data: data,
+                    borderColor: '#409EFF',
+                    backgroundColor: 'rgba(64, 158, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }, 100);
 }
 
 /**
@@ -1823,10 +2092,16 @@ function initContactForm() {
  * 初始化OCR演示
  */
 function initOCRDemo() {
-    const fileInput = document.getElementById('fileInput');
+    const fileInput = document.getElementById('file-input');
     if (!fileInput) return;
     
     fileInput.addEventListener('change', handleFileUpload);
+    
+    // 示例案例按钮
+    const demoCaseBtn = document.getElementById('btn-demo-case');
+    if (demoCaseBtn) {
+        demoCaseBtn.addEventListener('click', handleDemoCase);
+    }
     
     // 拖放功能
     const uploadArea = document.getElementById('uploadArea');
@@ -1854,15 +2129,58 @@ function initOCRDemo() {
 }
 
 /**
+ * 处理示例案例
+ */
+function handleDemoCase() {
+    // 更新事件流状态：文件上传开始
+    updateEventNodeStatus('event-upload', 'processing');
+    
+    setTimeout(() => {
+        // 更新事件流状态：文件上传完成
+        updateEventNodeStatus('event-upload', 'completed');
+        
+        // 更新事件流状态：VLM识别开始
+        updateEventNodeStatus('event-vlm', 'processing');
+        
+        setTimeout(() => {
+            // 显示识别结果
+            const recognitionResultArea = document.getElementById('recognition-result-area');
+            if (recognitionResultArea) {
+                recognitionResultArea.style.display = 'block';
+                
+                const recognitionTbody = document.getElementById('recognition-tbody');
+                if (recognitionTbody) {
+                    const sampleData = {
+                        '用电类型': '工商业用电',
+                        '用电量': '1,245 kWh',
+                        '电费金额': '¥ 1,245.00',
+                        '计费期间': '2024年3月1日-3月31日'
+                    };
+                    
+                    recognitionTbody.innerHTML = Object.entries(sampleData).map(([key, value]) => `
+                        <tr>
+                            <td>${key}</td>
+                            <td>${value}</td>
+                            <td>98%</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+            
+            // 更新事件流状态：VLM识别完成
+            updateEventNodeStatus('event-vlm', 'completed');
+            
+            showToast('示例案例加载成功！', 'success');
+        }, 1500);
+    }, 1000);
+}
+
+/**
  * 处理文件上传
  */
 function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
-    
-    const uploadArea = document.getElementById('uploadArea');
-    const ocrResult = document.getElementById('ocrResult');
-    if (!uploadArea || !ocrResult) return;
     
     // 验证文件类型
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
@@ -1877,97 +2195,127 @@ function handleFileUpload(e) {
         return;
     }
     
-    // 显示上传状态
-    uploadArea.innerHTML = `
-        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
-        <p class="mt-3">正在上传文件...</p>
-        <div class="progress mt-3">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
-        </div>
-    `;
+    // 更新事件流状态：文件上传开始
+    updateEventNodeStatus('event-upload', 'processing');
     
-    // 模拟OCR处理
-    setTimeout(() => {
-        const sampleResults = {
-            electricity: {
-                title: '电费单识别结果',
-                data: {
-                    '用电类型': '工商业用电',
-                    '用电量': '1,245 kWh',
-                    '电费金额': '¥ 1,245.00',
-                    '计费期间': '2024年3月1日-3月31日',
-                    '识别准确率': '98.5%'
-                }
-            },
-            logistics: {
-                title: '物流面单识别结果',
-                data: {
-                    '运单号': 'SF1234567890',
-                    '收件人': '张先生',
-                    '重量': '2.5 kg',
-                    '运输距离': '350 km',
-                    '运输方式': '陆运',
-                    '识别准确率': '96.2%'
-                }
-            },
-            fuel: {
-                title: '加油发票识别结果',
-                data: {
-                    '油品类型': '95#汽油',
-                    '加油量': '45.6 L',
-                    '金额': '¥ 386.52',
-                    '加油站': '中国石化',
-                    '识别准确率': '97.8%'
-                }
-            }
-        };
-        
-        // 根据文件名猜测类型
-        let sampleType = 'electricity';
-        const fileName = file.name.toLowerCase();
-        if (fileName.includes('物流') || fileName.includes('快递')) {
-            sampleType = 'logistics';
-        } else if (fileName.includes('油') || fileName.includes('fuel')) {
-            sampleType = 'fuel';
-        }
-        
-        const result = sampleResults[sampleType];
-        
-        // 显示识别结果
-        ocrResult.innerHTML = `
-            <div class="result-content">
-                <h5><i class="fas fa-check-circle text-success me-2"></i>${result.title}</h5>
-                <div class="result-details mt-3">
-                    ${Object.entries(result.data).map(([key, value]) => `
-                        <div class="result-item">
-                            <span class="result-key">${key}：</span>
-                            <span class="result-value">${value}</span>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="result-actions mt-4">
-                    <button class="btn btn-sm btn-success me-2" onclick="useOCRData('${sampleType}')">
-                        <i class="fas fa-check me-1"></i>使用此数据
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="resetOCRDemo()">
-                        <i class="fas fa-redo me-1"></i>重新识别
-                    </button>
-                </div>
+    // 显示上传状态
+    const uploadZone = document.getElementById('upload-zone');
+    if (uploadZone) {
+        uploadZone.innerHTML = `
+            <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+            <p class="mt-3">正在上传文件...</p>
+            <div class="progress mt-3">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
             </div>
         `;
+    }
+    
+    // 显示上传进度区域
+    const uploadProgressArea = document.getElementById('upload-progress-area');
+    if (uploadProgressArea) {
+        uploadProgressArea.style.display = 'block';
+    }
+    
+    // 模拟文件上传
+    setTimeout(() => {
+        // 更新事件流状态：文件上传完成
+        updateEventNodeStatus('event-upload', 'completed');
         
-        // 重置上传区域
-        uploadArea.innerHTML = `
-            <i class="fas fa-check-circle fa-3x text-success"></i>
-            <p class="mt-3">${file.name}</p>
-            <p class="text-muted small">文件上传成功</p>
-            <button class="btn btn-outline-primary mt-3" onclick="document.getElementById('fileInput').click()">
-                选择其他文件
-            </button>
-        `;
+        // 更新事件流状态：VLM识别开始
+        updateEventNodeStatus('event-vlm', 'processing');
         
-        showToast('OCR识别完成！', 'success');
-    }, 2000);
+        // 模拟OCR处理
+        setTimeout(() => {
+            const sampleResults = {
+                electricity: {
+                    title: '电费单识别结果',
+                    data: {
+                        '用电类型': '工商业用电',
+                        '用电量': '1,245 kWh',
+                        '电费金额': '¥ 1,245.00',
+                        '计费期间': '2024年3月1日-3月31日',
+                        '识别准确率': '98.5%'
+                    }
+                },
+                logistics: {
+                    title: '物流面单识别结果',
+                    data: {
+                        '运单号': 'SF1234567890',
+                        '收件人': '张先生',
+                        '重量': '2.5 kg',
+                        '运输距离': '350 km',
+                        '运输方式': '陆运',
+                        '识别准确率': '96.2%'
+                    }
+                },
+                fuel: {
+                    title: '加油发票识别结果',
+                    data: {
+                        '油品类型': '95#汽油',
+                        '加油量': '45.6 L',
+                        '金额': '¥ 386.52',
+                        '加油站': '中国石化',
+                        '识别准确率': '97.8%'
+                    }
+                }
+            };
+            
+            // 根据文件名猜测类型
+            let sampleType = 'electricity';
+            const fileName = file.name.toLowerCase();
+            if (fileName.includes('物流') || fileName.includes('快递')) {
+                sampleType = 'logistics';
+            } else if (fileName.includes('油') || fileName.includes('fuel')) {
+                sampleType = 'fuel';
+            }
+            
+            const result = sampleResults[sampleType];
+            
+            // 显示识别结果
+            const recognitionResultArea = document.getElementById('recognition-result-area');
+            if (recognitionResultArea) {
+                recognitionResultArea.style.display = 'block';
+                
+                const recognitionTbody = document.getElementById('recognition-tbody');
+                if (recognitionTbody) {
+                    recognitionTbody.innerHTML = Object.entries(result.data).map(([key, value]) => {
+                        let confidence = '98%';
+                        if (key === '识别准确率') {
+                            confidence = value;
+                            return '';
+                        }
+                        return `
+                            <tr>
+                                <td>${key}</td>
+                                <td>${value}</td>
+                                <td>${confidence}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+            
+            // 重置上传区域
+            if (uploadZone) {
+                uploadZone.innerHTML = `
+                    <i class="fas fa-check-circle fa-3x text-success"></i>
+                    <p class="mt-3">${file.name}</p>
+                    <p class="text-muted small">文件上传成功</p>
+                    <button class="btn btn-outline-primary mt-2" onclick="document.getElementById('file-input').click()">选择文件</button>
+                `;
+            }
+            
+            // 隐藏上传进度区域
+            if (uploadProgressArea) {
+                uploadProgressArea.style.display = 'none';
+            }
+            
+            // 更新事件流状态：VLM识别完成
+            updateEventNodeStatus('event-vlm', 'completed');
+            
+            showToast('OCR识别完成！', 'success');
+        }, 2000);
+    }, 1000);
 }
 
 /**
@@ -2019,15 +2367,15 @@ function useOCRData(type) {
 function resetOCRDemo() {
     const uploadArea = document.getElementById('uploadArea');
     const ocrResult = document.getElementById('ocrResult');
-    const fileInput = document.getElementById('fileInput');
+    const fileInput = document.getElementById('file-input');
     
     if (uploadArea) {
         uploadArea.innerHTML = `
             <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
             <p class="mt-3">拖拽文件到这里，或点击选择文件</p>
             <p class="text-muted small">支持 JPG, PNG, PDF 格式，最大10MB</p>
-            <input type="file" id="fileInput" class="d-none" accept=".jpg,.jpeg,.png,.pdf" onchange="handleFileUpload(event)">
-            <button class="btn btn-outline-primary mt-3" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="file-input" class="d-none" accept=".jpg,.jpeg,.png,.pdf" onchange="handleFileUpload(event)">
+            <button class="btn btn-outline-primary mt-3" onclick="document.getElementById('file-input').click()">
                 选择文件
             </button>
         `;
@@ -3284,6 +3632,7 @@ function selectPlan(planType) {
             </div>
         `);
     }
+};
 }
 
 // ============================================
@@ -3300,8 +3649,7 @@ if (document.readyState === 'loading') {
 }
 
 // 导出到全局作用域
-window.PlatformState = PlatformState;
-window.DataService = DataService;
+// PlatformState已经通过window对象导出
 window.calculateEnvironmental = calculateEnvironmental;
 window.calculateSocial = calculateSocial;
 window.calculateGovernance = calculateGovernance;
@@ -3322,6 +3670,9 @@ window.viewReportHistory = viewReportHistory;
 window.toggleTheme = toggleTheme;
 window.showToast = showToast;
 window.showModal = showModal;
+window.initEventFlow = initEventFlow;
+window.resetEventFlow = resetEventFlow;
+window.startEventFlow = startEventFlow;
 
 
 // --- GLOBAL UI HELPERS ---
@@ -3355,11 +3706,192 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
+// ============================================
+// 自动化业务事件流
+// ============================================
+
+/**
+ * 初始化事件流
+ */
+function initEventFlow() {
+    const eventFlow = document.querySelector('.event-flow-container');
+    if (!eventFlow) return;
+    
+    // 重置所有事件步骤
+    resetEventFlow();
+}
+
+/**
+ * 重置事件流
+ */
+function resetEventFlow() {
+    const steps = document.querySelectorAll('.event-step');
+    steps.forEach(step => {
+        step.classList.remove('active', 'completed');
+        const icon = step.querySelector('.event-icon');
+        const status = step.querySelector('.status-indicator');
+        
+        if (icon) {
+            icon.innerHTML = step.getAttribute('data-icon');
+            icon.classList.remove('text-success', 'text-warning');
+        }
+        
+        if (status) {
+            status.textContent = '待处理';
+            status.classList.remove('loading', 'completed');
+        }
+    });
+}
+
+/**
+ * 更新事件流状态
+ */
+function updateEventStatus(stepIndex, status) {
+    const steps = document.querySelectorAll('.event-step');
+    const step = steps[stepIndex];
+    if (!step) return;
+    
+    const icon = step.querySelector('.event-icon');
+    const statusIndicator = step.querySelector('.status-indicator');
+    
+    // 移除之前的状态
+    step.classList.remove('active', 'completed');
+    if (icon) {
+        icon.classList.remove('text-success', 'text-warning');
+    }
+    if (statusIndicator) {
+        statusIndicator.classList.remove('loading', 'completed');
+    }
+    
+    // 设置新状态
+    if (status === 'loading') {
+        step.classList.add('active');
+        if (icon) {
+            icon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            icon.classList.add('text-warning');
+        }
+        if (statusIndicator) {
+            statusIndicator.textContent = '处理中';
+            statusIndicator.classList.add('loading');
+        }
+    } else if (status === 'completed') {
+        step.classList.add('completed');
+        if (icon) {
+            icon.innerHTML = '<i class="fas fa-check"></i>';
+            icon.classList.add('text-success');
+        }
+        if (statusIndicator) {
+            statusIndicator.textContent = '完成';
+            statusIndicator.classList.add('completed');
+        }
+    }
+}
+
+/**
+ * 启动事件流处理
+ */
+function startEventFlow() {
+    resetEventFlow();
+    
+    // 模拟事件流处理过程
+    const steps = [
+        { name: '上传', duration: 2000 },
+        { name: 'VLM识别', duration: 3000 },
+        { name: '逻辑校验', duration: 2500 },
+        { name: '区块链存证', duration: 3500 },
+        { name: 'AI撰写', duration: 4000 }
+    ];
+    
+    let currentStep = 0;
+    
+    function processNextStep() {
+        if (currentStep >= steps.length) {
+            showToast('数据处理完成！', 'success');
+            return;
+        }
+        
+        // 更新当前步骤为加载中
+        updateEventStatus(currentStep, 'loading');
+        
+        // 模拟处理时间
+        setTimeout(() => {
+            // 标记当前步骤为完成
+            updateEventStatus(currentStep, 'completed');
+            
+            // 进入下一步
+            currentStep++;
+            processNextStep();
+        }, steps[currentStep].duration);
+    }
+    
+    // 开始处理
+    processNextStep();
+}
+
 // Ensure pages get fade-in class
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tab-pane').forEach(page => {
         page.classList.add('page-content');
     });
+    
+    // 初始化事件流
+initEventFlow();
+
+// ============================================
+// 区块链证据链功能
+// ============================================
+
+/**
+ * 查看票据原图大图
+ */
+function viewFullImage() {
+    const imgSrc = document.getElementById('invoiceImage').src;
+    document.getElementById('fullImageView').src = imgSrc;
+    const imageViewModal = new bootstrap.Modal(document.getElementById('imageViewModal'));
+    imageViewModal.show();
+}
+
+/**
+ * 复制哈希值到剪贴板
+ */
+function copyHash() {
+    const hashValue = document.getElementById('hashValueText').textContent;
+    navigator.clipboard.writeText(hashValue).then(() => {
+        showToast('哈希值已复制到剪贴板', 'success');
+    }).catch(err => {
+        showToast('复制失败，请手动复制', 'error');
+    });
+}
+
+/**
+ * 下载区块链证书
+ */
+function downloadCertificate() {
+    // 模拟证书下载
+    showToast('证书下载功能已触发', 'success');
+    // 实际项目中可以生成PDF或图片证书
+}
+
+/**
+ * 初始化区块链证据链
+ */
+function initBlockchainEvidence() {
+    const evidencePanel = document.getElementById('evidencePanel');
+    if (!evidencePanel) return;
+    
+    // 模拟区块链校验
+    document.getElementById('evidenceVerifyBtn').addEventListener('click', function() {
+        const verifyStatus = document.getElementById('evidenceVerifyStatus');
+        verifyStatus.innerHTML = '<div class="alert alert-info">正在验证区块链存证...</div>';
+        
+        setTimeout(() => {
+            verifyStatus.innerHTML = '<div class="alert alert-success">区块链存证校验成功！数据未被篡改。</div>';
+        }, 2000);
+    });
+}
+
+// 初始化区块链证据链
+initBlockchainEvidence();
     
     // Add simple num-roll effect to big numbers
     document.querySelectorAll('.fs-2, .fs-1, h2, h1').forEach(el => {
@@ -3372,9 +3904,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // 点击叉号 关闭右下角预警弹窗
     const closeBtn = document.getElementById('closeWarning');
     const popupBox = document.getElementById('warningPopup');
-    closeBtn.addEventListener('click', () => {
-        popupBox.style.display = 'none';
-    });
+    if (closeBtn && popupBox) {
+        closeBtn.addEventListener('click', () => {
+            popupBox.style.display = 'none';
+        });
+    }
 
     // 预警数字滚动动画 和上方卡片完全统一，彻底修复NaN
     const stats = document.querySelectorAll(".warning-row .stat-number");
@@ -3394,4 +3928,720 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }, 16);
     });
+});
+// ========== 碳融智核平台 - 深度可视化核心逻辑 ==========
+// 1. 碳排放/供应链 知识图谱
+const KnowledgeGraph = {
+  graphDom: null,
+  nodeList: [],
+  linkList: [],
+  init(containerSelector){
+    this.graphDom = document.querySelector(containerSelector);
+    if(!this.graphDom) return;
+    this.renderBaseGraph();
+    this.bindNodeEvent();
+  },
+  renderBaseGraph(){
+    const wrap = this.graphDom;
+    wrap.innerHTML = '';
+    const nodes = [
+      {text:"厂区总排放",cls:"node-emission",left:"45%",top:"45%"},
+      {text:"车间生产设备",cls:"node-device",left:"15%",top:"20%"},
+      {text:"空调/照明系统",cls:"node-device",left:"12%",top:"70%"},
+      {text:"柴油运输车队",cls:"node-device",left:"78%",top:"25%"},
+      {text:"电力排放因子",cls:"node-factor",left:"80%",top:"68%"},
+      {text:"一级供应商A",cls:"node-supplier",left:"30%",top:"12%"},
+      {text:"包装材料供应商",cls:"node-supplier",left:"65%",top:"80%"}
+    ];
+    const links = [
+      {s:0,e:1},{s:0,e:2},{s:0,e:3},{s:1,e:4},{s:2,e:4},{s:3,e:4},{s:0,e:5},{s:0,e:6}
+    ];
+    nodes.forEach((item,idx)=>{
+      const node = document.createElement('div');
+      node.className = `graph-node ${item.cls}`;
+      node.style.left = item.left;
+      node.style.top = item.top;
+      node.dataset.id = idx;
+      node.innerText = item.text;
+      wrap.appendChild(node);
+      this.nodeList.push(node);
+    });
+    links.forEach(item=>{
+      const sNode = this.nodeList[item.s];
+      const eNode = this.nodeList[item.e];
+      const line = this.createLinkLine(sNode,eNode);
+      wrap.appendChild(line);
+      this.linkList.push(line);
+    });
+  },
+  createLinkLine(start,end){
+    const line = document.createElement('div');
+    line.className = 'graph-link';
+    const sRect = start.getBoundingClientRect();
+    const eRect = end.getBoundingClientRect();
+    const wrapRect = this.graphDom.getBoundingClientRect();
+    const x1 = sRect.left + sRect.width/2 - wrapRect.left;
+    const y1 = sRect.top + sRect.height/2 - wrapRect.top;
+    const x2 = eRect.left + eRect.width/2 - wrapRect.left;
+    const y2 = eRect.top + eRect.height/2 - wrapRect.top;
+    const length = Math.hypot(x2-x1,y2-y1);
+    const angle = Math.atan2(y2-y1,x2-x1) * 180 / Math.PI;
+    line.style.width = length + 'px';
+    line.style.left = x1 + 'px';
+    line.style.top = y1 + 'px';
+    line.style.transform = `rotate(${angle}deg)`;
+    return line;
+  },
+  bindNodeEvent(){
+    this.nodeList.forEach(node=>{
+      node.addEventListener('mouseenter',(e)=>{
+        this.showDrillCard(e,node.innerText);
+      });
+      node.addEventListener('mouseleave',()=>{
+        const card = document.querySelector('.drill-down-card');
+        if(card) card.style.display = 'none';
+      });
+    });
+  },
+  showDrillCard(e,name){
+    let card = document.querySelector('.drill-down-card');
+    if(!card){
+      card = document.createElement('div');
+      card.className = 'drill-down-card';
+      document.body.appendChild(card);
+    }
+    let html = `<h6 class="fw-bold mb-2">${name} - 能耗趋势</h6>`;
+    html += `<div class="text-muted small">近6个月用能稳定，环比下降 4.2%</div>
+    <div class="mt-2" style="height:100px;display:flex;align-items:flex-end;gap:4px;">
+      <div style="width:16px;background:#2e7d3266;height:60%"></div>
+      <div style="width:16px;background:#2e7d3288;height:72%"></div>
+      <div style="width:16px;background:#2e7d32;height:55%"></div>
+      <div style="width:16px;background:#2e7d3299;height:48%"></div>
+      <div style="width:16px;background:#2e7d32aa;height:42%"></div>
+      <div style="width:16px;background:#2e7d32;height:38%"></div>
+    </div>`;
+    card.innerHTML = html;
+    card.style.left = (e.pageX + 10) + 'px';
+    card.style.top = (e.pageY + 10) + 'px';
+    card.style.display = 'block';
+  }
+};
+
+// 2. 自动化业务事件流
+const BusinessFlowStream = {
+  renderFlowBox(containerSelector){
+    const container = document.querySelector(containerSelector);
+    if(!container) return;
+    container.innerHTML = `
+    <div class="business-flow-timeline">
+      <div class="flow-step-item">
+        <div class="flow-line"></div>
+        <div class="flow-step-icon" data-step="upload">
+          <i class="fas fa-file-upload"></i>
+        </div>
+        <div class="flow-step-name">票据上传</div>
+      </div>
+      <div class="flow-step-item">
+        <div class="flow-line"></div>
+        <div class="flow-step-icon" data-step="vlm">
+          <i class="fas fa-eye"></i>
+        </div>
+        <div class="flow-step-name">VLM智能识别</div>
+      </div>
+      <div class="flow-step-item">
+        <div class="flow-line"></div>
+        <div class="flow-step-icon" data-step="check">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="flow-step-name">数据逻辑校验</div>
+      </div>
+      <div class="flow-step-item">
+        <div class="flow-line"></div>
+        <div class="flow-step-icon" data-step="chain">
+          <i class="fas fa-link"></i>
+        </div>
+        <div class="flow-step-name">区块链存证</div>
+      </div>
+      <div class="flow-step-item">
+        <div class="flow-step-icon" data-step="ai">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="flow-step-name">AI核算&报告</div>
+      </div>
+    </div>
+    <div class="stream-desc text-muted small mt-2">
+    `;
+  }
+};
+
+// 3. AI 报告深度交互
+const AIReport = {
+  /**
+   * 生成AI报告
+   */
+  generate() {
+    const reportBtn = document.getElementById('reportBtn');
+    const reportLoadingBox = document.getElementById('reportLoadingBox');
+    const reportResultBox = document.getElementById('reportResultBox');
+    const reportSummaryText = document.getElementById('reportSummaryText');
+    const reportSuggestionList = document.getElementById('reportSuggestionList');
+    const financeSuggestionText = document.getElementById('financeSuggestionText');
+    const aiThinkingProcess = document.getElementById('aiThinkingProcess');
+    const reportProgressBar = document.getElementById('reportProgressBar');
+    
+    reportBtn.disabled = true;
+    reportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>生成中...';
+    
+    // 显示加载状态
+    reportLoadingBox.style.display = 'block';
+    reportResultBox.style.display = 'none';
+    
+    // 模拟AI思考过程
+    const thinkingSteps = [
+        'AI 正在检索行业基准...',
+        'AI 正在分析企业碳排数据...',
+        'AI 正在评估减排潜力...',
+        'AI 正在匹配融资方案...',
+        'AI 正在生成最终报告...'
+    ];
+    
+    let currentStep = 0;
+    let progress = 0;
+    
+    const thinkingInterval = setInterval(() => {
+        if (currentStep < thinkingSteps.length) {
+            aiThinkingProcess.innerHTML = `<p class="text-muted"><i class="fas fa-brain me-2 text-primary"></i>${thinkingSteps[currentStep]}</p>`;
+            currentStep++;
+            progress += 20;
+            reportProgressBar.style.width = `${progress}%`;
+            reportProgressBar.setAttribute('aria-valuenow', progress);
+        } else {
+            clearInterval(thinkingInterval);
+        }
+    }, 1000);
+    
+    // 模拟API调用延迟
+    setTimeout(() => {
+        // 隐藏加载状态
+        reportLoadingBox.style.display = 'none';
+        
+        // 显示结果区域
+        reportResultBox.style.display = 'block';
+        
+        // 打字机效果显示报告内容
+        const summaryText = '基于您企业的碳排放数据和行业基准对比，我们发现您的企业整体碳表现处于行业中等水平。电力消耗是主要排放源，占总排放量的46%，建议优先优化用电结构。';
+        AIReport.typeWriter(reportSummaryText, summaryText, 0, 30);
+        
+        // 填充减排建议（交互式卡片）
+        const suggestions = [
+            { text: '部署分布式光伏', action: 'goToFinanceMatch', icon: 'fa-solar-system', color: 'success' },
+            { text: '优化生产设备运行时间，降低非生产时段能耗', action: null, icon: 'fa-machines', color: 'info' },
+            { text: '建立员工节能意识培训计划，减少办公区域能耗', action: null, icon: 'fa-people-line', color: 'warning' },
+            { text: '考虑使用绿色能源供应商，获取绿色电力证书', action: null, icon: 'fa-plug-circle-check', color: 'primary' }
+        ];
+        
+        reportSuggestionList.innerHTML = '';
+        suggestions.forEach((suggestion, index) => {
+            setTimeout(() => {
+                const card = document.createElement('div');
+                card.className = `card shadow-sm border-${suggestion.color} border-left-4`;
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-${suggestion.color} bg-opacity-10 p-2 rounded-full me-3">
+                                <i class="fas ${suggestion.icon} text-${suggestion.color}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <p class="mb-0">${suggestion.text}</p>
+                            </div>
+                            ${suggestion.action ? '<div><i class="fas fa-arrow-right text-primary"></i></div>' : ''}
+                        </div>
+                    </div>
+                `;
+                
+                if (suggestion.action) {
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', () => {
+                        window[suggestion.action]();
+                    });
+                }
+                
+                reportSuggestionList.appendChild(card);
+            }, 1000 + index * 500);
+        });
+        
+        // 打字机效果显示融资建议
+        const financeText = '基于您的ESG评分和碳表现，建议申请绿色信贷优惠包，预计可获得LPR-50BP的利率优惠，最高额度500万元。';
+        setTimeout(() => {
+            AIReport.typeWriter(financeSuggestionText, financeText, 0, 20);
+        }, 3000);
+        
+        // 恢复按钮状态
+        reportBtn.disabled = false;
+        reportBtn.innerHTML = '<i class="fas fa-robot me-2"></i>生成 AI 报告';
+        
+        // 显示导出按钮
+        setTimeout(() => {
+            document.getElementById('exportBtnContainer').style.display = 'block';
+        }, 4000);
+        
+    }, 6000);
+  },
+  
+  /**
+   * 打字机效果函数
+   */
+  typeWriter(element, text, index, speed) {
+      if (index < text.length) {
+          element.textContent = text.substring(0, index + 1);
+          index++;
+          setTimeout(() => AIReport.typeWriter(element, text, index, speed), speed);
+      }
+  }
+};
+
+/**
+ * 跳转到绿色金融对接页面
+ */
+function goToFinanceMatch() {
+    window.location.hash = 'finance-match';
+    showToast('正在跳转到绿色金融对接页面...', 'success');
+}
+
+// 初始化AI报告事件
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const reportBtn = document.getElementById('reportBtn');
+        if (reportBtn) {
+            reportBtn.addEventListener('click', AIReport.generate);
+        }
+    });
+} else {
+    const reportBtn = document.getElementById('reportBtn');
+    if (reportBtn) {
+        reportBtn.addEventListener('click', AIReport.generate);
+    }
+}
+
+// 页面切换函数
+function switchPage(pageId) {
+    console.log('switchPage function called with pageId:', pageId);
+    const pageSections = document.querySelectorAll('.page-section');
+    const targetPage = document.getElementById(pageId);
+    
+    console.log('targetPage found:', targetPage);
+    if (!targetPage) {
+        console.log('targetPage not found');
+        return;
+    }
+    
+    // 隐藏所有页面
+    console.log('Hiding all page sections');
+    pageSections.forEach(section => {
+        section.classList.remove('active');
+        section.style.display = 'none';
+    });
+    
+    // 显示目标页面
+    console.log('Showing target page:', pageId);
+    targetPage.classList.add('active');
+    targetPage.style.display = 'block';
+    
+    // 更新URL hash
+    console.log('Updating URL hash to:', `#${pageId}`);
+    window.history.pushState(null, null, `#${pageId}`);
+    
+    // 页面切换后重新初始化图表
+    setTimeout(() => {
+        if (pageId === 'home') initHeroDashboard();
+        if (pageId === 'features') initDashboardDemo();
+        if (pageId === 'esg-calculator') {
+            initESGRadarChart();
+            updateESGVisualization();
+        }
+        if (pageId === 'demo-carbon') {
+            console.log('Initializing emission graph for demo-carbon');
+            initEmissionGraph();
+            
+            // 初始化供应链ESG影响分析图表
+            console.log('Initializing supply chain ESG chart');
+            initSupplyChainESGChart();
+            
+            // 绑定开始核算按钮事件
+            const carbonBtn = document.getElementById('carbonBtn');
+            if (carbonBtn) {
+                carbonBtn.addEventListener('click', function() {
+                    // 显示核算结果
+                    document.getElementById('carbonSummaryBox').style.display = 'block';
+                    document.getElementById('carbonTotalCard').style.display = 'flex';
+                    document.getElementById('carbonResultBox').style.display = 'flex';
+                    
+                    // 图谱模块已移至3D数字孪生舱下方，无需单独显示
+                    
+                    // 初始化图谱
+                    initEmissionGraph();
+                });
+            }
+        }
+        if (pageId === 'demo-risk') {
+            console.log('Initializing risk detection page');
+            // 绑定风控检测按钮事件
+            if (typeof bindRiskButton === 'function') {
+                bindRiskButton();
+            }
+        }
+        if (pageId === 'demo-report') {
+            console.log('Initializing AI report page');
+            // 初始化报告生成器
+            if (typeof initReportGenerator === 'function') {
+                initReportGenerator();
+            }
+        }
+        if (pageId === 'demo-upload') {
+            console.log('Initializing event stream for demo-upload');
+            // 初始化事件流交互
+            if (typeof initEventStream === 'function') {
+                initEventStream();
+            }
+        }
+        window.dispatchEvent(new Event('resize'));
+    }, 100);
+}
+
+// 页面兼容函数
+function goToRiskDetection(){window.location.hash="#demo-risk";}
+function goToAIReport(){window.location.hash="#demo-report";}
+
+// 初始化事件流交互
+function initEventStream() {
+    // 绑定事件节点点击事件
+    const eventNodes = document.querySelectorAll('.event-node');
+    eventNodes.forEach(node => {
+        node.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            if (target) {
+                const targetElement = document.querySelector(target);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    });
+}
+
+// 更新事件流节点状态
+function updateEventNodeStatus(nodeId, status) {
+    const eventIcon = document.getElementById(nodeId);
+    if (eventIcon) {
+        // 获取父级event-step元素
+        const eventStep = eventIcon.closest('.event-step');
+        
+        if (status === 'completed') {
+            eventIcon.classList.add('completed');
+            eventIcon.classList.remove('processing');
+            // 更新状态标签
+            if (eventStep) {
+                eventStep.classList.add('completed');
+                const statusIndicator = eventStep.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.textContent = '已完成';
+                }
+            }
+        } else if (status === 'processing') {
+            eventIcon.classList.add('processing');
+            eventIcon.classList.remove('completed');
+            // 更新状态标签
+            if (eventStep) {
+                eventStep.classList.remove('completed');
+                const statusIndicator = eventStep.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.textContent = '处理中';
+                }
+            }
+        } else {
+            eventIcon.classList.remove('completed', 'processing');
+            // 更新状态标签
+            if (eventStep) {
+                eventStep.classList.remove('completed');
+                const statusIndicator = eventStep.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.textContent = '待处理';
+                }
+            }
+        }
+    }
+}
+
+// 跳转到下一步
+function goToNextStep() {
+    console.log('goToNextStep function called');
+    
+    // 禁用按钮，防止重复点击
+    const nextBtn = document.querySelector('.btn-primary');
+    console.log('Next button found:', nextBtn);
+    if (nextBtn) {
+        nextBtn.disabled = true;
+        nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+    }
+    
+    try {
+        // 显示处理中模态框
+        console.log('Showing modal...');
+        showModal('处理中', '正在执行数据生命周期流程...');
+        console.log('Modal shown');
+    } catch (error) {
+        console.error('Error showing modal:', error);
+    }
+    
+    // 定义事件节点和处理时间
+    const events = [
+        { id: 'event-validation', name: '逻辑校验', duration: 1500 },
+        { id: 'event-blockchain', name: '区块链存证', duration: 2000 },
+        { id: 'event-ai', name: 'AI撰写', duration: 1800 }
+    ];
+    
+    let currentIndex = 0;
+    
+    // 执行事件流
+    function processNextEvent() {
+        if (currentIndex < events.length) {
+            const event = events[currentIndex];
+            console.log('Processing event:', event.name);
+            
+            // 更新模态框内容
+            const modalBody = document.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.innerHTML = `<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x mb-3"></i><p>正在进行${event.name}...</p></div>`;
+            }
+            
+            // 更新事件节点为处理中状态
+            updateEventNodeStatus(event.id, 'processing');
+            
+            // 模拟处理时间
+            setTimeout(() => {
+                // 更新事件节点为成功状态
+                updateEventNodeStatus(event.id, 'completed');
+                
+                currentIndex++;
+                processNextEvent();
+            }, event.duration);
+        } else {
+            // 所有事件处理完成
+            console.log('All events processed');
+            const modalBody = document.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.innerHTML = `<div class="text-center"><i class="fas fa-check-circle fa-2x text-success mb-3"></i><p>数据生命周期流程处理完成！</p></div>`;
+            }
+            
+            // 2秒后跳转到自动化碳核算页面
+            setTimeout(() => {
+                // 关闭模态框
+                const modal = document.getElementById('dynamicModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                    const modalBackdrop = document.querySelector('.modal-backdrop');
+                    if (modalBackdrop) {
+                        modalBackdrop.remove();
+                    }
+                }
+                
+                // 恢复按钮状态
+                if (nextBtn) {
+                    nextBtn.disabled = false;
+                    nextBtn.innerHTML = '确认无误，下一步 <i class="fas fa-arrow-right ms-1"></i>';
+                }
+                
+                // 跳转到自动化碳核算页面
+                console.log('Calling switchPage with demo-carbon');
+                try {
+                    switchPage('demo-carbon');
+                    console.log('switchPage called successfully');
+                    
+                    // 延迟执行核算操作，确保页面已经加载完成
+                    setTimeout(() => {
+                        console.log('Auto-executing carbon calculation');
+                        const carbonBtn = document.getElementById('carbonBtn');
+                        if (carbonBtn) {
+                            carbonBtn.click();
+                            console.log('Carbon calculation button clicked');
+                            
+                            // 更新核算节点状态为完成
+                            updateEventNodeStatus('event-calculation', 'completed');
+                            
+                            // 延迟跳转到风控检测页面，确保核算操作已经完成
+                            setTimeout(() => {
+                                console.log('Navigating to risk detection page');
+                                switchPage('demo-risk');
+                                
+                                // 延迟执行风控检测操作，确保页面已经加载完成
+                                setTimeout(() => {
+                                    console.log('Auto-executing risk detection');
+                                    const riskBtn = document.getElementById('riskBtn');
+                                    if (riskBtn) {
+                                        riskBtn.click();
+                                        console.log('Risk detection button clicked');
+                                        
+                                        // 更新风控节点状态为完成
+                                        updateEventNodeStatus('event-risk', 'completed');
+                                        
+                                        // 延迟跳转到AI诊断报告页面，确保风控检测操作已经完成
+                                        setTimeout(() => {
+                                            console.log('Navigating to AI report page');
+                                            switchPage('demo-report');
+                                            
+                                            // 延迟执行AI报告生成操作，确保页面已经加载完成
+                                            setTimeout(() => {
+                                                console.log('Auto-executing AI report generation');
+                                                const reportBtn = document.getElementById('reportBtn');
+                                                if (reportBtn) {
+                                                    reportBtn.click();
+                                                    console.log('AI report generation button clicked');
+                                                    
+                                                    // 更新报告节点状态为完成
+                                                    updateEventNodeStatus('event-report', 'completed');
+                                                }
+                                            }, 2000);
+                                        }, 5000);
+                                    }
+                                }, 2000);
+                            }, 3000);
+                        }
+                    }, 2000);
+                } catch (error) {
+                    console.error('Error calling switchPage:', error);
+                }
+            }, 2000);
+        }
+    }
+    
+    // 开始执行事件流
+    processNextEvent();
+}
+
+// 初始化供应链ESG影响分析图表
+function initSupplyChainESGChart() {
+    const chart = echarts.init(document.getElementById('supplyChainESGChart'));
+    
+    // 生成模拟数据
+    const generateData = () => {
+        // 供应商ESG评分（0-100）
+        const suppliers = ['供应商A', '供应商B', '供应商C', '供应商D', '供应商E', '供应商F', '供应商G'];
+        const esgScores = [85, 72, 90, 65, 78, 82, 60];
+        
+        // 下游企业综合表现（基于ESG评分的影响）
+        const companyPerformance = esgScores.map(score => {
+            // 基础表现 + ESG影响
+            return 60 + (score * 0.4) + (Math.random() * 5 - 2.5);
+        });
+        
+        // 范围3排放量（与ESG评分负相关）
+        const scope3Emissions = esgScores.map(score => {
+            return 1000 - (score * 8) + (Math.random() * 100 - 50);
+        });
+        
+        return { suppliers, esgScores, companyPerformance, scope3Emissions };
+    };
+    
+    const data = generateData();
+    
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                crossStyle: {
+                    color: '#999'
+                }
+            }
+        },
+        legend: {
+            data: ['ESG评分', '企业综合表现', '范围3排放量']
+        },
+        xAxis: [
+            {
+                type: 'category',
+                data: data.suppliers,
+                axisPointer: {
+                    type: 'shadow'
+                }
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                name: '评分/表现',
+                min: 0,
+                max: 100,
+                interval: 20,
+                axisLabel: {
+                    formatter: '{value}'
+                }
+            },
+            {
+                type: 'value',
+                name: '范围3排放量 (tCO₂e)',
+                min: 0,
+                max: 1000,
+                interval: 200,
+                axisLabel: {
+                    formatter: '{value}'
+                }
+            }
+        ],
+        series: [
+            {
+                name: 'ESG评分',
+                type: 'bar',
+                data: data.esgScores,
+                itemStyle: {
+                    color: '#4CAF50'
+                }
+            },
+            {
+                name: '企业综合表现',
+                type: 'line',
+                data: data.companyPerformance,
+                itemStyle: {
+                    color: '#2196F3'
+                },
+                lineStyle: {
+                    width: 3
+                },
+                symbol: 'circle',
+                symbolSize: 8
+            },
+            {
+                name: '范围3排放量',
+                type: 'line',
+                yAxisIndex: 1,
+                data: data.scope3Emissions,
+                itemStyle: {
+                    color: '#FF5722'
+                },
+                lineStyle: {
+                    width: 3
+                },
+                symbol: 'circle',
+                symbolSize: 8
+            }
+        ]
+    };
+    
+    chart.setOption(option);
+    
+    // 响应式调整
+    window.addEventListener('resize', function() {
+        chart.resize();
+    });
+}
+
+// 页面加载时初始化供应链ESG图表
+document.addEventListener('DOMContentLoaded', function() {
+    // 当页面切换到demo-carbon时初始化
+    const currentHash = window.location.hash.substring(1);
+    if (currentHash === 'demo-carbon') {
+        setTimeout(initSupplyChainESGChart, 500);
+    }
 });
