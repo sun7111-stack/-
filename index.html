@@ -25,6 +25,7 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="visual-system.js"></script>
     
     <!-- 加载动画 -->
         <style>
@@ -635,14 +636,14 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <!-- 左侧侧边栏 -->
     <aside class="sidebar" id="sidebar">
-        <div style="padding: 10px 12px;">
+        <div class="sidebar-search">
             <input 
                 id="searchInput" 
                 type="text" 
-                placeholder="搜索菜单" 
-                style="width:100%; padding:7px 10px; border:1px solid #ccc; border-radius:6px; background:#fff; font-size:14px; outline:none;"
-                onkeydown="if(event.keyCode===13){var t=this.value.trim().toLowerCase();var m={'首页':'#home','概览':'#home','上传':'#demo-upload','上传识别':'#demo-upload','碳核算':'#demo-carbon','自动化碳核算':'#demo-carbon','风控':'#demo-risk','风控检测':'#demo-risk','诊断':'#demo-report','ai诊断':'#demo-report','ai诊断报告':'#demo-report','产品功能':'#features','esg':'#esg-calculator','esg智能计算器':'#esg-calculator','数据报告':'#data-center','数据报告中心':'#data-center','绿色金融':'#finance-match','绿色金融对接':'#finance-match','解决方案':'#solutions','行业解决方案':'#solutions','案例':'#cases','客户成功案例':'#cases','关于我们':'#about','系统设置':'#settings'};if(m[t])window.location.hash=m[t];else alert('未找到菜单')}"
+                placeholder="搜索页面 / 功能" 
+                autocomplete="off"
             >
+            <div id="searchResults" class="sidebar-search-results" aria-live="polite"></div>
         </div>
 
         <div class="sidebar-menu">
@@ -771,6 +772,45 @@
                         <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#contactModal">
                             <i class="fas fa-phone-alt me-2"></i>联系我们
                         </button>
+                    </div>
+                </div>
+                <div class="col-lg-5 ms-auto d-none d-lg-block">
+                    <div class="hero-insight-panel">
+                        <div class="insight-header">
+                            <div>
+                                <span class="insight-kicker">Carbon Flow</span>
+                                <h3>ESG Data Loop</h3>
+                            </div>
+                            <span class="insight-status">Live</span>
+                        </div>
+                        <div class="insight-metrics">
+                            <div>
+                                <strong>45,820</strong>
+                                <span>tCO2e</span>
+                            </div>
+                            <div>
+                                <strong>86</strong>
+                                <span>ESG Score</span>
+                            </div>
+                            <div>
+                                <strong>A</strong>
+                                <span>Credit</span>
+                            </div>
+                        </div>
+                        <div class="carbon-flow-visual">
+                            <span class="flow-node node-ocr">OCR</span>
+                            <span class="flow-node node-calc">Carbon</span>
+                            <span class="flow-node node-risk">Risk</span>
+                            <span class="flow-node node-finance">Finance</span>
+                            <span class="flow-line line-1"></span>
+                            <span class="flow-line line-2"></span>
+                            <span class="flow-line line-3"></span>
+                        </div>
+                        <div class="insight-bars">
+                            <div><span>Scope 1</span><i style="--v: 42%"></i></div>
+                            <div><span>Scope 2</span><i style="--v: 76%"></i></div>
+                            <div><span>Scope 3</span><i style="--v: 58%"></i></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3023,7 +3063,7 @@
             
             <!-- 区块链证书弹窗 -->
             <div class="modal fade" id="blockchainCertificateModal" tabindex="-1" aria-labelledby="blockchainCertificateModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content">
                         <div class="modal-header bg-primary text-white">
                             <h5 class="modal-title" id="blockchainCertificateModalLabel">
@@ -3744,6 +3784,115 @@ document.addEventListener('DOMContentLoaded', function () {
         activePanel.style.display = 'block';
       }
     });
+  });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const input = document.getElementById('searchInput');
+  const panel = document.getElementById('searchResults');
+  if (!input || !panel) return;
+
+  const aliases = {
+    home: ['home', 'index', 'dashboard', 'overview', '首页', '概览', '驾驶舱'],
+    'demo-upload': ['upload', 'ocr', 'invoice', 'file', '上传', '识别', '票据', '凭证'],
+    'demo-carbon': ['carbon', 'calc', 'accounting', '碳', '核算', '排放', '自动化'],
+    'demo-risk': ['risk', 'scan', 'warning', '风控', '风险', '检测', '扫描'],
+    'demo-report': ['report', 'ai', 'diagnosis', '报告', '诊断', '生成'],
+    features: ['feature', 'product', '功能', '产品'],
+    'esg-calculator': ['esg', 'calculator', 'score', '计算器', '评分'],
+    'data-center': ['data', 'center', 'report center', '数据', '报表', '报告中心'],
+    'finance-match': ['finance', 'loan', 'green finance', '金融', '融资', '绿色金融', '对接'],
+    solutions: ['solution', 'industry', '方案', '行业'],
+    cases: ['case', 'customer', '案例', '客户'],
+    about: ['about', '关于', '我们'],
+    settings: ['setting', 'settings', 'system', '设置', '系统']
+  };
+
+  function pageFromLink(link) {
+    const item = link.closest('.menu-item');
+    return item?.getAttribute('data-page') || link.getAttribute('href')?.replace('#', '') || '';
+  }
+
+  function collectItems() {
+    return Array.from(document.querySelectorAll('.sidebar .menu-link')).map(link => {
+      const page = pageFromLink(link);
+      const label = (link.querySelector('span')?.textContent || link.textContent || '').trim();
+      const group = (link.closest('ul.sub')?.previousElementSibling?.textContent || '导航').replace(/\s+/g, ' ').trim();
+      const icon = link.querySelector('i')?.className || 'fas fa-circle';
+      const terms = [label, group, page, ...(aliases[page] || [])].join(' ').toLowerCase();
+      return { page, label, group, icon, terms, link };
+    }).filter(item => item.page && item.label);
+  }
+
+  let items = collectItems();
+  let currentResults = [];
+
+  function go(item) {
+    if (!item) return;
+    panel.classList.remove('open');
+    input.value = '';
+    if (typeof switchPage === 'function') {
+      switchPage(item.page);
+      window.location.hash = item.page;
+    } else {
+      item.link.click();
+    }
+  }
+
+  function render(query) {
+    const q = query.trim().toLowerCase();
+    if (!q) {
+      panel.classList.remove('open');
+      panel.innerHTML = '';
+      currentResults = [];
+      return;
+    }
+
+    items = collectItems();
+    currentResults = items
+      .map(item => ({ item, score: item.terms.includes(q) ? 2 : (q.split(/\s+/).every(part => item.terms.includes(part)) ? 1 : 0) }))
+      .filter(result => result.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map(result => result.item);
+
+    panel.classList.add('open');
+    if (!currentResults.length) {
+      panel.innerHTML = '<div class="search-empty">未找到匹配功能，试试“碳核算 / 风控 / ESG / 报告 / 金融”。</div>';
+      return;
+    }
+
+    panel.innerHTML = currentResults.map((item, index) => `
+      <button type="button" class="search-result-item${index === 0 ? ' active' : ''}" data-page="${item.page}">
+        <i class="${item.icon}"></i>
+        <span>
+          <span class="search-result-main">${item.label}</span>
+          <span class="search-result-sub">${item.group}</span>
+        </span>
+      </button>
+    `).join('');
+  }
+
+  input.addEventListener('input', () => render(input.value));
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      go(currentResults[0]);
+    }
+    if (event.key === 'Escape') {
+      panel.classList.remove('open');
+    }
+  });
+
+  panel.addEventListener('click', event => {
+    const button = event.target.closest('.search-result-item');
+    if (!button) return;
+    go(currentResults.find(item => item.page === button.dataset.page));
+  });
+
+  document.addEventListener('click', event => {
+    if (!event.target.closest('.sidebar-search')) panel.classList.remove('open');
   });
 });
 </script>
