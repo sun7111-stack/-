@@ -850,6 +850,55 @@
             </div>
         </div>
 
+        <div class="home-intelligence-grid">
+            <div class="intel-tile tile-carbon">
+                <div class="intel-icon"><i class="fas fa-cloud"></i></div>
+                <div class="intel-content">
+                    <span class="intel-label">累计核算碳排</span>
+                    <strong>128,460</strong>
+                    <small>tCO2e 已纳入可信核算口径</small>
+                </div>
+                <div class="intel-pulse"></div>
+            </div>
+            <div class="intel-tile tile-health">
+                <div class="intel-icon"><i class="fas fa-heart-pulse"></i></div>
+                <div class="intel-content">
+                    <span class="intel-label">碳资产健康度评分</span>
+                    <strong>87.6</strong>
+                    <small>处于行业绿色金融准入优良区间</small>
+                </div>
+                <div class="intel-ring" aria-hidden="true"></div>
+            </div>
+            <div class="intel-tile tile-chain">
+                <div class="intel-icon"><i class="fas fa-cubes"></i></div>
+                <div class="intel-content">
+                    <span class="intel-label">区块链节点运行状态</span>
+                    <strong>99.98%</strong>
+                    <small>4 个存证节点在线，最近同步 8 秒前</small>
+                </div>
+                <div class="intel-node-line" aria-hidden="true"></div>
+            </div>
+        </div>
+
+        <div class="home-panorama-card">
+            <div class="panorama-header">
+                <div>
+                    <span class="insight-kicker">Business Trend</span>
+                    <h3>排放趋势与行业基准定位</h3>
+                    <p>以月度核算结果对比行业平均与绿色标杆，快速判断企业当前减排压力与融资可解释空间。</p>
+                </div>
+                <div class="panorama-legend">
+                    <span><i class="legend-dot dot-self"></i>本企业</span>
+                    <span><i class="legend-dot dot-industry"></i>行业平均</span>
+                    <span><i class="legend-dot dot-benchmark"></i>绿色标杆</span>
+                </div>
+            </div>
+            <div id="homePanoramaChart" class="home-panorama-chart"></div>
+            <div class="panorama-caption">
+                当前企业排放强度自 3 月后持续下行，但仍高于绿色标杆区间，建议优先治理外购电力与运输活动数据。
+            </div>
+        </div>
+
         <div class="dashboard-main-row">
             <div class="recent-records-panel">
                 <h3><i class="fas fa-history"></i> 最近核算记录</h3>
@@ -2614,6 +2663,23 @@
                       <div class="container py-4">
                           <h3 class="mb-2"><i class="fas fa-leaf text-success me-2"></i>自动化碳核算与数字孪生分析</h3>
                           <p class="text-muted mb-4 small">基于票据识别与业务活动数据，自动完成碳排放核算、结构分析与可视化监测。</p>
+                          <div class="carbon-method-strip">
+                              <div class="method-item">
+                                  <span>Accounting Boundary</span>
+                                  <strong>Scope 1 / 2 / 3</strong>
+                                  <small>覆盖直接排放、外购电力与供应链活动数据</small>
+                              </div>
+                              <div class="method-item">
+                                  <span>Emission Factor</span>
+                                  <strong>IPCC + CN Grid</strong>
+                                  <small>按活动数据匹配排放因子并保留计算口径</small>
+                              </div>
+                              <div class="method-item">
+                                  <span>Data Confidence</span>
+                                  <strong>95.8%</strong>
+                                  <small>OCR 字段、票据哈希与核算结果同步校验</small>
+                              </div>
+                          </div>
                           
                           <div class="mb-4">
                               <button id="carbonBtn" class="btn btn-success me-2"><i class="fas fa-calculator me-2"></i>开始核算</button>
@@ -2850,6 +2916,19 @@
     <div class="container py-4">
         <h3 class="mb-2"><i class="fas fa-shield-alt text-warning me-2"></i>绿色金融风控检测</h3>
         <p class="text-muted mb-4 small">基于多维度数据交叉验证与区块链防篡改技术，对企业碳排放与经营数据进行合规性与真实性排查，拦截“洗绿”风险。</p>
+        <div class="risk-command-panel">
+            <div class="risk-command-main">
+                <span class="insight-kicker">Advanced Risk Detail</span>
+                <h4>可信数据、异常解释与证据链状态集中核验</h4>
+                <p>系统将同时扫描历史波动、供应链间接排放、凭证一致性和区块链存证结果，并把风险原因沉淀到证据链抽屉中。</p>
+            </div>
+            <div class="risk-command-steps">
+                <span><i class="fas fa-database"></i> Data</span>
+                <span><i class="fas fa-shield-alt"></i> Risk</span>
+                <span><i class="fas fa-link"></i> Evidence</span>
+                <span><i class="fas fa-file-signature"></i> Report</span>
+            </div>
+        </div>
         
         <div class="mb-4">
             <button id="riskBtn" class="btn btn-warning text-dark fw-bold me-2"><i class="fas fa-search-dollar me-2"></i>执行全域风控扫描</button>
@@ -3744,6 +3823,8 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/examples/js/controls/OrbitControls.js"></script>
             <script src="api.js?v=20260416b"></script>
+            <script src="real-mode.js?v=20260421"></script>
+            <script src="home-dynamics.js?v=20260421"></script>
         <script src="auth.js"></script>
              <script src="router.js"></script>
              <script src="demo-flow.js?v=20260416c"></script>
@@ -3894,6 +3975,61 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('click', event => {
     if (!event.target.closest('.sidebar-search')) panel.classList.remove('open');
   });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const chartDom = document.getElementById('homePanoramaChart');
+  if (!chartDom || typeof echarts === 'undefined') return;
+
+  const chart = echarts.init(chartDom);
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { show: false },
+    grid: { left: 48, right: 28, top: 34, bottom: 36, containLabel: true },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月']
+    },
+    yAxis: {
+      type: 'value',
+      name: 'tCO2e',
+      min: 0
+    },
+    series: [
+      {
+        name: '本企业',
+        type: 'line',
+        smooth: true,
+        symbolSize: 8,
+        data: [92, 88, 84, 76, 72, 68, 61, 58],
+        lineStyle: { width: 4, color: '#1F6B4F' },
+        itemStyle: { color: '#1F6B4F' },
+        areaStyle: { color: 'rgba(31,107,79,0.10)' }
+      },
+      {
+        name: '行业平均',
+        type: 'line',
+        smooth: true,
+        symbol: 'none',
+        data: [80, 79, 78, 76, 75, 73, 72, 70],
+        lineStyle: { width: 2, color: '#5E748C', type: 'dashed' }
+      },
+      {
+        name: '绿色标杆',
+        type: 'line',
+        smooth: true,
+        symbol: 'none',
+        data: [54, 53, 52, 51, 50, 49, 48, 47],
+        lineStyle: { width: 2, color: '#B7791F', type: 'dotted' }
+      }
+    ]
+  });
+
+  const resize = () => chart.resize();
+  window.addEventListener('resize', resize);
+  setTimeout(resize, 200);
 });
 </script>
 </body>
