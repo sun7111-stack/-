@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 
 # 导入所有路由
-from routers import auth, carbon, esg, finance, reports, ocr, enterprise, carbon_manage, dashboard, risk, flow, forecast
+from routers import auth, carbon, esg, finance, reports, ocr, enterprise, carbon_manage, dashboard, risk, flow, forecast, system
 
 # 创建FastAPI应用
 app = FastAPI(
@@ -55,6 +55,7 @@ app.include_router(dashboard.router)
 app.include_router(risk.router)
 app.include_router(flow.router)
 app.include_router(forecast.router)
+app.include_router(system.router)
 
 
 # 根路径

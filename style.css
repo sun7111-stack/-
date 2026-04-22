@@ -9263,6 +9263,26 @@ code {
     border-color: rgba(255, 190, 92, 0.28);
 }
 
+.real-mode-status .warn {
+    color: #8a5a00;
+    background: rgba(255, 190, 92, 0.14);
+    border-color: rgba(255, 190, 92, 0.28);
+}
+
+.real-mode-status.warning .ok,
+.real-mode-status.checking .ok {
+    color: #0f6b4f;
+    background: rgba(31, 107, 79, 0.1);
+    border-color: rgba(31, 107, 79, 0.18);
+}
+
+.real-mode-status.warning .bad,
+.real-mode-status.checking .bad {
+    color: #b42318;
+    background: rgba(244, 63, 94, 0.1);
+    border-color: rgba(244, 63, 94, 0.18);
+}
+
 .real-mode-body {
     display: grid;
     grid-template-columns: minmax(240px, 0.95fr) minmax(320px, 1.6fr);

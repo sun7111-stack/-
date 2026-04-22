@@ -1,9 +1,9 @@
-// Real Mode keeps the runnable API-backed flow separate from the visual demo flow.
+﻿// Real Mode keeps the runnable API-backed flow separate from the visual demo flow.
 (function () {
   const RealMode = {
     state: {
       mode: 'real',
-      health: {},
+      health: null,
       steps: [],
       lastRun: null,
       running: false,
@@ -17,7 +17,6 @@
       file: 'realVoucherFile',
       check: 'realModeCheckBtn',
       run: 'realModeRunBtn',
-      demo: 'demoModeHintBtn',
     },
 
     apiRoot() {
@@ -26,13 +25,12 @@
     },
 
     async request(path, options = {}) {
-      if (!window.API) throw new Error('前端 API 对象未加载，请确认 api.js 已引入');
+      if (!window.API) throw new Error('前端 API 对象未加载，请确认 api.js 已引入。');
       if (path.startsWith('/api/')) {
-        const base = this.apiRoot();
-        const headers = options.headers || {};
+        const headers = { ...(options.headers || {}) };
         const token = API.getToken && API.getToken();
         if (token) headers.Authorization = `Bearer ${token}`;
-        const response = await fetch(`${base}${path}`, { ...options, headers });
+        const response = await fetch(`${this.apiRoot()}${path}`, { ...options, headers });
         const data = await this.readResponse(response);
         if (!response.ok) throw new Error(this.toErrorText(data, `请求失败：${path}`));
         return data;
@@ -68,6 +66,23 @@
       return n.toLocaleString('zh-CN', { maximumFractionDigits: digits });
     },
 
+    friendlyError(error) {
+      const message = String(error?.message || error || '未知错误');
+      if (/Failed to fetch|无法连接|NetworkError/i.test(message)) {
+        return '无法连接后端服务。请先在 backend 目录启动：python main.py，然后刷新页面重试。';
+      }
+      if (/401|Not authenticated|Could not validate credentials|认证/i.test(message)) {
+        return '登录状态失效或 demo 账号不可用，请确认 demo@carbon-ai.com / demo123 存在。';
+      }
+      if (/404|Not Found/i.test(message)) {
+        return '后端接口不存在。请重启后端，让新增的真实模式健康检查接口生效。';
+      }
+      if (/500|Internal Server Error/i.test(message)) {
+        return `后端内部错误：${message}`;
+      }
+      return message;
+    },
+
     markStep(key, label, status, detail = '') {
       const existing = this.state.steps.find(step => step.key === key);
       const next = { key, label, status, detail, time: new Date().toLocaleTimeString('zh-CN') };
@@ -76,18 +91,18 @@
       this.renderSteps();
     },
 
-    setStatus(kind, text) {
+    setStatus(kind, html) {
       const el = document.getElementById(this.selectors.status);
       if (!el) return;
       el.className = `real-mode-status ${kind}`;
-      el.innerHTML = text;
+      el.innerHTML = html;
     },
 
     renderSteps() {
       const el = document.getElementById(this.selectors.steps);
       if (!el) return;
       if (!this.state.steps.length) {
-        el.innerHTML = '<div class="real-step muted">尚未运行真实闭环。点击“运行真实闭环”后，每一步都会显示真实接口状态。</div>';
+        el.innerHTML = '<div class="real-step muted">尚未运行真实闭环。点击“检查真实服务”会先确认数据库、OCR、因子库、证据链和报告服务。</div>';
         return;
       }
       el.innerHTML = this.state.steps.map(step => `
@@ -108,7 +123,7 @@
         el.innerHTML = `
           <div class="real-result-empty">
             <strong>真实链路凭证区</strong>
-            <span>这里会显示 record_id、analysis_id、tx_id、Merkle Root 等后端返回证据。</span>
+            <span>运行后会展示 record_id、analysis_id、tx_id、Merkle Root 等后端真实返回证据。</span>
           </div>
         `;
         return;
@@ -148,37 +163,88 @@
         </div>
         <div class="real-report-preview">
           <strong>AI 报告摘要</strong>
-          <p>${this.escape(report.executive_summary || '报告接口已返回，但没有摘要字段。')}</p>
+          <p>${this.escape(report.executive_summary || report.summary || '报告接口已返回，但没有摘要字段。')}</p>
         </div>
       `;
     },
 
-    async checkHealth() {
-      this.setStatus('checking', '正在检查真实服务...');
-      const checks = [
-        ['后端', () => fetch(`${this.apiRoot()}/health`).then(async r => ({ ok: r.ok, data: await this.readResponse(r) }))],
-        ['OCR', () => API.get('/ocr/health').then(data => ({ ok: true, data }))],
-        ['因子库', () => API.getEmissionFactors().then(data => ({ ok: Array.isArray(data) && data.length > 0, data }))],
-        ['行业基准', () => API.getIndustryBenchmarks().then(data => ({ ok: Array.isArray(data) && data.length > 0, data }))],
-      ];
+    normalizeHealth(payload) {
+      if (payload?.checks?.length) return payload;
+      const checks = Object.entries(payload || {}).map(([name, item]) => ({
+        key: name,
+        name,
+        ok: !!item.ok,
+        required: true,
+        detail: item.ok ? '在线' : (item.error || '异常'),
+        meta: item.data || {},
+      }));
+      const requiredOk = checks.every(item => item.ok);
+      return {
+        status: requiredOk ? 'ok' : 'blocked',
+        message: requiredOk ? '真实模式依赖已就绪' : '真实模式关键依赖未就绪',
+        checks,
+      };
+    },
 
-      const results = {};
-      for (const [name, fn] of checks) {
-        try {
-          const res = await fn();
-          results[name] = { ok: !!res.ok, data: res.data };
-        } catch (error) {
-          results[name] = { ok: false, error: error.message };
-        }
+    renderHealth(payload) {
+      const normalized = this.normalizeHealth(payload);
+      const chips = normalized.checks.map(item => {
+        const cls = item.ok ? (item.meta?.mock_mode ? 'warn' : 'ok') : 'bad';
+        const label = item.ok ? (item.meta?.mock_mode ? '降级' : '正常') : '异常';
+        return `<span class="${cls}" title="${this.escape(item.detail)}">${this.escape(item.name)} ${label}</span>`;
+      }).join('');
+
+      const kind = normalized.status === 'ok' ? 'ok' : normalized.status === 'blocked' ? 'bad' : 'warning';
+      this.setStatus(kind, `${chips}<span>${this.escape(normalized.message || '')}</span>`);
+      this.state.health = normalized;
+      return normalized;
+    },
+
+    async checkHealth(options = {}) {
+      const { strict = false } = options;
+      this.setStatus('checking', '<span>正在检查真实服务...</span>');
+
+      let health;
+      try {
+        health = await API.get('/system/real-mode-health');
+      } catch (error) {
+        // Backward-compatible fallback for an old backend process that has not been restarted yet.
+        health = await this.legacyHealthCheck();
       }
 
-      this.state.health = results;
-      const okCount = Object.values(results).filter(item => item.ok).length;
-      const chips = Object.entries(results).map(([name, item]) => `
-        <span class="${item.ok ? 'ok' : 'bad'}">${this.escape(name)} ${item.ok ? '在线' : '异常'}</span>
-      `).join('');
-      this.setStatus(okCount === checks.length ? 'ok' : 'warning', `${chips}`);
-      return results;
+      const normalized = this.renderHealth(health);
+      if (strict) {
+        const blocking = normalized.checks.filter(item => item.required !== false && !item.ok);
+        if (blocking.length) {
+          throw new Error(`真实模式未就绪：${blocking.map(item => `${item.name} ${item.detail}`).join('；')}`);
+        }
+      }
+      return normalized;
+    },
+
+    async legacyHealthCheck() {
+      const checks = [
+        ['backend', '后端', () => fetch(`${this.apiRoot()}/health`).then(async r => ({ ok: r.ok, data: await this.readResponse(r) }))],
+        ['ocr', 'OCR', () => API.get('/ocr/health').then(data => ({ ok: true, data }))],
+        ['factor_library', '排放因子库', () => API.getEmissionFactors().then(data => ({ ok: Array.isArray(data) && data.length > 0, data }))],
+        ['benchmarks', '行业基准', () => API.getIndustryBenchmarks().then(data => ({ ok: Array.isArray(data) && data.length > 0, data }))],
+      ];
+
+      const results = [];
+      for (const [key, name, fn] of checks) {
+        try {
+          const res = await fn();
+          results.push({ key, name, ok: !!res.ok, required: true, detail: res.ok ? '在线' : '返回为空', meta: res.data || {} });
+        } catch (error) {
+          results.push({ key, name, ok: false, required: true, detail: this.friendlyError(error), meta: {} });
+        }
+      }
+      const requiredOk = results.every(item => item.ok);
+      return {
+        status: requiredOk ? 'warning' : 'blocked',
+        message: requiredOk ? '旧版健康检查通过；建议重启后端启用详细自检' : '真实模式关键依赖未就绪',
+        checks: results,
+      };
     },
 
     async ensureLogin() {
@@ -199,12 +265,7 @@
 
     async getOcrResult(file) {
       this.markStep('ocr', '票据识别', 'running', file ? `上传 ${file.name}` : '使用后端示例票据');
-      let ocr;
-      if (file) {
-        ocr = await API.recognizeOCR(file);
-      } else {
-        ocr = await API.getOCRSample('electricity');
-      }
+      const ocr = file ? await API.recognizeOCR(file) : await API.getOCRSample('electricity');
       if (ocr.success === false) throw new Error(ocr.message || 'OCR 识别失败');
       const data = ocr.data || ocr;
       this.markStep('ocr', '票据识别', 'done', `${data.doc_type || 'voucher'} · ${(Number(data.confidence || 0) * 100).toFixed(1)}%`);
@@ -251,7 +312,7 @@
       return { carbon, payload };
     },
 
-    async detectRisk(ocr, carbon, carbonPayload) {
+    async detectRisk(ocr, carbon) {
       this.markStep('risk', '风控检测', 'running', '调用 /risk/detect');
       const data = ocr.data || ocr;
       const amount = this.getMainAmount(data.fields || {});
@@ -297,7 +358,7 @@
     },
 
     async verifyEvidence(evidence, carbon) {
-      this.markStep('verify', '证据链核验', 'running', '查询链路与核验证明');
+      this.markStep('verify', '证据链核验', 'running', '查询链路并核验哈希');
       const analysisId = String(evidence.analysis_id || carbon.analysis_id || '');
       const chain = await API.getEvidenceChain(analysisId);
       const verify = await API.verifyEvidence({ analysis_id: analysisId });
@@ -321,7 +382,7 @@
         evidence_chain_length: Array.isArray(chain.timeline) ? chain.timeline.length : 0,
         esg_score: 82,
       });
-      this.markStep('report', 'AI 诊断报告', 'done', report.is_mock ? '报告模型处于 mock 降级' : (report.model_used || 'real/model'));
+      this.markStep('report', 'AI 诊断报告', 'done', report.is_mock ? '报告模型处于 mock/降级' : (report.model_used || 'real/model'));
       return report;
     },
 
@@ -332,16 +393,16 @@
       this.renderSteps();
       this.renderResult(null);
       this.setRunDisabled(true);
-      this.setStatus('checking', '真实闭环运行中，不会自动伪装成 mock 成功...');
+      this.setStatus('checking', '<span>真实闭环运行中，不会自动伪装成 mock 成功...</span>');
 
       try {
-        await this.checkHealth();
+        await this.checkHealth({ strict: true });
         await this.ensureLogin();
         const fileInput = document.getElementById(this.selectors.file);
         const file = fileInput?.files?.[0] || null;
         const ocr = await this.getOcrResult(file);
-        const { carbon, payload: carbonPayload } = await this.calculateCarbon(ocr);
-        const risk = await this.detectRisk(ocr, carbon, carbonPayload);
+        const { carbon } = await this.calculateCarbon(ocr);
+        const risk = await this.detectRisk(ocr, carbon);
         const evidence = await this.storeEvidence(ocr, carbon, risk);
         const evidenceInfo = await this.verifyEvidence(evidence, carbon);
         const report = await this.generateReport(carbon, risk, { ...evidenceInfo, evidence });
@@ -362,9 +423,10 @@
         this.renderResult(lastRun);
         this.setStatus('ok', '<span class="ok">真实闭环完成</span><span class="ok">已写入数据库/证据链</span><span class="ok">可用于答辩展示</span>');
       } catch (error) {
+        const text = this.friendlyError(error);
         console.error('[RealMode] flow failed', error);
-        this.markStep('failed', '真实闭环中断', 'failed', error.message);
-        this.setStatus('bad', `<span class="bad">真实模式失败</span><span>${this.escape(error.message)}</span><span>未自动切换 mock</span>`);
+        this.markStep('failed', '真实闭环中断', 'failed', text);
+        this.setStatus('bad', `<span class="bad">真实模式失败</span><span>${this.escape(text)}</span><span>未自动切换 mock</span>`);
       } finally {
         this.state.running = false;
         this.setRunDisabled(false);
@@ -389,7 +451,7 @@
         <div class="real-mode-copy">
           <span class="real-mode-kicker">Real Mode · API Backed</span>
           <h3>真实运行链路</h3>
-          <p>这条链路独立于 DemoState：成功结果必须来自后端 API、MySQL 记录和证据链返回。</p>
+          <p>这条链路独立于 Mock 演示：成功结果必须来自后端 API、数据库记录和证据链返回。</p>
         </div>
         <div class="real-mode-actions">
           <label class="real-file-picker">
@@ -406,7 +468,7 @@
         </div>
         <div id="${this.selectors.status}" class="real-mode-status idle">
           <span>真实模式待检查</span>
-          <span>演示模式仍保留，但不会混入这里</span>
+          <span>Mock 演示仍保留，但不会混入这里</span>
         </div>
         <div class="real-mode-body">
           <div id="${this.selectors.steps}" class="real-mode-steps"></div>
