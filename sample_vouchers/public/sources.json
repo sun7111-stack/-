@@ -1,0 +1,34 @@
+﻿[
+  {
+    "file": "pucn_sample_electric_bill.pdf",
+    "type": "electricity_bill",
+    "recommended": true,
+    "expected_activity_type": "electricity",
+    "expected_amount": 350,
+    "expected_unit": "kWh",
+    "source": "https://puc.nv.gov/uploadedFiles/pucnvgov/Content/Utilities/MHP/SampleElectricBill.pdf"
+  },
+  {
+    "file": "pucn_sample_gas_bill.pdf",
+    "type": "natural_gas_bill",
+    "recommended": true,
+    "expected_activity_type": "natural_gas",
+    "expected_amount": 88,
+    "expected_unit": "therm",
+    "source": "https://puc.nv.gov/uploadedFiles/pucnvgov/Content/Utilities/MHP/SampleGasBill.pdf"
+  },
+  {
+    "file": "gov_cn_vat_e_invoice_sample.pdf",
+    "type": "vat_invoice_sample",
+    "recommended": false,
+    "note": "Official invoice layout sample. Useful for OCR layout demo, not a direct carbon activity voucher.",
+    "source": "https://www.gov.cn/zhengce/zhengceku/2020-12/21/5571923/files/0f2ec1eae0d842b1b70650f95631767c.pdf"
+  },
+  {
+    "file": "epa_sample_electric_bill.pdf",
+    "type": "electricity_bill_reference",
+    "recommended": false,
+    "note": "Public reference document. The current simple parser may extract a non-core kWh value from this complex document.",
+    "source": "https://www.epa.gov/sites/default/files/2015-06/documents/sample-elec-bill.pdf"
+  }
+]

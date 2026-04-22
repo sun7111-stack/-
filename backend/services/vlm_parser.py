@@ -45,6 +45,10 @@ settings = OCRSettings()
 
 class VLMParser:
     @staticmethod
+    def _to_float(value: str) -> float:
+        return float(str(value).replace(",", "").strip())
+
+    @staticmethod
     def _normalize_activity_type(value: Optional[str]) -> str:
         if value in settings.ACTIVITY_TYPES:
             return value
@@ -106,14 +110,42 @@ class VLMParser:
 
         combined = filename.lower() + " " + (raw_text.lower() if raw_text else "")
 
-        if any(x in combined for x in ["电", "electricity", "kwh", "用电"]):
+        if any(x in combined for x in ["electricity", "kwh", "用电", "电费", "电量"]):
             result["doc_type"] = "electricity_bill"
             result["suggested_activity_type"] = "electricity"
             result["confidence"] = 0.75
             match = re.search(r"(\d+\.?\d*)\s*[kK][wW][hH]", raw_text or "")
+            if not match:
+                for pattern in [
+                    r"usage\s*\([^)]*kwh[^)]*\)\s*=\s*([\d,]+\.?\d*)",
+                    r"usage\s+in\s+kwh\s+([\d,]+\.?\d*)",
+                    r"monthly\s+usage\s+in\s+kwh\s+([\d,]+\.?\d*)",
+                    r"kwh[^0-9]{0,20}([\d,]+\.?\d*)",
+                ]:
+                    match = re.search(pattern, raw_text or "", re.IGNORECASE)
+                    if match:
+                        break
             if match:
-                result["fields"]["amount"] = float(match.group(1))
+                result["fields"]["amount"] = VLMParser._to_float(match.group(1))
                 result["fields"]["unit"] = "kWh"
+                result["confidence"] = 0.85
+        elif any(x in combined for x in ["natural gas", "gas bill", "therm", "天然气"]):
+            result["doc_type"] = "natural_gas_bill"
+            result["suggested_activity_type"] = "natural_gas"
+            result["confidence"] = 0.75
+            match = None
+            for pattern in [
+                r"usage\s*\([^)]*therms?[^)]*\)\s*=\s*([\d,]+\.?\d*)",
+                r"usage\s+in\s+therms?\s+([\d,]+\.?\d*)",
+                r"therms?[^0-9]{0,20}([\d,]+\.?\d*)",
+                r"(\d+\.?\d*)\s*(?:m3|m³|立方米)",
+            ]:
+                match = re.search(pattern, raw_text or "", re.IGNORECASE)
+                if match:
+                    break
+            if match:
+                result["fields"]["amount"] = VLMParser._to_float(match.group(1))
+                result["fields"]["unit"] = "therm"
                 result["confidence"] = 0.85
         elif any(x in combined for x in ["运输", "logistics", "物流", "km", "公里"]):
             result["doc_type"] = "logistics_bill"
@@ -130,8 +162,10 @@ class VLMParser:
             result["suggested_activity_type"] = "diesel"
             result["confidence"] = 0.75
             match = re.search(r"(\d+\.?\d*)\s*[升L]", raw_text or "")
+            if not match:
+                match = re.search(r"([\d,]+\.?\d*)\s*(?:liters?|litres?|l|gallons?|gal)\b", raw_text or "", re.IGNORECASE)
             if match:
-                result["fields"]["amount"] = float(match.group(1))
+                result["fields"]["amount"] = VLMParser._to_float(match.group(1))
                 result["fields"]["unit"] = "L"
                 result["confidence"] = 0.85
 
