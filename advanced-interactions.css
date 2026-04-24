@@ -1,0 +1,398 @@
+/* System-level interaction layer: motion, command access, active state, and tactile surfaces. */
+:root {
+    --ix: 50vw;
+    --iy: 50vh;
+    --interaction-ink: #10231d;
+    --interaction-muted: #64748b;
+    --interaction-green: #1f7a59;
+    --interaction-cyan: #3aa0a8;
+    --interaction-line: rgba(31, 107, 79, 0.15);
+    --interaction-panel: rgba(255, 255, 255, 0.82);
+}
+
+.experience-aura {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(520px circle at var(--ix) var(--iy), rgba(31, 122, 89, 0.10), transparent 58%),
+        linear-gradient(110deg, rgba(58, 160, 168, 0.035), transparent 42%);
+    mix-blend-mode: multiply;
+}
+
+.app-main,
+.app-body,
+.main-content,
+.sidebar,
+.top-navbar {
+    position: relative;
+}
+
+.app-main,
+.app-body,
+.main-content {
+    z-index: 1;
+}
+
+.interaction-progress {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 9998;
+    height: 3px;
+    background: rgba(31, 107, 79, 0.08);
+    pointer-events: none;
+}
+
+.interaction-progress i {
+    display: block;
+    width: var(--scroll-progress, 0%);
+    height: 100%;
+    background: linear-gradient(90deg, var(--interaction-green), var(--interaction-cyan), #bd7d28);
+    box-shadow: 0 0 18px rgba(31, 122, 89, 0.35);
+    transition: width 0.12s ease;
+}
+
+.interaction-route-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 7px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 12px;
+    font-weight: 700;
+    backdrop-filter: blur(16px);
+}
+
+.interaction-route-chip i {
+    color: #9be7d8;
+}
+
+.menu-link {
+    position: relative;
+    isolation: isolate;
+}
+
+.menu-link::before {
+    content: "";
+    position: absolute;
+    inset: 6px 8px;
+    z-index: -1;
+    border-radius: 10px;
+    background:
+        radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(31, 122, 89, 0.16), transparent 48%),
+        rgba(31, 122, 89, 0.04);
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.menu-link:hover::before,
+.menu-item.active .menu-link::before {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.menu-item.active .menu-link {
+    box-shadow: inset 3px 0 0 var(--interaction-green);
+}
+
+.advanced-surface {
+    position: relative;
+    overflow: hidden;
+}
+
+.advanced-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.58), transparent 46%);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+.advanced-surface:hover::after {
+    opacity: 1;
+}
+
+.page-section {
+    transform-origin: 50% 18%;
+}
+
+body.page-switching .page-section.active {
+    animation: interactionPageIn 0.34s ease both;
+}
+
+@keyframes interactionPageIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.992);
+        filter: blur(3px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+.interaction-dock {
+    position: fixed;
+    right: 26px;
+    bottom: 26px;
+    z-index: 9990;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.interaction-dock-panel {
+    width: 296px;
+    padding: 14px;
+    border: 1px solid var(--interaction-line);
+    border-radius: 14px;
+    background: var(--interaction-panel);
+    box-shadow: 0 22px 60px rgba(16, 35, 29, 0.16);
+    backdrop-filter: blur(22px);
+    transform: translateY(10px) scale(0.98);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.interaction-dock.open .interaction-dock-panel {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.interaction-dock-trigger {
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(31, 107, 79, 0.2);
+    border-radius: 14px;
+    background: linear-gradient(145deg, #ffffff, #edf7f2);
+    color: var(--interaction-green);
+    box-shadow: 0 18px 36px rgba(16, 35, 29, 0.14);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.interaction-dock-trigger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 24px 48px rgba(16, 35, 29, 0.18);
+}
+
+.dock-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.dock-title strong {
+    display: block;
+    color: var(--interaction-ink);
+    font-size: 15px;
+}
+
+.dock-title span {
+    color: var(--interaction-muted);
+    font-size: 12px;
+}
+
+.dock-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.dock-shortcuts button,
+.palette-result {
+    border: 1px solid rgba(31, 107, 79, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.68);
+    color: #23443a;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.dock-shortcuts button {
+    min-height: 40px;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.dock-shortcuts button:hover,
+.palette-result:hover,
+.palette-result.active {
+    background: #edf7f2;
+    border-color: rgba(31, 122, 89, 0.28);
+    transform: translateY(-1px);
+}
+
+.interaction-palette {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-items: start center;
+    padding-top: 11vh;
+    background: rgba(9, 22, 19, 0.34);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.16s ease;
+}
+
+.interaction-palette.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.palette-card {
+    width: min(640px, calc(100vw - 32px));
+    border: 1px solid rgba(255, 255, 255, 0.54);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.22);
+    overflow: hidden;
+    transform: translateY(-8px);
+    transition: transform 0.18s ease;
+}
+
+.interaction-palette.open .palette-card {
+    transform: translateY(0);
+}
+
+.palette-input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(31, 107, 79, 0.12);
+}
+
+.palette-input-row i {
+    color: var(--interaction-green);
+}
+
+.palette-input-row input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--interaction-ink);
+    font-size: 16px;
+}
+
+.palette-results {
+    max-height: 360px;
+    overflow: auto;
+    padding: 10px;
+}
+
+.palette-result {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 48px;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.palette-result i {
+    width: 22px;
+    color: var(--interaction-green);
+}
+
+.palette-result strong {
+    display: block;
+    color: var(--interaction-ink);
+    font-size: 14px;
+}
+
+.palette-result span {
+    display: block;
+    color: var(--interaction-muted);
+    font-size: 12px;
+}
+
+.route-flash {
+    position: fixed;
+    left: 50%;
+    top: 74px;
+    z-index: 9997;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--interaction-line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.86);
+    color: var(--interaction-ink);
+    box-shadow: 0 14px 34px rgba(16, 35, 29, 0.12);
+    backdrop-filter: blur(18px);
+    transform: translate(-50%, -8px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.route-flash.show {
+    animation: routeFlash 1.25s ease both;
+}
+
+@keyframes routeFlash {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -8px);
+    }
+    16%, 72% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .advanced-surface::after,
+    .experience-aura,
+    .route-flash,
+    body.page-switching .page-section.active {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .interaction-route-chip {
+        display: none;
+    }
+
+    .interaction-dock {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .interaction-dock-panel {
+        width: min(292px, calc(100vw - 32px));
+    }
+}
