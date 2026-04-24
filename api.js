@@ -190,9 +190,9 @@ const API = {
         return this.post('/carbon/calculate', calcData);
     },
 
-    async getCarbonRecords() {
-        return this.get('/carbon/records');
-    },
+  async getCarbonRecords(params = '') {
+    return this.get(`/carbon/records${params ? `?${params}` : ''}`);
+},
 
     // ========== ESG评分相关 ==========
 
@@ -305,7 +305,41 @@ const API = {
     async forecastMonthlyCarbon(data) {
         return this.post('/forecast/monthly-carbon', data);
     },
+// ========== 首页 / 驾驶舱相关 ==========
 
+// 首页统计数据
+async getDashboardStats() {
+    return this.get('/dashboard/key-indicators');
+},
+
+// 首页最新事件流
+async getLatestEvents(limit = 8) {
+    return this.get(`/events/latest?limit=${limit}`);
+},
+
+// ========== 报告 / 数据列表补充接口 ==========
+
+// 获取碳核算记录（支持后续扩展查询参数）
+async getCarbonRecords(params = '') {
+    return this.get(`/carbon/records${params ? `?${params}` : ''}`);
+},
+
+// 获取我的报告列表
+async getMyReports() {
+    return this.get('/reports/my-reports');
+},
+
+// 月度碳排预测（别名，后面统一调用）
+async getMonthlyCarbonForecast(data) {
+    return this.post('/forecast/monthly-carbon', data);
+},
+
+// ========== 系统健康检查 ==========
+
+// 真实运行模式健康检查
+async getRealModeHealth() {
+    return this.get('/system/real-mode-health');
+},
     async getOCRSample(type) {
         return this.get(`/ocr/sample/${type}`);
     },

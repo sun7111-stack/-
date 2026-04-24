@@ -145,17 +145,16 @@
 
       if (typeof echarts === 'undefined') return;
       const chart = echarts.init(document.getElementById('homeForceGraph'));
-      const nodes = [
-        { name: '企业', role: 'enterprise', value: 42, category: 0, symbolSize: 34 },
-        { name: '电费账单', role: 'voucher', value: 30, category: 1, symbolSize: 26 },
-        { name: '物流单据', role: 'voucher', value: 28, category: 1, symbolSize: 25 },
-        { name: 'OCR识别', role: 'engine', value: 34, category: 2, symbolSize: 27 },
-        { name: '碳核算', role: 'carbon', value: 40, category: 2, symbolSize: 30 },
-        { name: '风控模型', role: 'risk', value: 35, category: 3, symbolSize: 27 },
-        { name: '区块链存证', role: 'chain', value: 38, category: 4, symbolSize: 29 },
-        { name: '绿色银行', role: 'finance', value: 32, category: 5, symbolSize: 27 },
-        { name: '信贷产品', role: 'finance', value: 26, category: 5, symbolSize: 24 },
-      ];
+     const nodes = [
+  { name: '企业', role: 'enterprise', value: 42, category: 0, symbolSize: 26 },
+  { name: '凭证', role: 'voucher', value: 30, category: 1, symbolSize: 20 },
+  { name: 'OCR', role: 'engine', value: 34, category: 2, symbolSize: 21 },
+  { name: '碳核算', role: 'carbon', value: 40, category: 2, symbolSize: 24 },
+  { name: '风控', role: 'risk', value: 35, category: 3, symbolSize: 21 },
+  { name: '区块链', role: 'chain', value: 38, category: 4, symbolSize: 22 },
+  { name: '绿色银行', role: 'finance', value: 32, category: 5, symbolSize: 21 },
+  { name: '金融产品', role: 'finance', value: 26, category: 5, symbolSize: 18 },
+];
       this.nodeIndexByRole = nodes.reduce((acc, node, index) => {
         acc[node.role] = acc[node.role] || [];
         acc[node.role].push(index);
@@ -181,13 +180,13 @@
           right: 22,
           top: 16,
           bottom: 18,
-          force: {
-            repulsion: 95,
-            edgeLength: [46, 78],
-            gravity: 0.22,
-            friction: 0.58,
-            layoutAnimation: true,
-          },
+        force: {
+  repulsion: 72,
+  edgeLength: [52, 68],
+  gravity: 0.16,
+  friction: 0.62,
+  layoutAnimation: true,
+},
           categories: [
             { name: 'Enterprise' },
             { name: 'Voucher' },
@@ -197,36 +196,40 @@
             { name: 'Finance' },
           ],
           data: nodes,
-          links: [
-            ['企业', '电费账单'], ['企业', '物流单据'], ['电费账单', 'OCR识别'],
-            ['物流单据', 'OCR识别'], ['OCR识别', '碳核算'], ['碳核算', '风控模型'],
-            ['风控模型', '区块链存证'], ['区块链存证', '绿色银行'], ['绿色银行', '信贷产品'],
-          ].map(([source, target]) => ({ source, target })),
+       links: [
+  ['企业', '凭证'],
+  ['凭证', 'OCR'],
+  ['OCR', '碳核算'],
+  ['碳核算', '风控'],
+  ['风控', '区块链'],
+  ['区块链', '绿色银行'],
+  ['绿色银行', '金融产品'],
+].map(([source, target]) => ({ source, target })),
           edgeSymbol: ['none', 'arrow'],
           edgeSymbolSize: [0, 6],
-          label: {
-            show: true,
-            color: '#172033',
-            fontWeight: 800,
-            fontSize: 10,
-            formatter: '{b}',
-            position: 'bottom',
-            distance: 4,
-          },
-          itemStyle: {
-            borderWidth: 2,
-            borderColor: '#fff',
-            shadowBlur: 14,
-            shadowColor: 'rgba(31,107,79,0.16)',
-          },
+        label: {
+  show: true,
+  color: '#344054',
+  fontWeight: 600,
+  fontSize: 10,
+  formatter: '{b}',
+  position: 'bottom',
+  distance: 2,
+},
+         itemStyle: {
+  borderWidth: 1.5,
+  borderColor: '#ffffff',
+  shadowBlur: 6,
+  shadowColor: 'rgba(31,41,55,0.10)',
+},
           lineStyle: { color: '#9bb7ad', opacity: 0.42, width: 1.7, curveness: 0.18 },
-          emphasis: {
-            focus: 'adjacency',
-            itemStyle: { shadowBlur: 28, shadowColor: 'rgba(31,107,79,0.45)' },
-            lineStyle: { opacity: 0.75, width: 4 },
-          },
+        emphasis: {
+  focus: 'adjacency',
+  itemStyle: { shadowBlur: 12, shadowColor: 'rgba(31,41,55,0.16)' },
+  lineStyle: { opacity: 0.72, width: 2.5 },
+},
         }],
-        color: ['#172033', '#1f6b4f', '#5e748c', '#b7791f', '#0f766e', '#2563eb'],
+      color: ['#5B7FA3', '#7BAE7F', '#8FA4B8', '#D19A52', '#7E92A8', '#4F6D8A'],
       });
       this.graphChart = chart;
       this.startGraphPulse();
@@ -286,21 +289,50 @@
       `;
       anchor.insertAdjacentElement('afterend', feed);
 
-      const seeds = [
-        ['OCR识别', '绿能科技', '成功提取电费账单字段，用电量 1320 kWh', 'ocr'],
-        ['数据上链', '环宇制造', '碳排放凭证已存证，哈希: 0x66bd4625', 'chain'],
-        ['风控预警', '城配物流', '发现运输轨迹与油耗不符，拦截洗绿风险', 'risk'],
-        ['碳核算', '未来出行', 'Scope 2 排放完成核算，较上月下降 5.6%', 'carbon'],
-        ['金融匹配', '绿创电子', '匹配到绿色信贷产品，预计利率优惠 45BP', 'finance'],
-      ];
-      seeds.slice(0, 4).forEach(item => this.pushFeed(item));
-      let index = 4;
-      this.feedTimer = setInterval(() => {
-        this.pushFeed(seeds[index % seeds.length]);
-        index += 1;
-      }, 4200);
-    },
+   const seeds = [
+  ['OCR识别', '绿能科技', '成功提取电费账单字段，用电量 1320 kWh', 'ocr'],
+  ['数据上链', '环宇制造', '碳排放凭证已完成链上存证', 'chain'],
+  ['风控预警', '城配物流', '发现运输轨迹与油耗不符，触发风险复核', 'risk'],
+  ['碳核算', '未来出行', 'Scope 2 排放完成核算，较上月下降 5.6%', 'carbon'],
+  ['金融匹配', '绿创电子', '匹配到绿色信贷产品，预计利率优惠 45BP', 'finance'],
+];
 
+this.loadLiveFeedFromApi().then(ok => {
+  if (ok) return;
+
+  seeds.slice(0, 4).forEach(item => this.pushFeed(item));
+  let index = 4;
+  this.feedTimer = setInterval(() => {
+    this.pushFeed(seeds[index % seeds.length]);
+    index += 1;
+  }, 4200);
+});
+    },
+async loadLiveFeedFromApi() {
+  try {
+    const data = await API.getLatestEvents(7);
+    const events = Array.isArray(data) ? data : (data.events || []);
+
+    if (!events.length) return false;
+
+    const list = document.getElementById('homeLiveFeedList');
+    if (!list) return false;
+
+    list.innerHTML = events.map(event => `
+      <div class="live-feed-item ${event.type || 'info'}">
+        <span class="live-feed-tag">[${event.tag || '业务事件'}]</span>
+        <time>${event.time || event.created_at || '--:--'}</time>
+        <strong>${event.company || '系统'}</strong>
+        <p>${event.description || event.message || event.content || '暂无描述'}</p>
+      </div>
+    `).join('');
+
+    return true;
+  } catch (e) {
+    console.warn('实时事件流接口未就绪，回退本地种子数据。', e);
+    return false;
+  }
+},
     pushFeed([tag, company, message, type]) {
       const list = document.getElementById('homeLiveFeedList');
       if (!list) return;
@@ -366,40 +398,71 @@
       this.topologyChart = chart;
     },
 
-    mountEvidenceNarrative() {
-      const panel = document.getElementById('evidencePanel');
-      if (!panel || document.getElementById('evidenceTraceabilityCard')) return;
-      const card = document.createElement('section');
-      card.id = 'evidenceTraceabilityCard';
-      card.className = 'evidence-traceability-card';
-      card.innerHTML = `
-        <div class="trace-header">
-          <div>
-            <span class="insight-kicker">Carbon Chain Traceability</span>
-            <h4>碳链溯源系统</h4>
-          </div>
-          <div class="trace-stats">
-            <span>链上状态<strong>已同步</strong></span>
-            <span>共识节点<strong>12/12</strong></span>
-            <span>最新块<strong>20,421</strong></span>
-          </div>
-        </div>
-        <div class="trace-body">
-          <div class="trace-cert">
-            <span>VERIFIED ON CHAIN</span>
-            <i class="fas fa-certificate"></i>
-          </div>
-          <div class="trace-timeline">
-            <div class="trace-step done"><strong>数据原始采集</strong><span>上传电费账单，生成原始凭证哈希</span></div>
-            <div class="trace-step done"><strong>AI 交叉校验通过</strong><span>OCR 字段与历史趋势匹配，共识节点确认</span></div>
-            <div class="trace-step active"><strong>智能合约触发</strong><span>绿色信贷风控评分自动生成 A 级建议</span></div>
-            <div class="trace-step done"><strong>链上存证完成</strong><span>Merkle Root 与时间戳已写入证据链</span></div>
-          </div>
-        </div>
-        <button type="button" class="trace-verify-btn" data-real-mode-run>全流程核查 Verify on Chain</button>
-      `;
-      panel.insertAdjacentElement('beforebegin', card);
-    },
+mountEvidenceNarrative() {
+  const anchor =
+    document.getElementById('homeLiveFeed') ||
+    document.querySelector('.home-panorama-card') ||
+    document.querySelector('#home .stat-cards-row');
+
+  if (!anchor || document.getElementById('evidenceTraceabilityCard')) return;
+
+  const card = document.createElement('section');
+  card.id = 'evidenceTraceabilityCard';
+  card.className = 'evidence-traceability-card';
+
+  card.innerHTML = `
+    <div class="trace-header">
+      <div>
+        <span class="insight-kicker">可信业务链路</span>
+        <h3>真实链路佐证区</h3>
+      </div>
+      <span class="trace-status">已核验</span>
+    </div>
+
+    <div class="trace-timeline">
+      <div class="trace-step done">
+        <strong>数据原始采集</strong>
+        <span>企业上传票据、业务单据或原始凭证，形成初始采集记录。</span>
+      </div>
+      <div class="trace-step done">
+        <strong>OCR 识别完成</strong>
+        <span>系统完成票据识别与字段提取，生成可用的结构化内容。</span>
+      </div>
+      <div class="trace-step done">
+        <strong>数据标准化完成</strong>
+        <span>完成字段校验、单位统一与业务口径标准化处理。</span>
+      </div>
+      <div class="trace-step done">
+        <strong>碳核算完成</strong>
+        <span>系统已生成 Scope 结果、排放明细和总碳排放量。</span>
+      </div>
+      <div class="trace-step done">
+        <strong>风控扫描完成</strong>
+        <span>完成异常检测与风险等级识别，生成风控结果摘要。</span>
+      </div>
+      <div class="trace-step active">
+        <strong>链上存证成功</strong>
+        <span>关键摘要、时间戳与校验信息已写入证据链并完成存证。</span>
+      </div>
+      <div class="trace-step done">
+        <strong>全流程核验通过</strong>
+        <span>支持结果追溯、流程验真与业务可信展示。</span>
+      </div>
+    </div>
+
+    <div class="trace-proof">
+      <div class="trace-proof-title">链上核验摘要</div>
+      <div class="trace-proof-grid">
+        <span>记录编号：record_id</span>
+        <span>分析编号：analysis_id</span>
+        <span>存证编号：tx_id</span>
+        <span>校验摘要：Merkle Root</span>
+      </div>
+    </div>
+  `;
+
+  anchor.insertAdjacentElement('afterend', card);
+},
   };
 
   window.HomeDynamics = HomeDynamics;

@@ -40,6 +40,7 @@ function init3DTwin() {
     addEnvironment();
     buildFactory();
     initParticleSystem();
+    ensureCarbonFlowSection();
 
     // 绑定窗口大小调整
     window.addEventListener('resize', onWindowResize, false);
@@ -222,7 +223,143 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+function ensureCarbonFlowSection() {
+    const host =
+        document.getElementById('factory3dContainer') ||
+        document.querySelector('.twin3d-container') ||
+        document.querySelector('#carbonTwinPanel');
 
+    if (!host || document.getElementById('carbonFlowSection')) return;
+
+    const section = document.createElement('section');
+    section.id = 'carbonFlowSection';
+    section.className = 'carbon-flow-section';
+
+    section.innerHTML = `
+        <div class="carbon-flow-header">
+            <div>
+                <span class="insight-kicker">Carbon Flow Analysis</span>
+                <h3>碳流向分析图</h3>
+            </div>
+            <span class="trace-status">业务视角</span>
+        </div>
+
+        <div id="carbonFlowChart" class="carbon-flow-chart"></div>
+
+        <div class="carbon-flow-conclusion">
+           从碳流向结果看，排放贡献主要集中在生产环节与仓储配送环节，其中范围一排放和范围三排放占比较高，说明企业后续应重点围绕燃料使用、物流运输及供应链协同开展减排优化。
+        </div>
+    `;
+
+    host.insertAdjacentElement('afterend', section);
+    renderCarbonFlowChart();
+}
+function renderCarbonFlowChart() {
+    const chartDom = document.getElementById('carbonFlowChart');
+    if (!chartDom || typeof echarts === 'undefined') return;
+
+    const chart = echarts.init(chartDom);
+
+    const option = {
+        backgroundColor: 'transparent',
+        animationDuration: 900,
+       tooltip: {
+    trigger: 'item',
+    triggerOn: 'mousemove',
+    formatter: function (params) {
+        if (params.dataType === 'edge') {
+            return `${params.data.source} → ${params.data.target}<br/>流量值：${params.data.value}`;
+        }
+        return `${params.name}`;
+    }
+},
+        series: [
+            {
+                levels: [
+    {
+        depth: 0,
+        itemStyle: { color: '#8FA4B8' },
+        lineStyle: { opacity: 0.28 }
+    },
+    {
+        depth: 1,
+        itemStyle: { color: '#7BAE7F' },
+        lineStyle: { opacity: 0.32 }
+    },
+    {
+        depth: 2,
+        itemStyle: { color: '#D19A52' },
+        lineStyle: { opacity: 0.36 }
+    },
+    {
+        depth: 3,
+        itemStyle: { color: '#5B7FA3' },
+        lineStyle: { opacity: 0.4 }
+    }
+],
+                type: 'sankey',
+                layout: 'none',
+                emphasis: {
+                    focus: 'adjacency'
+                },
+                data: [
+    { name: '外购电力' },
+    { name: '燃料消耗' },
+    { name: '物流运输' },
+    { name: '包装材料' },
+    { name: '采购环节' },
+    { name: '生产环节' },
+    { name: '仓储配送' },
+    { name: '范围一排放' },
+    { name: '范围二排放' },
+    { name: '范围三排放' },
+    { name: '总碳排放' }
+],
+                links: [
+    { source: '外购电力', target: '采购环节', value: 18 },
+    { source: '燃料消耗', target: '生产环节', value: 26 },
+    { source: '物流运输', target: '仓储配送', value: 14 },
+    { source: '包装材料', target: '仓储配送', value: 8 },
+
+    { source: '采购环节', target: '范围二排放', value: 18 },
+    { source: '生产环节', target: '范围一排放', value: 26 },
+    { source: '仓储配送', target: '范围三排放', value: 22 },
+
+    { source: '范围一排放', target: '总碳排放', value: 26 },
+    { source: '范围二排放', target: '总碳排放', value: 18 },
+    { source: '范围三排放', target: '总碳排放', value: 22 }
+],
+                nodeAlign: 'justify',
+                draggable: true,
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: 20,
+              lineStyle: {
+    color: 'gradient',
+    curveness: 0.42,
+    opacity: 0.32
+},
+                itemStyle: {
+    borderWidth: 1,
+    borderColor: '#d7dee8',
+    color: '#7b8da6'
+},
+               label: {
+    color: '#344054',
+    fontSize: 12,
+    fontWeight: 600
+},
+            }
+        ]
+    };
+
+    chart.setOption(option);
+
+    window.addEventListener('resize', () => {
+        chart.resize();
+    });
+}
 // --- 模式切换逻辑 ---
 let currentTwinMode = 'total';
 let originalMaterials = new Map();

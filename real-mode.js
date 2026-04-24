@@ -135,8 +135,20 @@
       const report = payload.report || {};
       const chain = payload.chain || {};
       const ocr = payload.ocr || {};
-      const ocrData = ocr.data || ocr;
+     const ocrData = ocr.data || ocr;
+const ocrMethod = ocrData.parse_method || ocrData.method || 'api/sample';
+const runMode = payload.run_mode || payload.mode || '';
+const isMock = ocrData.is_mock || payload.is_mock || false;
 
+let modeBadge = '<span class="real-badge real-badge-neutral">状态未知</span>';
+
+if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
+  modeBadge = '<span class="real-badge real-badge-warning">Mock / 降级解析</span>';
+} else if (/vlm|vision|真实/i.test(ocrMethod) || /real/i.test(runMode)) {
+  modeBadge = '<span class="real-badge real-badge-success">真实 VLM</span>';
+} else if (/ocr/i.test(ocrMethod)) {
+  modeBadge = '<span class="real-badge real-badge-info">OCR 识别</span>';
+}
       const rows = [
         ['数据来源', payload.source || 'Real API'],
         ['OCR 方法', ocrData.parse_method || 'api/sample'],
@@ -152,20 +164,28 @@
         ['Report Mock', report.is_mock === true ? '是' : report.is_mock === false ? '否' : '--'],
       ];
 
-      el.innerHTML = `
-        <div class="real-proof-grid">
-          ${rows.map(([label, value]) => `
-            <div>
-              <span>${this.escape(label)}</span>
-              <strong title="${this.escape(value)}">${this.escape(value)}</strong>
-            </div>
-          `).join('')}
-        </div>
-        <div class="real-report-preview">
-          <strong>AI 报告摘要</strong>
-          <p>${this.escape(report.executive_summary || report.summary || '报告接口已返回，但没有摘要字段。')}</p>
-        </div>
-      `;
+ el.innerHTML = `
+  <div class="real-mode-status-row">
+    ${modeBadge}
+    <span class="real-mode-status-text">
+      当前识别方式：${this.escape(ocrMethod)}${runMode ? ` ｜运行模式：${this.escape(runMode)}` : ''}
+    </span>
+  </div>
+
+  <div class="real-proof-grid">
+    ${rows.map(([label, value]) => `
+      <div>
+        <span>${this.escape(label)}</span>
+        <strong>${value}</strong>
+      </div>
+    `).join('')}
+  </div>
+
+  <div class="real-report-preview mt-3">
+    <strong>AI 报告摘要</strong>
+    <p>${this.escape(report.summary || report.preview || report.content || '暂无摘要')}</p>
+  </div>
+`;
     },
 
     normalizeHealth(payload) {
