@@ -1006,6 +1006,8 @@ function initPlatform() {
     // 8. 模拟数据加载
     loadSampleData();
     
+    loadDynamicBackendData();
+
     // 9. 初始化ESG计算器
     initESGCalculator();
     
@@ -1906,7 +1908,85 @@ function animateCounter(element, target, suffix = '') {
         element.textContent = Math.floor(current) + suffix;
     }, 20);
 }
+/**
+ * 首页KPI从后端真实接口拉取
+ */
+/**
+ * 动态加载后端 KPI 及事件流
+ */
+async function loadDynamicBackendData() {
+    try {
+        // 1. 拉取首页 KPI
+        const dashboardData = await API.getDashboardStats().catch(() => null);
 
+        if (dashboardData) {
+            document.querySelectorAll('.stat-number[data-kpi]').forEach(el => {
+                const field = el.dataset.kpi;
+                const realValue = dashboardData[field];
+
+                if (realValue !== undefined && realValue !== null) {
+                    const numericValue = Number(realValue);
+
+                    el.setAttribute('data-target', numericValue || 0);
+                    el.textContent = '0';
+
+                    if (!Number.isNaN(numericValue)) {
+                        if (typeof animateCounter === 'function') {
+                            animateCounter(el, numericValue);
+                        }
+                    } else {
+                        el.textContent = realValue;
+                    }
+                }
+            });
+        } else {
+            console.warn('首页统计接口未返回数据，保留静态展示。');
+        }
+
+        // 2. 拉取首页事件流
+        const eventsData = await API.getLatestEvents(8).catch(() => null);
+
+        if (eventsData) {
+            const events = Array.isArray(eventsData)
+                ? eventsData
+                : (eventsData.events || []);
+
+            renderHomeStream(events);
+        } else {
+            console.warn('首页事件流接口未返回数据，保留静态展示。');
+        }
+
+    } catch (e) {
+        console.warn('Dashboard 后端接口未就绪，使用默认静态数据展示。', e);
+    }
+}
+function renderHomeStream(events) {
+    const streamContainer = document.querySelector('.stream-desc');
+    if (!streamContainer) {
+        console.warn('未找到首页事件流容器 .stream-desc');
+        return;
+    }
+
+    if (!Array.isArray(events) || events.length === 0) {
+        streamContainer.innerHTML = `
+            <div class="mb-1 text-muted">
+                <span class="fw-bold">[--:--]</span> 暂无最新业务事件
+            </div>
+        `;
+        return;
+    }
+
+    streamContainer.innerHTML = events.map(event => {
+        const time = event.time || event.created_at || '--:--';
+        const desc = event.description || event.message || event.content || '暂无描述';
+        return `
+            <div class="mb-1">
+                <span class="text-primary fw-bold">[${time}]</span>
+                ${desc}
+            </div>
+        `;
+    }).join('');
+}
 // ============================================
 // 表单初始化
 // ============================================
