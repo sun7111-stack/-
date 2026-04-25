@@ -1701,6 +1701,10 @@ function initDashboardDemo() {
     if (!chartDom) return;
     
     const chart = echarts.init(chartDom);
+    const defaultCategories = ['电商', '制造', '物流', '服务', '零售', '建筑'];
+const defaultCarbonIntensity = [0.42, 0.78, 0.56, 0.21, 0.47, 0.89];
+const defaultIndustryAvg = [0.50, 0.85, 0.62, 0.28, 0.53, 0.95];
+const defaultExcellent = [0.30, 0.60, 0.40, 0.18, 0.35, 0.70];
     const option = {
         tooltip: {
             trigger: 'axis',
@@ -1726,7 +1730,7 @@ function initDashboardDemo() {
         xAxis: [
             {
                 type: 'category',
-                data: ['电商', '制造', '物流', '服务', '零售', '建筑'],
+               data: defaultCategories,
                 axisPointer: {
                     type: 'shadow'
                 }
@@ -1748,7 +1752,7 @@ function initDashboardDemo() {
             {
                 name: '碳排放强度',
                 type: 'bar',
-                data: [0.15, 0.85, 0.45, 0.08, 0.25, 0.95],
+                data: defaultCarbonIntensity,
                 itemStyle: {
                     color: '#4CAF50'
                 },
@@ -1757,7 +1761,7 @@ function initDashboardDemo() {
             {
                 name: '行业平均',
                 type: 'line',
-                data: [0.18, 0.92, 0.52, 0.12, 0.30, 1.05],
+               data: defaultIndustryAvg,
                 itemStyle: {
                     color: '#FF9800'
                 },
@@ -1769,7 +1773,7 @@ function initDashboardDemo() {
             {
                 name: '优秀水平',
                 type: 'line',
-                data: [0.10, 0.65, 0.35, 0.05, 0.18, 0.75],
+                data: defaultExcellent,
                 itemStyle: {
                     color: '#0288D1'
                 },
@@ -1781,7 +1785,51 @@ function initDashboardDemo() {
     };
     
     chart.setOption(option);
-    
+    // 真实接口优先更新图表
+API.getDashboardStats().then(res => {
+    if (!res) return;
+
+    // 这里先做兼容式读取，避免后端字段没准备好时图表直接报错
+   const categories = Array.isArray(res.industry_labels) && res.industry_labels.length
+    ? res.industry_labels
+    : (Array.isArray(res.categories) && res.categories.length ? res.categories : defaultCategories);
+
+const carbonIntensity = Array.isArray(res.carbon_intensity) && res.carbon_intensity.length
+    ? res.carbon_intensity
+    : (Array.isArray(res.intensity_values) && res.intensity_values.length ? res.intensity_values : defaultCarbonIntensity);
+
+const industryAvg = Array.isArray(res.industry_average) && res.industry_average.length
+    ? res.industry_average
+    : (Array.isArray(res.industry_avg) && res.industry_avg.length ? res.industry_avg : defaultIndustryAvg);
+
+const excellent = Array.isArray(res.excellent_level) && res.excellent_level.length
+    ? res.excellent_level
+    : (Array.isArray(res.excellent_values) && res.excellent_values.length ? res.excellent_values : defaultExcellent);
+
+    chart.setOption({
+        xAxis: [
+            {
+                data: categories
+            }
+        ],
+        series: [
+            {
+                name: '碳排放强度',
+                data: carbonIntensity
+            },
+            {
+                name: '行业平均',
+                data: industryAvg
+            },
+            {
+                name: '优秀水平',
+                data: excellent
+            }
+        ]
+    });
+}).catch(error => {
+    console.warn('仪表板图表接口未返回有效数据，保留默认展示。', error);
+});
     // 响应式调整
     window.addEventListener('resize', () => {
         chart.resize();
@@ -1944,17 +1992,14 @@ async function loadDynamicBackendData() {
         }
 
         // 2. 拉取首页事件流
-        const eventsData = await API.getLatestEvents(8).catch(() => null);
-
-        if (eventsData) {
-            const events = Array.isArray(eventsData)
-                ? eventsData
-                : (eventsData.events || []);
-
-            renderHomeStream(events);
-        } else {
-            console.warn('首页事件流接口未返回数据，保留静态展示。');
-        }
+    const eventsData = await API.getLatestEvents(8).catch(() => null);
+if (eventsData) {
+    const events = Array.isArray(eventsData) ? eventsData : (eventsData.events || []);
+    renderHomeStream(events);
+} else {
+    console.warn('首页事件流接口未返回数据，使用空状态提示。');
+    renderHomeStream([]);
+}
 
     } catch (e) {
         console.warn('Dashboard 后端接口未就绪，使用默认静态数据展示。', e);
@@ -1970,7 +2015,7 @@ function renderHomeStream(events) {
     if (!Array.isArray(events) || events.length === 0) {
         streamContainer.innerHTML = `
             <div class="mb-1 text-muted">
-                <span class="fw-bold">[--:--]</span> 暂无最新业务事件
+                <span class="fw-bold">[--:--]</span> 暂无最新业务事件，系统已进入静态展示模式。
             </div>
         `;
         return;

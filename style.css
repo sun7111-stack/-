@@ -9952,3 +9952,47 @@ code {
   background: rgba(148, 163, 184, 0.12);
   border-color: rgba(148, 163, 184, 0.22);
 }
+.real-health-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.real-health-item {
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e6ebf2;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.real-health-label {
+  font-size: 13px;
+  color: #475467;
+  font-weight: 600;
+}
+
+.health-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.health-badge-success {
+  color: #0f6b4f;
+  background: rgba(31, 107, 79, 0.10);
+  border: 1px solid rgba(31, 107, 79, 0.18);
+}
+
+.health-badge-danger {
+  color: #b42318;
+  background: rgba(217, 45, 32, 0.10);
+  border: 1px solid rgba(217, 45, 32, 0.18);
+}

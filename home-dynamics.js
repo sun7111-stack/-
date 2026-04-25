@@ -300,6 +300,21 @@
 this.loadLiveFeedFromApi().then(ok => {
   if (ok) return;
 
+  if (!seeds.length) {
+    const list = document.getElementById('homeLiveFeedList');
+    if (list) {
+      list.innerHTML = `
+        <div class="live-feed-item info">
+          <span class="live-feed-tag">[系统提示]</span>
+          <time>--:--</time>
+          <strong>平台</strong>
+          <p>当前未获取到实时业务事件，系统已切换为静态展示模式。</p>
+        </div>
+      `;
+    }
+    return;
+  }
+
   seeds.slice(0, 4).forEach(item => this.pushFeed(item));
   let index = 4;
   this.feedTimer = setInterval(() => {

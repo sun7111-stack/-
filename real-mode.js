@@ -9,15 +9,16 @@
       running: false,
     },
 
-    selectors: {
-      panel: 'realModePanel',
-      status: 'realModeStatus',
-      steps: 'realModeSteps',
-      result: 'realModeResult',
-      file: 'realVoucherFile',
-      check: 'realModeCheckBtn',
-      run: 'realModeRunBtn',
-    },
+ selectors: {
+  panel: 'realModePanel',
+  status: 'realModeStatus',
+  steps: 'realModeSteps',
+  result: 'realModeResult',
+  file: 'realVoucherFile',
+  check: 'realModeCheckBtn',
+  run: 'realModeRunBtn',
+  export: 'realModeExportBtn',
+},
 
     apiRoot() {
       const apiBase = (window.API && API.BASE_URL) || 'http://localhost:8000/api';
@@ -219,6 +220,52 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
       this.state.health = normalized;
       return normalized;
     },
+    renderHealthSummary(health) {
+  const panel = document.getElementById(this.selectors.status);
+  if (!panel || !health) return;
+
+  const oldSummary = panel.querySelector('.real-health-summary');
+  if (oldSummary) oldSummary.remove();
+
+  const findCheck = (keys) => {
+    return (health.checks || []).find(item =>
+      keys.includes(item.key) || keys.includes(item.name)
+    );
+  };
+
+  const backendCheck = findCheck(['backend', '后端']);
+  const ocrCheck = findCheck(['ocr', 'OCR']);
+  const dbCheck = findCheck(['database', 'db', '数据库']);
+  const chainCheck = findCheck(['blockchain', 'chain', 'evidence', '证据链', '可信存证']);
+
+  const badge = (ok) =>
+    ok
+      ? '<span class="health-badge health-badge-success">可用</span>'
+      : '<span class="health-badge health-badge-danger">异常</span>';
+
+  const html = `
+    <div class="real-health-summary">
+      <div class="real-health-item">
+        <span class="real-health-label">后端服务</span>
+        ${badge(!!backendCheck?.ok)}
+      </div>
+      <div class="real-health-item">
+        <span class="real-health-label">OCR / VLM</span>
+        ${badge(!!ocrCheck?.ok)}
+      </div>
+      <div class="real-health-item">
+        <span class="real-health-label">数据库</span>
+        ${badge(!!dbCheck?.ok)}
+      </div>
+      <div class="real-health-item">
+        <span class="real-health-label">链上存证</span>
+        ${badge(!!chainCheck?.ok)}
+      </div>
+    </div>
+  `;
+
+  panel.insertAdjacentHTML('beforeend', html);
+},
 
     async checkHealth(options = {}) {
       const { strict = false } = options;
@@ -233,6 +280,7 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
       }
 
       const normalized = this.renderHealth(health);
+      this.renderHealthSummary(normalized);
       if (strict) {
         const blocking = normalized.checks.filter(item => item.required !== false && !item.ok);
         if (blocking.length) {
@@ -438,21 +486,64 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
           report,
           finishedAt: new Date().toISOString(),
         };
-        this.state.lastRun = lastRun;
-        window.RealModeState = lastRun;
-        this.renderResult(lastRun);
+       this.state.lastRun = lastRun;
+this.state.lastError = null;
+window.RealModeState = lastRun;
+this.renderResult(lastRun);
+// 真实闭环成功后，自动刷新首页数据
+try {
+  if (typeof loadDynamicBackendData === 'function') {
+    loadDynamicBackendData();
+  }
+
+  if (window.HomeDynamics && typeof window.HomeDynamics.loadLiveFeedFromApi === 'function') {
+    window.HomeDynamics.loadLiveFeedFromApi();
+  }
+} catch (refreshError) {
+  console.warn('真实闭环完成后刷新首页数据失败', refreshError);
+}
         this.setStatus('ok', '<span class="ok">真实闭环完成</span><span class="ok">已写入数据库/证据链</span><span class="ok">可用于答辩展示</span>');
-      } catch (error) {
-        const text = this.friendlyError(error);
-        console.error('[RealMode] flow failed', error);
-        this.markStep('failed', '真实闭环中断', 'failed', text);
-        this.setStatus('bad', `<span class="bad">真实模式失败</span><span>${this.escape(text)}</span><span>未自动切换 mock</span>`);
-      } finally {
+ } catch (error) {
+  const text = this.friendlyError(error);
+  this.state.lastError = text;
+  console.error('[RealMode] flow failed', error);
+  this.markStep('failed', '真实闭环中断', 'failed', text);
+  this.setStatus('bad', `<span class="bad">真实模式失败</span><span>${this.escape(text)}</span><span>未自动切换 mock</span>`);
+}
+      finally {
         this.state.running = false;
         this.setRunDisabled(false);
       }
     },
+exportLog() {
+  try {
+    const payload = {
+      exported_at: new Date().toISOString(),
+      run_mode: this.state.mode || 'real',
+      health: this.state.health || null,
+      steps: this.state.steps || [],
+      result: this.state.lastRun || null,
+      last_error: this.state.lastError || null
+    };
 
+    const blob = new Blob(
+      [JSON.stringify(payload, null, 2)],
+      { type: 'application/json;charset=utf-8' }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `real-mode-log-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.warn('导出运行日志失败', error);
+    alert('导出运行日志失败，请稍后重试。');
+  }
+},
     setRunDisabled(disabled) {
       const run = document.getElementById(this.selectors.run);
       const check = document.getElementById(this.selectors.check);
@@ -474,18 +565,21 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
           <p>这条链路独立于 Mock 演示：成功结果必须来自后端 API、数据库记录和证据链返回。</p>
         </div>
         <div class="real-mode-actions">
-          <label class="real-file-picker">
-            <i class="fas fa-file-arrow-up"></i>
-            <span>可选上传票据</span>
-            <input id="${this.selectors.file}" type="file" accept="image/png,image/jpeg,application/pdf">
-          </label>
-          <button id="${this.selectors.check}" type="button" class="btn btn-outline-success">
-            <i class="fas fa-signal me-2"></i>检查真实服务
-          </button>
-          <button id="${this.selectors.run}" type="button" class="btn btn-success">
-            <i class="fas fa-play me-2"></i>运行真实闭环
-          </button>
-        </div>
+  <label class="real-file-picker">
+    <i class="fas fa-file-arrow-up"></i>
+    <span>可选上传票据</span>
+    <input id="${this.selectors.file}" type="file" accept="image/png,image/jpeg,application/pdf">
+  </label>
+  <button id="${this.selectors.check}" type="button" class="btn btn-outline-success">
+    <i class="fas fa-signal me-2"></i>检查真实服务
+  </button>
+  <button id="${this.selectors.run}" type="button" class="btn btn-success">
+    <i class="fas fa-play me-2"></i>运行真实闭环
+  </button>
+  <button id="${this.selectors.export}" type="button" class="btn btn-outline-secondary">
+    <i class="fas fa-download me-2"></i>导出运行日志
+  </button>
+</div>
         <div id="${this.selectors.status}" class="real-mode-status idle">
           <span>真实模式待检查</span>
           <span>Mock 演示仍保留，但不会混入这里</span>
@@ -509,7 +603,8 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
       this.renderResult(null);
 
       document.getElementById(this.selectors.check)?.addEventListener('click', () => this.checkHealth());
-      document.getElementById(this.selectors.run)?.addEventListener('click', () => this.runRealFlow());
+document.getElementById(this.selectors.run)?.addEventListener('click', () => this.runRealFlow());
+document.getElementById(this.selectors.export)?.addEventListener('click', () => this.exportLog());
       this.enhanceExistingActions();
 
       document.addEventListener('click', event => {
