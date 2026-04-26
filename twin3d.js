@@ -226,10 +226,16 @@ function animate() {
 function ensureCarbonFlowSection() {
     const host =
         document.getElementById('factory3dContainer') ||
+        document.querySelector('.factory-3d-container') ||
         document.querySelector('.twin3d-container') ||
-        document.querySelector('#carbonTwinPanel');
+        document.querySelector('#carbonTwinPanel') ||
+        document.body;
 
-    if (!host || document.getElementById('carbonFlowSection')) return;
+    if (document.getElementById('carbonFlowSection')) return;
+
+    if (host && host !== document.body) {
+        host.classList.add('twin3d-secondary-view');
+    }
 
     const section = document.createElement('section');
     section.id = 'carbonFlowSection';
@@ -239,19 +245,24 @@ function ensureCarbonFlowSection() {
         <div class="carbon-flow-header">
             <div>
                 <span class="insight-kicker">Carbon Flow Analysis</span>
-                <h3>碳流向分析图</h3>
+                <h3>碳流向与范围归因分析</h3>
             </div>
-            <span class="trace-status">业务视角</span>
+            <span class="trace-status">主分析视图</span>
         </div>
 
         <div id="carbonFlowChart" class="carbon-flow-chart"></div>
 
         <div class="carbon-flow-conclusion">
-           从碳流向结果看，排放贡献主要集中在生产环节与仓储配送环节，其中范围一排放和范围三排放占比较高，说明企业后续应重点围绕燃料使用、物流运输及供应链协同开展减排优化。
+            从碳流向结果看，排放贡献主要集中在生产环节与仓储配送环节，其中范围一排放和范围三排放占比较高，说明企业后续应重点围绕燃料使用、物流运输及供应链协同开展减排优化。
         </div>
     `;
 
-    host.insertAdjacentElement('afterend', section);
+    if (host === document.body) {
+        host.appendChild(section);
+    } else {
+        host.insertAdjacentElement('beforebegin', section);
+    }
+
     renderCarbonFlowChart();
 }
 function renderCarbonFlowChart() {

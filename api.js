@@ -333,7 +333,10 @@ async getMyReports() {
 async getMonthlyCarbonForecast(data) {
     return this.post('/forecast/monthly-carbon', data);
 },
-
+// 获取金融产品推荐
+async getFinanceRecommendations(params = '') {
+    return this.get(`/finance/recommendations${params ? `?${params}` : ''}`);
+},
 // ========== 系统健康检查 ==========
 
 // 真实运行模式健康检查

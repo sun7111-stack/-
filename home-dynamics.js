@@ -373,7 +373,6 @@ async loadLiveFeedFromApi() {
         <div class="carbon-topology-copy">
           <span class="insight-kicker">Carbon Footprint Topology</span>
           <h4>碳足迹实时拓扑图</h4>
-          <p>用“采购端 → 生产环节 → Scope 排放”的流向关系替代黑色粒子展示，让核算逻辑更直观。</p>
         </div>
         <div id="carbonTopologyChart" class="carbon-topology-chart"></div>
       `;

@@ -1008,6 +1008,9 @@ function initPlatform() {
     
     loadDynamicBackendData();
 
+    loadReportPreviewData();
+
+loadFinanceRecommendationData();
     // 9. 初始化ESG计算器
     initESGCalculator();
     
@@ -2004,6 +2007,195 @@ if (eventsData) {
     } catch (e) {
         console.warn('Dashboard 后端接口未就绪，使用默认静态数据展示。', e);
     }
+}
+async function loadReportPreviewData() {
+    try {
+        const res = await API.getMyReports().catch(() => null);
+
+        const reports = Array.isArray(res)
+            ? res
+            : (res?.reports || res?.data || []);
+
+        if (!reports.length) {
+            renderReportPreviewFallback();
+            return;
+        }
+
+        renderReportPreview(reports.slice(0, 3));
+    } catch (error) {
+        console.warn('报告预览接口未返回有效数据，使用默认报告预览。', error);
+        renderReportPreviewFallback();
+    }
+}
+/**
+ * 加载绿色金融推荐：后端接口优先，失败时使用本地金融产品兜底
+ */
+async function loadFinanceRecommendationData() {
+    try {
+        if (!API || typeof API.getFinanceRecommendations !== 'function') {
+            renderFinanceRecommendationFallback();
+            return;
+        }
+
+        const res = await API.getFinanceRecommendations().catch(() => null);
+
+        const products = Array.isArray(res)
+            ? res
+            : (res?.products || res?.recommendations || res?.data || res?.items || []);
+
+        if (!products.length) {
+            renderFinanceRecommendationFallback();
+            return;
+        }
+
+        renderFinanceRecommendationList(products.slice(0, 4));
+    } catch (error) {
+        console.warn('融资推荐接口未返回有效数据，使用默认推荐展示。', error);
+        renderFinanceRecommendationFallback();
+    }
+}
+
+/**
+ * 渲染绿色金融推荐列表
+ */
+function renderFinanceRecommendationList(products) {
+    let container =
+        document.getElementById('financeRecommendationList') ||
+        document.querySelector('.finance-recommendation-list') ||
+        document.querySelector('.finance-products-list');
+
+    if (!container) {
+        const anchor =
+            document.querySelector('.finance-match-section') ||
+            document.querySelector('#finance-match') ||
+            document.querySelector('[data-page="finance-match"]');
+
+        if (!anchor) {
+            console.warn('未找到融资推荐容器。');
+            return;
+        }
+
+        const section = document.createElement('section');
+        section.className = 'finance-recommendation-section';
+        section.innerHTML = `
+            <div class="finance-recommendation-header">
+                <div>
+                    <span class="insight-kicker">Green Finance Matching</span>
+                    <h4>绿色金融产品推荐</h4>
+                </div>
+                <span class="finance-recommendation-status">接口优先</span>
+            </div>
+            <div id="financeRecommendationList" class="finance-recommendation-list"></div>
+        `;
+
+        anchor.insertAdjacentElement('afterbegin', section);
+        container = document.getElementById('financeRecommendationList');
+    }
+
+    container.innerHTML = products.map((product, index) => {
+        const id = product.id || product.product_id || index + 1;
+        const name = product.name || product.product_name || product.title || '绿色信贷产品';
+        const bank = product.bank || product.institution || product.provider || '合作金融机构';
+        const rate = product.rate || product.interest_rate || product.interestRate || product.discount || '利率优惠';
+        const score = product.score || product.match_score || product.fit_score || product.popularity || '--';
+        const reason = product.reason || product.description || product.summary || '根据企业碳核算结果、ESG 表现与减排潜力进行匹配推荐。';
+
+        return `
+            <div class="finance-recommendation-item">
+                <div class="finance-product-main">
+                    <strong>${name}</strong>
+                    <span>${bank}</span>
+                    <p>${reason}</p>
+                </div>
+                <div class="finance-product-meta">
+                    <span>匹配度：${score}${String(score).includes('%') ? '' : '%'}</span>
+                    <em>${rate}</em>
+                    <button type="button" class="btn btn-sm btn-outline-success mt-2" onclick="applyProduct(${Number(id) || 1})">
+                        申请
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * 绿色金融推荐兜底展示
+ */
+function renderFinanceRecommendationFallback() {
+    const fallbackProducts = DataService.financialProducts || [
+        {
+            id: 1,
+            name: '绿色经营贷',
+            bank: '绿色银行',
+            popularity: 86,
+            interestRate: '预计利率优惠 35BP',
+            description: '适用于碳排放强度下降、经营数据稳定且具备绿色转型计划的企业。'
+        },
+        {
+            id: 2,
+            name: '碳减排专项贷',
+            bank: '合作金融机构',
+            popularity: 82,
+            interestRate: '最高授信 300 万',
+            description: '面向节能改造、设备升级、物流减排等场景，支持企业开展低碳改造。'
+        }
+    ];
+
+    renderFinanceRecommendationList(fallbackProducts.slice(0, 4));
+}
+function renderReportPreview(reports) {
+    const container =
+        document.getElementById('reportPreviewList') ||
+        document.querySelector('.report-preview-list') ||
+        document.querySelector('.report-list');
+
+    if (!container) {
+        console.warn('未找到报告预览容器。');
+        return;
+    }
+
+    container.innerHTML = reports.map(report => {
+        const title = report.title || report.name || '碳排放分析报告';
+        const status = report.status || report.state || '已生成';
+        const time = report.created_at || report.updated_at || report.time || '--';
+        const summary = report.summary || report.preview || report.description || '暂无报告摘要';
+
+        return `
+            <div class="report-preview-item">
+                <div class="report-preview-main">
+                    <strong>${title}</strong>
+                    <span>${summary}</span>
+                </div>
+                <div class="report-preview-meta">
+                    <span>${status}</span>
+                    <time>${time}</time>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderReportPreviewFallback() {
+    const container =
+        document.getElementById('reportPreviewList') ||
+        document.querySelector('.report-preview-list') ||
+        document.querySelector('.report-list');
+
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="report-preview-item">
+            <div class="report-preview-main">
+                <strong>企业碳排放核算报告</strong>
+                <span>基于票据识别、碳核算结果和风险扫描生成的综合分析报告。</span>
+            </div>
+            <div class="report-preview-meta">
+                <span>静态展示</span>
+                <time>--</time>
+            </div>
+        </div>
+    `;
 }
 function renderHomeStream(events) {
     const streamContainer = document.querySelector('.stream-desc');
