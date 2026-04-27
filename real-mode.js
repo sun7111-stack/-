@@ -165,7 +165,10 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
         ['Report Mock', report.is_mock === true ? '是' : report.is_mock === false ? '否' : '--'],
       ];
 
- el.innerHTML = `
+ el.dataset.source = 'real';
+el.dataset.locked = 'true';
+
+el.innerHTML = `
   <div class="real-mode-status-row">
     ${modeBadge}
     <span class="real-mode-status-text">
@@ -472,9 +475,12 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
       return report;
     },
 
-    async runRealFlow() {
-      if (this.state.running) return;
-      this.state.running = true;
+   async runRealFlow() {
+  if (this.state.running) return;
+
+  window.RealModeActive = true;
+
+  this.state.running = true;
       this.state.steps = [];
       this.renderSteps();
       this.renderResult(null);
@@ -506,7 +512,12 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
         };
        this.state.lastRun = lastRun;
 this.state.lastError = null;
+
 window.RealModeState = lastRun;
+window.RealModeActive = false;
+window.RealModeLocked = true;
+window.RealModeResultReady = true;
+
 this.renderResult(lastRun);
 // 真实闭环成功后，自动刷新首页数据
 try {
@@ -522,6 +533,7 @@ try {
 }
         this.setStatus('ok', '<span class="ok">真实闭环完成</span><span class="ok">已写入数据库/证据链</span><span class="ok">可用于答辩展示</span>');
  } catch (error) {
+  window.RealModeActive = false;
   const text = this.friendlyError(error);
   this.state.lastError = text;
   console.error('[RealMode] flow failed', error);

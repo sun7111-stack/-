@@ -16,7 +16,22 @@ document.addEventListener('DOMContentLoaded', function() {
     initSidebar();
     initPageRouter();
 });
+// ============================================
+// Real Mode 结果保护：真实链路结果出现后，禁止 Mock/示例数据覆盖
+// ============================================
+function isRealModeProtected() {
+    return window.RealModeLocked === true ||
+           window.RealModeResultReady === true ||
+           window.RealModeActive === true;
+}
 
+function skipMockWhenRealModeLocked(source = 'mock') {
+    if (isRealModeProtected()) {
+        console.log(`真实模式结果已锁定，跳过 ${source} 覆盖。`);
+        return true;
+    }
+    return false;
+}
 // 检查登录状态
 function checkLoginStatus() {
     const isLoggedIn = localStorage.getItem('carbon_platform_logged_in') === 'true';
@@ -2664,18 +2679,23 @@ function initOCRDemo() {
  * 处理示例案例
  */
 function handleDemoCase() {
+    if (skipMockWhenRealModeLocked('示例案例')) return;
+
     // 更新事件流状态：文件上传开始
     updateEventNodeStatus('event-upload', 'processing');
     
     setTimeout(() => {
-        // 更新事件流状态：文件上传完成
+    if (skipMockWhenRealModeLocked('示例案例延迟任务')) return;
+
+    // 更新事件流状态：文件上传完成
         updateEventNodeStatus('event-upload', 'completed');
         
         // 更新事件流状态：VLM识别开始
         updateEventNodeStatus('event-vlm', 'processing');
-        
-        setTimeout(() => {
-            // 显示识别结果
+      setTimeout(() => {
+    if (skipMockWhenRealModeLocked('示例 OCR 结果')) return;
+
+    // 显示识别结果
             const recognitionResultArea = document.getElementById('recognition-result-area');
             if (recognitionResultArea) {
                 recognitionResultArea.style.display = 'block';
@@ -2711,6 +2731,8 @@ function handleDemoCase() {
  * 处理文件上传
  */
 function handleFileUpload(e) {
+    if (skipMockWhenRealModeLocked('普通上传 Mock 识别')) return;
+
     const file = e.target.files[0];
     if (!file) return;
     
@@ -2748,17 +2770,21 @@ function handleFileUpload(e) {
         uploadProgressArea.style.display = 'block';
     }
     
-    // 模拟文件上传
-    setTimeout(() => {
-        // 更新事件流状态：文件上传完成
+   // 模拟文件上传
+setTimeout(() => {
+    if (skipMockWhenRealModeLocked('普通上传延迟 Mock')) return;
+
+    // 更新事件流状态：文件上传完成
         updateEventNodeStatus('event-upload', 'completed');
         
         // 更新事件流状态：VLM识别开始
         updateEventNodeStatus('event-vlm', 'processing');
         
         // 模拟OCR处理
-        setTimeout(() => {
-            const sampleResults = {
+setTimeout(() => {
+    if (skipMockWhenRealModeLocked('OCR Mock 识别结果')) return;
+
+    const sampleResults = {
                 electricity: {
                     title: '电费单识别结果',
                     data: {
@@ -2998,6 +3024,8 @@ function initReportGenerator() {
  * 更新报告生成器
  */
 function updateReportGenerator(type) {
+    if (skipMockWhenRealModeLocked('报告模板预览')) return;
+
     const preview = document.getElementById('reportPreview');
     if (!preview) return;
     
@@ -3904,6 +3932,8 @@ function initEventListeners() {
  * 加载示例数据
  */
 function loadSampleData() {
+    if (skipMockWhenRealModeLocked('loadSampleData 示例数据')) return;
+
     // 可以在这里加载更多的模拟数据
     console.log('示例数据加载完成');
 }
@@ -4755,7 +4785,9 @@ const AIReport = {
   /**
    * 生成AI报告
    */
-  generate() {
+generate() {
+    if (skipMockWhenRealModeLocked('AI 报告 Mock 生成')) return;
+
     const reportBtn = document.getElementById('reportBtn');
     const reportLoadingBox = document.getElementById('reportLoadingBox');
     const reportResultBox = document.getElementById('reportResultBox');
@@ -4798,9 +4830,11 @@ const AIReport = {
         }
     }, 1000);
     
-    // 模拟API调用延迟
-    setTimeout(() => {
-        // 隐藏加载状态
+   // 模拟API调用延迟
+setTimeout(() => {
+    if (skipMockWhenRealModeLocked('AI 报告延迟 Mock 结果')) return;
+
+    // 隐藏加载状态
         reportLoadingBox.style.display = 'none';
         
         // 显示结果区域
@@ -4850,18 +4884,21 @@ const AIReport = {
         
         // 打字机效果显示融资建议
         const financeText = '基于您的ESG评分和碳表现，建议申请绿色信贷优惠包，预计可获得LPR-50BP的利率优惠，最高额度500万元。';
-        setTimeout(() => {
-            AIReport.typeWriter(financeSuggestionText, financeText, 0, 20);
-        }, 3000);
-        
+     setTimeout(() => {
+    if (skipMockWhenRealModeLocked('AI 融资建议 Mock')) return;
+    AIReport.typeWriter(financeSuggestionText, financeText, 0, 20);
+}, 3000);
         // 恢复按钮状态
         reportBtn.disabled = false;
         reportBtn.innerHTML = '<i class="fas fa-robot me-2"></i>生成 AI 报告';
         
         // 显示导出按钮
-        setTimeout(() => {
-            document.getElementById('exportBtnContainer').style.display = 'block';
-        }, 4000);
+       setTimeout(() => {
+    if (skipMockWhenRealModeLocked('AI 报告导出按钮 Mock')) return;
+
+    const exportBtnContainer = document.getElementById('exportBtnContainer');
+    if (exportBtnContainer) exportBtnContainer.style.display = 'block';
+}, 4000);
         
     }, 6000);
   },
@@ -4869,8 +4906,11 @@ const AIReport = {
   /**
    * 打字机效果函数
    */
-  typeWriter(element, text, index, speed) {
-      if (index < text.length) {
+typeWriter(element, text, index, speed) {
+    if (skipMockWhenRealModeLocked('AI 打字机 Mock')) return;
+    if (!element) return;
+
+    if (index < text.length) {
           element.textContent = text.substring(0, index + 1);
           index++;
           setTimeout(() => AIReport.typeWriter(element, text, index, speed), speed);
