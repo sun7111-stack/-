@@ -1090,19 +1090,36 @@ function initEmissionGraph() {
     };
     
     const data = generateRandomData();
-    const allNodes = [...data.productionLines, ...data.equipments, ...data.emissionFactors];
+    const positionedNodes = [
+        { ...data.productionLines[0], x: 210, y: 120, symbolSize: 58 },
+        { ...data.productionLines[1], x: 210, y: 220, symbolSize: 54 },
+        { ...data.productionLines[2], x: 210, y: 320, symbolSize: 50 },
+        { ...data.equipments[0], x: 500, y: 90, symbolSize: 42 },
+        { ...data.equipments[1], x: 500, y: 170, symbolSize: 38 },
+        { ...data.equipments[2], x: 500, y: 255, symbolSize: 44 },
+        { ...data.equipments[3], x: 500, y: 335, symbolSize: 36 },
+        { ...data.emissionFactors[0], x: 800, y: 150, symbolSize: 36 },
+        { ...data.emissionFactors[1], x: 800, y: 255, symbolSize: 36 },
+        { ...data.emissionFactors[2], x: 800, y: 335, symbolSize: 32 }
+    ];
     
     const option = {
         title: {
-            text: '企业排放源关系图谱',
-            left: 'center',
+            text: '排放源路径：生产线 → 设备 → 排放因子',
+            left: 28,
+            top: 18,
             textStyle: {
-                fontSize: 16,
-                fontWeight: 'bold'
+                color: '#17231F',
+                fontSize: 15,
+                fontWeight: 800
             }
         },
         tooltip: {
             trigger: 'item',
+            backgroundColor: 'rgba(17, 35, 31, 0.94)',
+            borderWidth: 0,
+            padding: [10, 12],
+            textStyle: { color: '#F8FAFC', fontSize: 12 },
             formatter: function(params) {
                 if (params.dataType === 'node') {
                     const categoryName = params.data.category === 0 ? '生产线' : params.data.category === 1 ? '设备' : '排放因子';
@@ -1116,50 +1133,96 @@ function initEmissionGraph() {
         legend: {
             data: ['生产线', '设备', '排放因子'],
             orient: 'horizontal',
-            bottom: 10
+            top: 22,
+            right: 24,
+            itemWidth: 12,
+            itemHeight: 8,
+            itemGap: 18,
+            textStyle: {
+                color: '#64748B',
+                fontWeight: 700
+            }
         },
+        graphic: [
+            {
+                type: 'text',
+                left: 170,
+                top: 58,
+                style: { text: '生产线', fill: '#64748B', font: '700 12px sans-serif' }
+            },
+            {
+                type: 'text',
+                left: 'center',
+                top: 58,
+                style: { text: '关键设备', fill: '#64748B', font: '700 12px sans-serif' }
+            },
+            {
+                type: 'text',
+                right: 162,
+                top: 58,
+                style: { text: '排放因子', fill: '#64748B', font: '700 12px sans-serif' }
+            }
+        ],
         animationDurationUpdate: 1500,
         animationEasingUpdate: 'quinticInOut',
         series: [
             {
                 type: 'graph',
-                layout: 'force',
-                force: {
-                    repulsion: 1500,
-                    edgeLength: [100, 200],
-                    gravity: 0.1
-                },
-                roam: true,
+                layout: 'none',
+                coordinateSystem: null,
+                left: 30,
+                right: 30,
+                top: 70,
+                bottom: 28,
+                roam: false,
                 label: {
                     show: true,
                     position: 'right',
                     formatter: '{b}',
-                    fontSize: 12
+                    color: '#243B35',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    backgroundColor: 'rgba(255,255,255,0.82)',
+                    borderRadius: 6,
+                    padding: [3, 6]
                 },
-                data: allNodes.map(node => ({
+                edgeSymbol: ['none', 'arrow'],
+                edgeSymbolSize: [0, 10],
+                data: positionedNodes.map(node => ({
                     ...node,
+                    symbol: node.category === 0 ? 'roundRect' : node.category === 1 ? 'circle' : 'diamond',
                     itemStyle: {
-                        color: node.category === 0 ? '#409EFF' : node.category === 1 ? '#67C23A' : '#E6A23C'
+                        color: node.category === 0 ? '#3B82F6' : node.category === 1 ? '#16A34A' : '#E9A23B',
+                        borderColor: '#FFFFFF',
+                        borderWidth: 3,
+                        shadowBlur: 16,
+                        shadowColor: node.category === 0 ? 'rgba(59,130,246,0.24)' : node.category === 1 ? 'rgba(22,163,74,0.22)' : 'rgba(233,162,59,0.22)'
                     }
                 })),
                 links: data.links.map(link => ({
                     ...link,
-                    lineStyle: { width: 2, color: '#999' }
+                    lineStyle: {
+                        width: 2,
+                        color: '#A9B9B2',
+                        curveness: 0.12,
+                        opacity: 0.72
+                    }
                 })),
                 categories: [
-                    { name: '生产线', itemStyle: { color: '#409EFF' } },
-                    { name: '设备', itemStyle: { color: '#67C23A' } },
-                    { name: '排放因子', itemStyle: { color: '#E6A23C' } }
+                    { name: '生产线', itemStyle: { color: '#3B82F6' } },
+                    { name: '设备', itemStyle: { color: '#16A34A' } },
+                    { name: '排放因子', itemStyle: { color: '#E9A23B' } }
                 ],
                 emphasis: {
                     focus: 'adjacency',
                     lineStyle: {
                         width: 4,
-                        color: '#409EFF'
+                        color: '#0F8F5F',
+                        opacity: 1
                     },
                     itemStyle: {
-                        shadowBlur: 10,
-                        shadowColor: 'rgba(64, 158, 255, 0.5)'
+                        shadowBlur: 18,
+                        shadowColor: 'rgba(15, 143, 95, 0.32)'
                     }
                 }
             }
@@ -1711,29 +1774,70 @@ const defaultExcellent = [0.30, 0.60, 0.40, 0.18, 0.35, 0.70];
     const option = {
         tooltip: {
             trigger: 'axis',
+            backgroundColor: 'rgba(17, 35, 31, 0.92)',
+            borderWidth: 0,
+            padding: [12, 14],
+            textStyle: {
+                color: '#F8FAFC',
+                fontSize: 12
+            },
             axisPointer: {
-                type: 'cross',
-                crossStyle: {
-                    color: '#999'
+                type: 'shadow',
+                shadowStyle: {
+                    color: 'rgba(31, 107, 79, 0.06)'
                 }
             }
         },
         toolbox: {
+            top: 42,
+            right: 14,
+            itemSize: 18,
+            itemGap: 12,
+            iconStyle: {
+                borderColor: '#5E748C',
+                borderWidth: 1.8
+            },
+            emphasis: {
+                iconStyle: {
+                    borderColor: '#0F8F5F',
+                    shadowBlur: 4,
+                    shadowColor: 'rgba(15, 143, 95, 0.22)'
+                }
+            },
             feature: {
-                dataView: { show: true, readOnly: false },
-                magicType: { show: true, type: ['line', 'bar'] },
-                restore: { show: true },
-                saveAsImage: { show: true }
+                dataView: { show: true, readOnly: false, title: '数据视图' },
+                magicType: { show: true, type: ['line', 'bar'], title: { line: '切换为折线图', bar: '切换为柱状图' } },
+                restore: { show: true, title: '还原' },
+                saveAsImage: { show: true, title: '保存图片' }
             }
         },
         legend: {
             data: ['碳排放强度', '行业平均', '优秀水平'],
-            top: 10
+            top: 12,
+            right: 24,
+            itemGap: 14
+        },
+        grid: {
+            top: 92,
+            left: 72,
+            right: 28,
+            bottom: 44,
+            containLabel: true
         },
         xAxis: [
             {
                 type: 'category',
                data: defaultCategories,
+                axisTick: { show: false },
+                axisLine: {
+                    lineStyle: {
+                        color: '#D9E5DF'
+                    }
+                },
+                axisLabel: {
+                    color: '#64748B',
+                    fontWeight: 700
+                },
                 axisPointer: {
                     type: 'shadow'
                 }
@@ -1746,8 +1850,22 @@ const defaultExcellent = [0.30, 0.60, 0.40, 0.18, 0.35, 0.70];
                 min: 0,
                 max: 1.5,
                 interval: 0.3,
+                nameTextStyle: {
+                    color: '#64748B',
+                    fontWeight: 700,
+                    padding: [0, 0, 8, 0]
+                },
                 axisLabel: {
-                    formatter: '{value} t/万元'
+                    formatter: '{value} t/万元',
+                    color: '#64748B'
+                },
+                axisLine: { show: false },
+                axisTick: { show: false },
+                splitLine: {
+                    lineStyle: {
+                        color: '#E8F0EC',
+                        type: 'dashed'
+                    }
                 }
             }
         ],
@@ -1756,33 +1874,79 @@ const defaultExcellent = [0.30, 0.60, 0.40, 0.18, 0.35, 0.70];
                 name: '碳排放强度',
                 type: 'bar',
                 data: defaultCarbonIntensity,
-                itemStyle: {
-                    color: '#4CAF50'
+                showBackground: true,
+                backgroundStyle: {
+                    color: 'rgba(31, 107, 79, 0.055)',
+                    borderRadius: [10, 10, 0, 0]
                 },
-                barWidth: '40%'
+                itemStyle: {
+                    borderRadius: [10, 10, 0, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#34D399' },
+                        { offset: 0.52, color: '#16A36F' },
+                        { offset: 1, color: '#0F6B4F' }
+                    ]),
+                    shadowBlur: 14,
+                    shadowColor: 'rgba(15, 107, 79, 0.18)',
+                    shadowOffsetY: 8
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#5EE0B0' },
+                            { offset: 1, color: '#128A62' }
+                        ])
+                    }
+                },
+                barWidth: 34,
+                z: 2
             },
             {
                 name: '行业平均',
                 type: 'line',
                data: defaultIndustryAvg,
+                smooth: true,
+                symbol: 'circle',
+                symbolSize: 7,
                 itemStyle: {
-                    color: '#FF9800'
+                    color: '#F59E0B',
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2
                 },
                 lineStyle: {
                     width: 3,
-                    type: 'dashed'
-                }
+                    type: 'dashed',
+                    color: '#F59E0B',
+                    shadowBlur: 8,
+                    shadowColor: 'rgba(245, 158, 11, 0.22)'
+                },
+                z: 4
             },
             {
                 name: '优秀水平',
                 type: 'line',
                 data: defaultExcellent,
+                smooth: true,
+                symbol: 'circle',
+                symbolSize: 7,
                 itemStyle: {
-                    color: '#0288D1'
+                    color: '#0EA5E9',
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2
                 },
                 lineStyle: {
-                    width: 3
-                }
+                    width: 3,
+                    color: '#0EA5E9',
+                    shadowBlur: 8,
+                    shadowColor: 'rgba(14, 165, 233, 0.18)'
+                },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(14, 165, 233, 0.12)' },
+                        { offset: 1, color: 'rgba(14, 165, 233, 0)' }
+                    ])
+                },
+                z: 3
             }
         ]
     };
@@ -1848,10 +2012,28 @@ function initESGRadarChart() {
     
     const chart = echarts.init(chartDom);
     const option = {
+        color: ['#12B981', '#E9A23B'],
         tooltip: {
-            trigger: 'item'
+            trigger: 'item',
+            backgroundColor: 'rgba(17, 35, 31, 0.92)',
+            borderWidth: 0,
+            textStyle: { color: '#F8FAFC' }
+        },
+        legend: {
+            top: 4,
+            right: 8,
+            itemWidth: 10,
+            itemHeight: 10,
+            itemGap: 16,
+            textStyle: {
+                color: '#64748B',
+                fontSize: 12,
+                fontWeight: 600
+            }
         },
         radar: {
+            center: ['50%', '55%'],
+            radius: '62%',
             indicator: [
                 { name: '碳管理', max: 100 },
                 { name: '能耗效率', max: 100 },
@@ -1863,50 +2045,77 @@ function initESGRadarChart() {
             shape: 'circle',
             splitNumber: 5,
             axisName: {
-                color: '#333',
-                fontSize: 12
+                color: '#334155',
+                fontSize: 12,
+                fontWeight: 700,
+                padding: [3, 5]
+            },
+            axisLine: {
+                lineStyle: {
+                    color: 'rgba(31, 107, 79, 0.14)'
+                }
             },
             splitLine: {
                 lineStyle: {
-                    color: 'rgba(0, 0, 0, 0.1)'
+                    color: [
+                        'rgba(31, 107, 79, 0.08)',
+                        'rgba(31, 107, 79, 0.10)',
+                        'rgba(31, 107, 79, 0.13)',
+                        'rgba(31, 107, 79, 0.16)',
+                        'rgba(31, 107, 79, 0.22)'
+                    ]
                 }
             },
             splitArea: {
                 show: true,
                 areaStyle: {
-                    color: ['rgba(255, 255, 255, 0.8)', 'rgba(200, 200, 200, 0.1)']
+                    color: ['rgba(246, 251, 248, 0.94)', 'rgba(236, 247, 241, 0.56)']
                 }
             }
         },
         series: [
             {
                 type: 'radar',
+                symbol: 'circle',
+                symbolSize: 6,
+                emphasis: {
+                    lineStyle: { width: 4 }
+                },
                 data: [
                     {
                         value: [75, 80, 65, 85, 70, 90],
                         name: '当前表现',
                         itemStyle: {
-                            color: '#4CAF50'
+                            color: '#12B981',
+                            borderColor: '#FFFFFF',
+                            borderWidth: 2
                         },
                         areaStyle: {
-                            color: 'rgba(76, 175, 80, 0.3)'
+                            color: new echarts.graphic.RadialGradient(0.5, 0.5, 1, [
+                                { offset: 0, color: 'rgba(18, 185, 129, 0.34)' },
+                                { offset: 1, color: 'rgba(18, 185, 129, 0.08)' }
+                            ])
                         },
                         lineStyle: {
-                            width: 2
+                            width: 3,
+                            color: '#12B981'
                         }
                     },
                     {
                         value: [60, 65, 55, 70, 60, 75],
                         name: '行业平均',
                         itemStyle: {
-                            color: '#FF9800'
+                            color: '#E9A23B',
+                            borderColor: '#FFFFFF',
+                            borderWidth: 2
                         },
                         areaStyle: {
-                            color: 'rgba(255, 152, 0, 0.1)'
+                            color: 'rgba(233, 162, 59, 0.05)'
                         },
                         lineStyle: {
                             type: 'dashed',
-                            width: 1
+                            width: 2,
+                            color: '#E9A23B'
                         }
                     }
                 ]
@@ -1956,7 +2165,8 @@ function animateCounter(element, target, suffix = '') {
             current = target;
             clearInterval(timer);
         }
-        element.textContent = Math.floor(current) + suffix;
+        const value = Math.floor(current);
+        element.textContent = (element.dataset.format === 'comma' ? value.toLocaleString('zh-CN') : value) + suffix;
     }, 20);
 }
 /**
@@ -1978,12 +2188,17 @@ async function loadDynamicBackendData() {
                 if (realValue !== undefined && realValue !== null) {
                     const numericValue = Number(realValue);
 
-                    el.setAttribute('data-target', numericValue || 0);
+                    const fallbackValue = Number(el.dataset.default || el.getAttribute('data-target') || 0);
+                    const displayValue = !Number.isNaN(numericValue) && numericValue > 0
+                        ? numericValue
+                        : fallbackValue;
+
+                    el.setAttribute('data-target', displayValue || 0);
                     el.textContent = '0';
 
-                    if (!Number.isNaN(numericValue)) {
+                    if (!Number.isNaN(displayValue)) {
                         if (typeof animateCounter === 'function') {
-                            animateCounter(el, numericValue);
+                            animateCounter(el, displayValue);
                         }
                     } else {
                         el.textContent = realValue;
@@ -3747,15 +3962,15 @@ function applyProduct(productId) {
                     申请要求：${product.requirements}
                 </div>
                 
-                <form id="productApplicationForm">
+                <form id="productApplicationForm" data-product-id="${product.id}" data-product-name="${product.name}" data-max-amount="${product.maxAmount}">
                     <div class="mb-3">
                         <label class="form-label">申请金额（元）</label>
-                        <input type="number" class="form-control" placeholder="请输入申请金额" min="10000" max="${product.maxAmount}" required>
+                        <input type="number" name="amount" class="form-control" placeholder="请输入申请金额" min="10000" max="${product.maxAmount}" step="1000" required>
                         <small class="text-muted">最高可申请：${product.maxAmount.toLocaleString()}元</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">使用用途</label>
-                        <textarea class="form-control" rows="3" placeholder="请描述资金用途..." required></textarea>
+                        <textarea name="purpose" class="form-control" rows="3" placeholder="请描述资金用途..." minlength="6" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-success w-100">
                         <i class="fas fa-paper-plane me-2"></i>提交申请
@@ -3763,11 +3978,86 @@ function applyProduct(productId) {
                 </form>
             </div>
         `);
+        setTimeout(bindProductApplicationForm, 0);
     } else {
         showToast('请先登录后申请金融产品', 'warning');
         const modal = new bootstrap.Modal(document.getElementById('loginModal'));
         modal.show();
     }
+}
+
+function bindProductApplicationForm() {
+    const form = document.getElementById('productApplicationForm');
+    if (!form || form.dataset.bound === '1') return;
+    form.dataset.bound = '1';
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const amount = Number(form.elements.amount.value);
+        const maxAmount = Number(form.dataset.maxAmount);
+        const purpose = form.elements.purpose.value.trim();
+
+        if (amount < 10000 || amount > maxAmount) {
+            showToast(`申请金额需在 10,000 元至 ${maxAmount.toLocaleString('zh-CN')} 元之间`, 'warning');
+            return;
+        }
+
+        if (purpose.length < 6) {
+            showToast('请补充更完整的资金用途说明', 'warning');
+            return;
+        }
+
+        const product = DataService.financialProducts.find(item => item.id === Number(form.dataset.productId));
+        const applicationNo = `GF-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 9000 + 1000)}`;
+        const application = {
+            applicationNo,
+            productId: Number(form.dataset.productId),
+            productName: form.dataset.productName,
+            bank: product?.bank || '合作金融机构',
+            amount,
+            purpose,
+            applicant: PlatformState.user?.name || '演示用户',
+            company: PlatformState.user?.company || '演示企业',
+            createdAt: new Date().toISOString(),
+            status: 'submitted'
+        };
+
+        const applications = JSON.parse(localStorage.getItem('carbon_platform_finance_applications') || '[]');
+        applications.unshift(application);
+        localStorage.setItem('carbon_platform_finance_applications', JSON.stringify(applications.slice(0, 20)));
+
+        const modalBody = form.closest('.modal-body');
+        if (modalBody) {
+            modalBody.innerHTML = `
+                <div class="finance-application-result">
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle me-2"></i>
+                        申请已提交，金融顾问会根据企业ESG数据和授信材料进行预审。
+                    </div>
+                    <div class="report-preview-item">
+                        <div class="report-preview-main">
+                            <strong>${application.productName}</strong>
+                            <span>申请编号：${applicationNo}</span>
+                            <span>申请金额：¥${amount.toLocaleString('zh-CN')}</span>
+                            <span>用途：${purpose}</span>
+                        </div>
+                        <div class="report-preview-meta">
+                            <span>${application.bank}</span>
+                            <em>预审中</em>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        showToast(`${application.productName}申请已提交：${applicationNo}`, 'success');
+    });
 }
 
 /**
@@ -3896,6 +4186,7 @@ function selectPlan(planType) {
     };
     
     const plan = plans[planType] || plans.basic;
+    const numericPrice = planType === 'enterprise' ? 1999 : 999;
     
     if (planType === 'basic') {
         if (PlatformState.user) {
@@ -3918,14 +4209,14 @@ function selectPlan(planType) {
                         '企业版提供定制化服务，适合有特殊需求的企业'}
                 </div>
                 
-                <form id="planSelectionForm">
+                <form id="planSelectionForm" data-plan-type="${planType}" data-plan-name="${plan.name}" data-unit-price="${numericPrice}">
                     <div class="mb-3">
                         <label class="form-label">购买数量（用户数）</label>
-                        <input type="number" class="form-control" value="1" min="1" max="100">
+                        <input name="quantity" type="number" class="form-control" value="1" min="1" max="100">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">购买时长</label>
-                        <select class="form-select">
+                        <select name="duration" class="form-select">
                             <option value="1">1年</option>
                             <option value="2">2年（享9折优惠）</option>
                             <option value="3">3年（享8折优惠）</option>
@@ -3933,13 +4224,13 @@ function selectPlan(planType) {
                     </div>
                     <div class="mb-3">
                         <label class="form-label">联系人信息</label>
-                        <input type="text" class="form-control" placeholder="姓名" required>
+                        <input name="contactName" type="text" class="form-control" placeholder="姓名" required>
                     </div>
                     <div class="mb-3">
-                        <input type="tel" class="form-control" placeholder="电话" required>
+                        <input name="phone" type="tel" class="form-control" placeholder="电话" required>
                     </div>
                     <div class="mb-3">
-                        <input type="email" class="form-control" placeholder="邮箱" required>
+                        <input name="email" type="email" class="form-control" placeholder="邮箱" required>
                     </div>
                     
                     <button type="submit" class="btn btn-primary w-100">
@@ -3948,8 +4239,76 @@ function selectPlan(planType) {
                 </form>
             </div>
         `);
+        setTimeout(bindPlanSelectionForm, 0);
     }
-};
+}
+}
+
+function bindPlanSelectionForm() {
+    const form = document.getElementById('planSelectionForm');
+    if (!form || form.dataset.bound === '1') return;
+    form.dataset.bound = '1';
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const quantity = Math.max(1, Number(form.elements.quantity.value) || 1);
+        const duration = Math.max(1, Number(form.elements.duration.value) || 1);
+        const unitPrice = Number(form.dataset.unitPrice) || 0;
+        const discount = duration === 3 ? 0.8 : duration === 2 ? 0.9 : 1;
+        const total = Math.round(unitPrice * quantity * duration * discount);
+        const orderNo = `CRZH-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 9000 + 1000)}`;
+
+        const order = {
+            orderNo,
+            planType: form.dataset.planType,
+            planName: form.dataset.planName,
+            quantity,
+            duration,
+            unitPrice,
+            discount,
+            total,
+            contactName: form.elements.contactName.value.trim(),
+            phone: form.elements.phone.value.trim(),
+            email: form.elements.email.value.trim(),
+            createdAt: new Date().toISOString(),
+            status: form.dataset.planType === 'enterprise' ? 'pending_consult' : 'pending_payment'
+        };
+
+        const orders = JSON.parse(localStorage.getItem('carbon_platform_orders') || '[]');
+        orders.unshift(order);
+        localStorage.setItem('carbon_platform_orders', JSON.stringify(orders.slice(0, 20)));
+
+        const modalEl = document.getElementById('dynamicModal');
+        const modal = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+        if (modal) modal.hide();
+
+        showToast(`${order.planName}订单已生成：${orderNo}，应付 ¥${total.toLocaleString('zh-CN')}`, 'success');
+        showModal('购买申请已提交', `
+            <div class="purchase-result">
+                <div class="alert alert-success mb-3">
+                    <i class="fas fa-check-circle me-2"></i>
+                    已生成订单，稍后会由客户经理联系确认开通与付款方式。
+                </div>
+                <div class="report-preview-item">
+                    <div class="report-preview-main">
+                        <strong>${order.planName} · ${quantity} 用户 · ${duration} 年</strong>
+                        <span>订单号：${orderNo}</span>
+                        <span>联系人：${order.contactName} / ${order.email}</span>
+                    </div>
+                    <div class="report-preview-meta">
+                        <span>¥${total.toLocaleString('zh-CN')}</span>
+                        <em>${order.status === 'pending_consult' ? '待咨询' : '待付款'}</em>
+                    </div>
+                </div>
+            </div>
+        `);
+    });
 }
 
 // ============================================
@@ -4405,11 +4764,13 @@ const AIReport = {
     const financeSuggestionText = document.getElementById('financeSuggestionText');
     const aiThinkingProcess = document.getElementById('aiThinkingProcess');
     const reportProgressBar = document.getElementById('reportProgressBar');
+    const reportEmptyState = document.getElementById('reportEmptyState');
     
     reportBtn.disabled = true;
     reportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>生成中...';
     
     // 显示加载状态
+    if (reportEmptyState) reportEmptyState.style.display = 'none';
     reportLoadingBox.style.display = 'block';
     reportResultBox.style.display = 'none';
     
@@ -4864,22 +5225,55 @@ function initSupplyChainESGChart() {
     const data = generateData();
     
     const option = {
+        color: ['#12B981', '#2563EB', '#F97316'],
+        grid: {
+            top: 78,
+            left: 64,
+            right: 72,
+            bottom: 48,
+            containLabel: true
+        },
         tooltip: {
             trigger: 'axis',
+            backgroundColor: 'rgba(17, 35, 31, 0.94)',
+            borderWidth: 0,
+            padding: [12, 14],
+            textStyle: {
+                color: '#F8FAFC',
+                fontSize: 12
+            },
             axisPointer: {
-                type: 'cross',
-                crossStyle: {
-                    color: '#999'
+                type: 'shadow',
+                shadowStyle: {
+                    color: 'rgba(31, 107, 79, 0.06)'
                 }
             }
         },
         legend: {
+            top: 18,
+            right: 18,
+            itemWidth: 10,
+            itemHeight: 10,
+            itemGap: 18,
+            textStyle: {
+                color: '#64748B',
+                fontSize: 12,
+                fontWeight: 700
+            },
             data: ['ESG评分', '企业综合表现', '范围3排放量']
         },
         xAxis: [
             {
                 type: 'category',
                 data: data.suppliers,
+                axisTick: { show: false },
+                axisLine: {
+                    lineStyle: { color: '#D9E5DF' }
+                },
+                axisLabel: {
+                    color: '#64748B',
+                    fontWeight: 700
+                },
                 axisPointer: {
                     type: 'shadow'
                 }
@@ -4892,8 +5286,22 @@ function initSupplyChainESGChart() {
                 min: 0,
                 max: 100,
                 interval: 20,
+                nameTextStyle: {
+                    color: '#64748B',
+                    fontWeight: 700,
+                    padding: [0, 0, 8, 0]
+                },
                 axisLabel: {
-                    formatter: '{value}'
+                    formatter: '{value}',
+                    color: '#64748B'
+                },
+                axisLine: { show: false },
+                axisTick: { show: false },
+                splitLine: {
+                    lineStyle: {
+                        color: '#E8F0EC',
+                        type: 'dashed'
+                    }
                 }
             },
             {
@@ -4902,9 +5310,18 @@ function initSupplyChainESGChart() {
                 min: 0,
                 max: 1000,
                 interval: 200,
+                nameTextStyle: {
+                    color: '#64748B',
+                    fontWeight: 700,
+                    padding: [0, 0, 8, 0]
+                },
                 axisLabel: {
-                    formatter: '{value}'
-                }
+                    formatter: '{value}',
+                    color: '#64748B'
+                },
+                axisLine: { show: false },
+                axisTick: { show: false },
+                splitLine: { show: false }
             }
         ],
         series: [
@@ -4912,36 +5329,71 @@ function initSupplyChainESGChart() {
                 name: 'ESG评分',
                 type: 'bar',
                 data: data.esgScores,
+                barWidth: 34,
+                showBackground: true,
+                backgroundStyle: {
+                    color: 'rgba(31, 107, 79, 0.055)',
+                    borderRadius: [10, 10, 0, 0]
+                },
                 itemStyle: {
-                    color: '#4CAF50'
-                }
+                    borderRadius: [10, 10, 0, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#45E0A6' },
+                        { offset: 0.55, color: '#18A36F' },
+                        { offset: 1, color: '#0F6B4F' }
+                    ]),
+                    shadowBlur: 14,
+                    shadowColor: 'rgba(15, 107, 79, 0.16)',
+                    shadowOffsetY: 8
+                },
+                z: 2
             },
             {
                 name: '企业综合表现',
                 type: 'line',
                 data: data.companyPerformance,
+                smooth: true,
                 itemStyle: {
-                    color: '#2196F3'
+                    color: '#2563EB',
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2
                 },
                 lineStyle: {
-                    width: 3
+                    width: 3,
+                    color: '#2563EB',
+                    shadowBlur: 8,
+                    shadowColor: 'rgba(37, 99, 235, 0.18)'
+                },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(37, 99, 235, 0.10)' },
+                        { offset: 1, color: 'rgba(37, 99, 235, 0)' }
+                    ])
                 },
                 symbol: 'circle',
-                symbolSize: 8
+                symbolSize: 7,
+                z: 4
             },
             {
                 name: '范围3排放量',
                 type: 'line',
                 yAxisIndex: 1,
                 data: data.scope3Emissions,
+                smooth: true,
                 itemStyle: {
-                    color: '#FF5722'
+                    color: '#F97316',
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2
                 },
                 lineStyle: {
-                    width: 3
+                    width: 3,
+                    color: '#F97316',
+                    shadowBlur: 8,
+                    shadowColor: 'rgba(249, 115, 22, 0.2)'
                 },
                 symbol: 'circle',
-                symbolSize: 8
+                symbolSize: 7,
+                z: 5
             }
         ]
     };

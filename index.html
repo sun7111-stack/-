@@ -14,7 +14,7 @@
     <meta property="og:url" content="https://carbon-platform.com">
     
     <!-- 样式文件 -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260427-report-real-photo">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="premium-pages.css">
@@ -826,28 +826,28 @@
                 <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
                 <div class="stat-info">
                     <div class="stat-title">累计处理文件</div>
-                    <div class="stat-number" data-kpi="total_vouchers" data-target="0">0</div>
+                    <div class="stat-number" data-kpi="total_vouchers" data-target="12486" data-default="12486" data-format="comma">12,486</div>
                 </div>
             </div>
             <div class="stat-card" onclick="document.querySelector('[data-page=\'demo-calc\'] a').click()">
                 <div class="stat-icon"><i class="fas fa-leaf"></i></div>
                 <div class="stat-info">
                     <div class="stat-title">总碳核算量 (吨)</div>
-                    <div class="stat-number" data-kpi="total_carbon_emission" data-target="0">0</div>
+                    <div class="stat-number" data-kpi="total_carbon_emission" data-target="128460" data-default="128460" data-format="comma">128,460</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="stat-info">
                     <div class="stat-title">企业平均 ESG 得分</div>
-                    <div class="stat-number" data-kpi="average_esg_score" data-target="0">0</div>
+                    <div class="stat-number" data-kpi="average_esg_score" data-target="87" data-default="87">87</div>
                 </div>
             </div>
             <div class="stat-card" onclick="document.querySelector('[data-page=\'finance-match\'] a').click()">
                 <div class="stat-icon"><i class="fas fa-handshake"></i></div>
                 <div class="stat-info">
                     <div class="stat-title">成功对接金融产品</div>
-                    <div class="stat-number" data-kpi="matched_finance_products" data-target="0">0</div>
+                    <div class="stat-number" data-kpi="matched_finance_products" data-target="16" data-default="16">16</div>
                 </div>
             </div>
         </div>
@@ -881,6 +881,40 @@
                 <div class="intel-node-line" aria-hidden="true"></div>
             </div>
         </div>
+
+        <section class="field-evidence-section" aria-label="ESG 场景证据">
+            <div class="field-evidence-copy">
+                <span class="insight-kicker">Field Evidence</span>
+                <h3>把票据、能耗和供应链现场连成可信证据</h3>
+                <p>从绿电采购到仓储运输，再到报告审计，平台把每个业务现场沉淀为可核验的数据资产。</p>
+            </div>
+            <div class="field-evidence-grid">
+                <figure class="field-evidence-panel panel-energy">
+                    <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1100&q=80" alt="太阳能板阵列">
+                    <figcaption>
+                        <span>Scope 2 · 绿电凭证</span>
+                        <strong>电力活动数据已归集</strong>
+                        <small>发票 OCR、能耗字段和排放因子自动关联</small>
+                    </figcaption>
+                </figure>
+                <figure class="field-evidence-panel panel-logistics">
+                    <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1100&q=80" alt="仓储物流现场">
+                    <figcaption>
+                        <span>Scope 3 · 供应链</span>
+                        <strong>运输与仓储排放可追溯</strong>
+                        <small>订单、里程、载重与证据链同步核验</small>
+                    </figcaption>
+                </figure>
+                <figure class="field-evidence-panel panel-report">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1100&q=80" alt="数据分析工作台">
+                    <figcaption>
+                        <span>Report · 审计输出</span>
+                        <strong>报告结论保留数据出处</strong>
+                        <small>风险解释、哈希存证和融资材料一并导出</small>
+                    </figcaption>
+                </figure>
+            </div>
+        </section>
 
         <div class="home-panorama-card">
             <div class="panorama-header">
@@ -949,7 +983,6 @@
                             <h2 class="section-title">核心产品功能</h2>
                             <p class="section-subtitle">一站式解决中小企业碳管理与ESG数据挑战</p>
                         </div>
-                        
                         <div class="row g-4">
                             <!-- 功能卡片 -->
                             <div class="col-lg-3 col-md-6">
@@ -1619,6 +1652,14 @@
                                     </div>
                                     
                                     <div class="report-preview mt-4" id="reportPreview">
+                                        <div class="report-preview-media" aria-hidden="true">
+                                            <img src="https://images.pexels.com/photos/8441819/pexels-photo-8441819.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="">
+                                            <div class="report-cover-card">
+                                                <span>REPORT DRAFT</span>
+                                                <strong>ESG & Carbon</strong>
+                                                <small>ready for review</small>
+                                            </div>
+                                        </div>
                                         <div class="preview-placeholder">
                                             <i class="fas fa-file-alt fa-3x text-muted"></i>
                                             <p class="mt-3">选择模板后，预览将显示在这里</p>
@@ -1801,15 +1842,28 @@
                 <!-- 解决方案模块 -->
                 <section id="solutions" class="page-section section-padding bg-light">
                     <div class="container">
-                        <div class="section-header text-center mb-5">
-                            <h2 class="section-title">行业解决方案</h2>
-                            <p class="section-subtitle">为不同行业提供定制化的碳管理与ESG解决方案</p>
+                        <div class="section-header solution-hero-header mb-5">
+                            <div class="solution-hero-copy">
+                                <span class="insight-kicker">Industry Playbooks</span>
+                                <h2 class="section-title">行业解决方案</h2>
+                                <p class="section-subtitle">按业务场景组织碳数据采集、核算边界、合规输出和金融材料，让方案看起来像能直接落地的作业台。</p>
+                            </div>
+                            <figure class="solution-hero-media" aria-label="行业场景">
+                                <img src="https://images.unsplash.com/photo-1494412651409-8963ce7935a7?auto=format&fit=crop&w=1200&q=82" alt="港口集装箱与供应链物流">
+                                <figcaption>
+                                    <strong>供应链现场</strong>
+                                    <span>订单、能耗、运输与凭证同步归集</span>
+                                </figcaption>
+                            </figure>
                         </div>
                         
                         <div class="row g-4">
                             <!-- 解决方案卡片 -->
                             <div class="col-lg-4">
                                 <div class="solution-card ecommerce">
+                                    <div class="solution-media">
+                                        <img src="https://images.unsplash.com/photo-1586880244386-8b3e34c8382c?auto=format&fit=crop&w=900&q=82" alt="电商仓储拣货与包装">
+                                    </div>
                                     <div class="solution-icon">
                                         <i class="fas fa-shopping-cart"></i>
                                     </div>
@@ -1831,6 +1885,9 @@
                             
                             <div class="col-lg-4">
                                 <div class="solution-card manufacture">
+                                    <div class="solution-media">
+                                        <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=900&q=82" alt="制造车间设备与产线">
+                                    </div>
                                     <div class="solution-icon">
                                         <i class="fas fa-industry"></i>
                                     </div>
@@ -1852,6 +1909,9 @@
                             
                             <div class="col-lg-4">
                                 <div class="solution-card logistics">
+                                    <div class="solution-media">
+                                        <img src="https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?auto=format&fit=crop&w=900&q=82" alt="物流车辆与仓储月台">
+                                    </div>
                                     <div class="solution-icon">
                                         <i class="fas fa-truck"></i>
                                     </div>
@@ -1878,6 +1938,20 @@
                                 <div class="pricing-header text-center mb-5">
                                     <h3 class="mb-3">灵活定价方案</h3>
                                     <p class="text-muted">根据企业规模与需求，选择合适的服务方案</p>
+                                </div>
+
+                                <div class="pricing-workflow-media">
+                                    <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=82" alt="企业绿色金融资料与报告审核">
+                                    <div class="pricing-workflow-copy">
+                                        <span>Service Workflow</span>
+                                        <strong>从票据识别、核算评分到报告与金融对接，按套餐逐步解锁。</strong>
+                                    </div>
+                                    <div class="pricing-workflow-steps">
+                                        <span>票据</span>
+                                        <span>核算</span>
+                                        <span>报告</span>
+                                        <span>金融</span>
+                                    </div>
                                 </div>
                                 
                                 <div class="row justify-content-center">
@@ -1980,8 +2054,26 @@
                         </div>
                         
                         <div class="row g-4">
+                            <div class="case-hero-visual">
+                                <div class="case-hero-media">
+                                    <img src="https://images.unsplash.com/photo-1565793298595-6a879b1d9492?auto=format&fit=crop&w=1400&q=80" alt="智能制造现场">
+                                </div>
+                                <div class="case-hero-copy">
+                                    <span class="insight-kicker">Customer Operating Room</span>
+                                    <h3>客户不是只拿到报告，而是拿到一套能持续运行的绿色经营台账</h3>
+                                    <p>每个案例都从真实票据、设备能耗、运输活动和融资材料出发，形成“采集-核算-风控-报告-金融”的闭环。</p>
+                                    <div class="case-hero-stats">
+                                        <span><strong>30%</strong><small>最高减排幅度</small></span>
+                                        <span><strong>7天</strong><small>完成首轮台账</small></span>
+                                        <span><strong>120万</strong><small>绿色补贴申请</small></span>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-lg-4">
                                 <div class="case-card">
+                                    <div class="case-media">
+                                        <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=900&q=80" alt="电商包装履约">
+                                    </div>
                                     <div class="case-header">
                                         <div class="case-logo">A公司</div>
                                         <div class="case-tag">电商企业</div>
@@ -2007,6 +2099,9 @@
                             
                             <div class="col-lg-4">
                                 <div class="case-card">
+                                    <div class="case-media">
+                                        <img src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=900&q=80" alt="制造工厂产线">
+                                    </div>
                                     <div class="case-header">
                                         <div class="case-logo">B工厂</div>
                                         <div class="case-tag">制造企业</div>
@@ -2032,6 +2127,9 @@
                             
                             <div class="col-lg-4">
                                 <div class="case-card">
+                                    <div class="case-media">
+                                        <img src="https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&w=900&q=80" alt="物流运输车辆">
+                                    </div>
                                     <div class="case-header">
                                         <div class="case-logo">C物流</div>
                                         <div class="case-tag">物流企业</div>
@@ -2057,6 +2155,35 @@
                         </div>
                         
                         <!-- 客户评价轮播 -->
+                        <div class="case-proof-strip">
+                            <div class="case-proof-title">
+                                <span class="insight-kicker">Implementation Path</span>
+                                <h3>从一次试点到可复用的绿色运营机制</h3>
+                            </div>
+                            <div class="case-proof-steps">
+                                <div>
+                                    <span>01</span>
+                                    <strong>票据接入</strong>
+                                    <small>上传发票、账单、运单，OCR 自动抽取关键字段。</small>
+                                </div>
+                                <div>
+                                    <span>02</span>
+                                    <strong>核算建模</strong>
+                                    <small>匹配行业因子，形成企业级排放画像。</small>
+                                </div>
+                                <div>
+                                    <span>03</span>
+                                    <strong>风险解释</strong>
+                                    <small>识别异常波动、缺失凭证和合规风险。</small>
+                                </div>
+                                <div>
+                                    <span>04</span>
+                                    <strong>融资输出</strong>
+                                    <small>生成报告、证据链和绿色金融申请材料。</small>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="testimonial-slider mt-5">
                             <div class="testimonial active">
                                 <div class="testimonial-content">
@@ -3244,6 +3371,44 @@
                             <button id="forecastBtn" class="btn btn-outline-success"><i class="fas fa-chart-line me-2"></i>预测未来 6 个月</button>
                             <button id="toggleIntervalModeBtn" class="btn btn-outline-secondary"><i class="fas fa-balance-scale me-2"></i>区间模式: Conformal</button>
                         </div>
+
+                        <div id="reportEmptyState" class="report-empty-state">
+                            <div class="report-empty-media">
+                                <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1300&q=82" alt="企业报告材料与财务数据审核桌面">
+                                <div class="report-empty-score">
+                                    <span>Readiness</span>
+                                    <strong>92</strong>
+                                    <small>数据可诊断度</small>
+                                </div>
+                            </div>
+                            <div class="report-empty-content">
+                                <span class="insight-kicker">AI Report Engine</span>
+                                <h4>预览报告结构与诊断依据</h4>
+                                <p>生成前先了解 AI 将如何整合票据识别、碳核算、风险解释、趋势预测和绿色金融建议。</p>
+                                <div class="report-empty-metrics">
+                                    <div><strong>6</strong><span>个月趋势预测</span></div>
+                                    <div><strong>4</strong><span>类证据链引用</span></div>
+                                    <div><strong>12</strong><span>项风险解释</span></div>
+                                </div>
+                                <div class="report-empty-modules">
+                                    <div>
+                                        <i class="fas fa-stethoscope"></i>
+                                        <strong>总体诊断</strong>
+                                        <span>定位主要排放源、行业偏离度和数据缺口。</span>
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-chart-line"></i>
+                                        <strong>趋势预测</strong>
+                                        <span>给出未来 6 个月区间预测与高风险月份。</span>
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-coins"></i>
+                                        <strong>融资建议</strong>
+                                        <span>匹配绿色信贷、供应链金融和材料清单。</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- AI 生成过程展示 -->
                         <div id="reportLoadingBox" class="card shadow-sm border-0 mb-4" style="display:none;">
@@ -3820,21 +3985,21 @@
     </div>
     
     <!-- 增强的CSS和JS引用 -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260427-report-real-photo">
     <link rel="stylesheet" href="premium-pages.css">
     <link rel="stylesheet" href="advanced-interactions.css">
     <!-- Three.js 用于3D可视化 -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/examples/js/controls/OrbitControls.js"></script>
             <script src="api.js?v=20260416b"></script>
-            <script src="real-mode.js?v=20260422-real-health"></script>
+            <script src="real-mode.js?v=20260427-real-upload-health"></script>
             <script src="home-dynamics.js?v=20260421"></script>
         <script src="auth.js"></script>
              <script src="router.js"></script>
              <script src="demo-flow.js?v=20260416c"></script>
              <script src="twin3d.js"></script>
              <script src="app.js"></script>
-             <script src="script.js"></script>
+             <script src="script.js?v=20260427-report-copy"></script>
              <script src="premium-pages.js"></script>
              <script src="advanced-interactions.js"></script>
        

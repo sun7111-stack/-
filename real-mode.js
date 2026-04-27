@@ -190,7 +190,25 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
     },
 
     normalizeHealth(payload) {
-      if (payload?.checks?.length) return payload;
+      if (payload?.checks?.length) {
+        const hasBackend = payload.checks.some(item => item.key === 'backend' || item.name === '后端');
+        return {
+          ...payload,
+          checks: hasBackend
+            ? payload.checks
+            : [
+                {
+                  key: 'backend',
+                  name: '后端服务',
+                  ok: payload.status !== 'blocked',
+                  required: true,
+                  detail: payload.status !== 'blocked' ? '健康检查接口已返回' : (payload.message || '异常'),
+                  meta: {},
+                },
+                ...payload.checks,
+              ],
+        };
+      }
       const checks = Object.entries(payload || {}).map(([name, item]) => ({
         key: name,
         name,
@@ -236,7 +254,7 @@ if (isMock || /mock|降级/i.test(ocrMethod) || /mock/i.test(runMode)) {
   const backendCheck = findCheck(['backend', '后端']);
   const ocrCheck = findCheck(['ocr', 'OCR']);
   const dbCheck = findCheck(['database', 'db', '数据库']);
-  const chainCheck = findCheck(['blockchain', 'chain', 'evidence', '证据链', '可信存证']);
+  const chainCheck = findCheck(['evidence_chain', 'blockchain', 'chain', 'evidence', '证据链', '可信存证']);
 
   const badge = (ok) =>
     ok
@@ -554,6 +572,23 @@ exportLog() {
       if (check) check.disabled = disabled;
     },
 
+    handleFileSelected(event) {
+      const file = event.target.files?.[0];
+      const label = event.target.closest('.real-file-picker')?.querySelector('span');
+      if (!file) return;
+
+      if (label) {
+        label.textContent = file.name.length > 24 ? `${file.name.slice(0, 12)}...${file.name.slice(-9)}` : file.name;
+        label.title = file.name;
+      }
+
+      this.setStatus(
+        'checking',
+        `<span>已选择票据：${this.escape(file.name)}</span><span>正在启动真实上传识别链路...</span>`
+      );
+      this.runRealFlow();
+    },
+
     buildPanel() {
       const panel = document.createElement('section');
       panel.id = this.selectors.panel;
@@ -605,6 +640,7 @@ exportLog() {
       document.getElementById(this.selectors.check)?.addEventListener('click', () => this.checkHealth());
 document.getElementById(this.selectors.run)?.addEventListener('click', () => this.runRealFlow());
 document.getElementById(this.selectors.export)?.addEventListener('click', () => this.exportLog());
+document.getElementById(this.selectors.file)?.addEventListener('change', event => this.handleFileSelected(event));
       this.enhanceExistingActions();
 
       document.addEventListener('click', event => {
