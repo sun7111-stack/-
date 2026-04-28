@@ -158,6 +158,7 @@
 
     function syncPageState(showFlash = false) {
         const page = currentPage();
+        document.body.dataset.currentPage = page.id;
         const chip = document.getElementById('interactionRouteChip');
         if (chip) chip.querySelector('span').textContent = `${page.group} / ${page.label}`;
 

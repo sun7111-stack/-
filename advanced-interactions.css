@@ -193,6 +193,10 @@ body.page-switching .page-section.active {
     box-shadow: 0 24px 48px rgba(16, 35, 29, 0.18);
 }
 
+body[data-current-page="demo-upload"] .interaction-dock {
+    display: none;
+}
+
 .dock-title {
     display: flex;
     align-items: center;

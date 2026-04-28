@@ -1,0 +1,72 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: carbon-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-carbon_platform}
+      MYSQL_USER: ${DB_USER:-carbon}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-carbon_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-carbon_root_password}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: carbon-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-carbon}
+      DB_PASSWORD: ${DB_PASSWORD:-carbon_password}
+      DB_NAME: ${DB_NAME:-carbon_platform}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-please-change-this-jwt-secret-in-production}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 10080
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      APP_DEBUG: ${APP_DEBUG:-false}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5500,http://127.0.0.1:5500}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      RUN_DB_INIT: ${RUN_DB_INIT:-true}
+      TZ: Asia/Shanghai
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: carbon-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-5500}:80"
+
+volumes:
+  mysql_data:

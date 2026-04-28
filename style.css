@@ -11322,3 +11322,17 @@ code {
         grid-template-columns: 1fr;
     }
 }
+
+.upload-next-actions {
+    position: relative;
+    z-index: 12050;
+}
+
+.upload-next-actions .btn {
+    position: relative;
+    pointer-events: auto;
+}
+
+#confirm-next-step {
+    min-width: 280px;
+}

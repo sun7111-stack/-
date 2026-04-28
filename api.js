@@ -4,7 +4,13 @@
 // ============================================
 
 const API = {
-    BASE_URL: 'http://localhost:8000/api',
+    BASE_URL: (() => {
+        if (window.API_BASE_URL) return window.API_BASE_URL.replace(/\/$/, '');
+        const { protocol, hostname, port, origin } = window.location;
+        const isLocalDev = ['localhost', '127.0.0.1'].includes(hostname) && port === '5500';
+        if (protocol.startsWith('http') && !isLocalDev) return `${origin}/api`;
+        return 'http://localhost:8000/api';
+    })(),
 
     // 获取存储的JWT token
     getToken() {

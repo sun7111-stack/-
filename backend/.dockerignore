@@ -1,0 +1,12 @@
+.env
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.log
+backend-run-*.log
+backend-run-*.err.log
+backend-server.log
+backend-server.err.log
+models/risk_model.pkl
+*.pkl

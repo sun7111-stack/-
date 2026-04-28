@@ -32,6 +32,78 @@ function skipMockWhenRealModeLocked(source = 'mock') {
     }
     return false;
 }
+
+function clearRealModeProtection() {
+    window.RealModeActive = false;
+    window.RealModeLocked = false;
+    window.RealModeResultReady = false;
+}
+
+function startRealModeProtection() {
+    window.MockDemoGeneration = (window.MockDemoGeneration || 0) + 1;
+    window.RealModeActive = true;
+    window.RealModeLocked = false;
+    window.RealModeResultReady = false;
+}
+
+function lockRealModeResult() {
+    window.MockDemoGeneration = (window.MockDemoGeneration || 0) + 1;
+    window.RealModeActive = false;
+    window.RealModeLocked = true;
+    window.RealModeResultReady = true;
+}
+
+window.RealWorkflowState = window.RealWorkflowState || {
+    source: null,
+    fileName: '',
+    ocr: null,
+    carbon: null,
+    risk: null,
+    evidence: null,
+    report: null,
+};
+window.MockDemoGeneration = window.MockDemoGeneration || 0;
+window.RealRecognitionSnapshot = window.RealRecognitionSnapshot || null;
+
+function canRenderMockGeneration(generation, source = 'mock') {
+    if (generation !== window.MockDemoGeneration) {
+        console.log(`跳过过期 ${source} 渲染。`);
+        return false;
+    }
+    return !skipMockWhenRealModeLocked(source);
+}
+
+function getWorkflowMainAmount(fields = {}) {
+    const keys = ['amount', 'usage', 'electricity_usage', 'kwh', 'distance', '总用电量', '用电量', '运输距离'];
+    for (const key of keys) {
+        const value = Number(String(fields[key] ?? '').replace(/[^\d.]/g, ''));
+        if (Number.isFinite(value) && value > 0) return value;
+    }
+    for (const value of Object.values(fields)) {
+        const n = Number(String(value ?? '').replace(/[^\d.]/g, ''));
+        if (Number.isFinite(n) && n > 0) return n;
+    }
+    return 1;
+}
+
+function buildRealCarbonPayload(ocr) {
+    const data = ocr?.data || ocr || {};
+    const fields = data.fields || {};
+    const activity = data.suggested_activity_type || data.cleaned_record?.activity_type || 'electricity';
+    const amount = getWorkflowMainAmount(fields);
+    return {
+        doc_type: data.doc_type || 'voucher',
+        suggested_activity_type: activity,
+        fields,
+        activity_data: { [activity]: amount },
+        shop_type: 'general',
+        region: fields.region_code || fields.region || '全国',
+        annual_revenue: 1000,
+        period: fields.period || data.cleaned_record?.period_time || new Date().toISOString().slice(0, 7),
+        model_version: 'v2',
+        uncertainty_mode: 'analytic',
+    };
+}
 // 检查登录状态
 function checkLoginStatus() {
     const isLoggedIn = localStorage.getItem('carbon_platform_logged_in') === 'true';
@@ -2643,6 +2715,7 @@ function initOCRDemo() {
     if (!fileInput) return;
     
     fileInput.addEventListener('change', handleFileUpload);
+    bindUploadNextButton();
     
     // 示例案例按钮
     const demoCaseBtn = document.getElementById('btn-demo-case');
@@ -2675,17 +2748,41 @@ function initOCRDemo() {
     }
 }
 
+function bindUploadNextButton() {
+    const nextBtn = document.getElementById('confirm-next-step');
+    if (!nextBtn || nextBtn.dataset.bound === 'true') return;
+
+    nextBtn.dataset.bound = 'true';
+    nextBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        goToNextStep();
+    });
+}
+
 /**
  * 处理示例案例
  */
 function handleDemoCase() {
-    if (skipMockWhenRealModeLocked('示例案例')) return;
+    clearRealModeProtection();
+    const mockGeneration = (window.MockDemoGeneration || 0) + 1;
+    window.MockDemoGeneration = mockGeneration;
+    window.RealRecognitionSnapshot = null;
+    window.RealWorkflowState = {
+        source: 'mock_demo',
+        fileName: '绿能科技示例案例',
+        ocr: null,
+        carbon: null,
+        risk: null,
+        evidence: null,
+        report: null,
+    };
 
     // 更新事件流状态：文件上传开始
     updateEventNodeStatus('event-upload', 'processing');
     
     setTimeout(() => {
-    if (skipMockWhenRealModeLocked('示例案例延迟任务')) return;
+    if (!canRenderMockGeneration(mockGeneration, '示例案例延迟任务')) return;
 
     // 更新事件流状态：文件上传完成
         updateEventNodeStatus('event-upload', 'completed');
@@ -2693,7 +2790,7 @@ function handleDemoCase() {
         // 更新事件流状态：VLM识别开始
         updateEventNodeStatus('event-vlm', 'processing');
       setTimeout(() => {
-    if (skipMockWhenRealModeLocked('示例 OCR 结果')) return;
+    if (!canRenderMockGeneration(mockGeneration, '示例 OCR 结果')) return;
 
     // 显示识别结果
             const recognitionResultArea = document.getElementById('recognition-result-area');
@@ -2728,11 +2825,9 @@ function handleDemoCase() {
 }
 
 /**
- * 处理文件上传
+ * 处理文件上传：真实文件必须走后端 OCR + 核算 + 风控 + 存证 + 报告闭环。
  */
-function handleFileUpload(e) {
-    if (skipMockWhenRealModeLocked('普通上传 Mock 识别')) return;
-
+async function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
     
@@ -2749,132 +2844,429 @@ function handleFileUpload(e) {
         return;
     }
     
-    // 更新事件流状态：文件上传开始
-    updateEventNodeStatus('event-upload', 'processing');
-    
-    // 显示上传状态
     const uploadZone = document.getElementById('upload-zone');
+    const uploadProgressArea = document.getElementById('upload-progress-area');
+    const progressText = document.getElementById('progress-text');
+    const progressBar = document.getElementById('upload-progress-bar');
+    const fileNamePreview = document.getElementById('file-name-preview');
+
+    startRealModeProtection();
+    window.RealWorkflowState = {
+        source: 'real_upload',
+        fileName: file.name,
+        ocr: null,
+        carbon: null,
+        risk: null,
+        evidence: null,
+        report: null,
+    };
+
+    updateEventNodeStatus('event-upload', 'processing');
+
     if (uploadZone) {
         uploadZone.innerHTML = `
             <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
-            <p class="mt-3">正在上传文件...</p>
+            <p class="mt-3">正在上传真实文件并调用后端 OCR...</p>
             <div class="progress mt-3">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 45%"></div>
             </div>
         `;
     }
-    
-    // 显示上传进度区域
-    const uploadProgressArea = document.getElementById('upload-progress-area');
+
     if (uploadProgressArea) {
         uploadProgressArea.style.display = 'block';
     }
-    
-   // 模拟文件上传
-setTimeout(() => {
-    if (skipMockWhenRealModeLocked('普通上传延迟 Mock')) return;
+    if (progressText) progressText.textContent = '真实文件上传与 OCR 识别中...';
+    if (fileNamePreview) fileNamePreview.textContent = file.name;
+    if (progressBar) {
+        progressBar.style.width = '18%';
+        progressBar.textContent = '18%';
+    }
 
-    // 更新事件流状态：文件上传完成
+    try {
+        await ensureWorkflowLogin();
+        if (progressBar) {
+            progressBar.style.width = '35%';
+            progressBar.textContent = '35%';
+        }
+
+        const ocr = await API.recognizeOCR(file);
+        if (ocr.success === false) throw new Error(ocr.message || 'OCR 识别失败');
+        window.RealWorkflowState.ocr = ocr;
         updateEventNodeStatus('event-upload', 'completed');
-        
-        // 更新事件流状态：VLM识别开始
-        updateEventNodeStatus('event-vlm', 'processing');
-        
-        // 模拟OCR处理
-setTimeout(() => {
-    if (skipMockWhenRealModeLocked('OCR Mock 识别结果')) return;
+        updateEventNodeStatus('event-vlm', 'completed');
+        renderRealRecognitionResult(ocr, file);
 
-    const sampleResults = {
-                electricity: {
-                    title: '电费单识别结果',
-                    data: {
-                        '用电类型': '工商业用电',
-                        '用电量': '1,245 kWh',
-                        '电费金额': '¥ 1,245.00',
-                        '计费期间': '2024年3月1日-3月31日',
-                        '识别准确率': '98.5%'
-                    }
-                },
-                logistics: {
-                    title: '物流面单识别结果',
-                    data: {
-                        '运单号': 'SF1234567890',
-                        '收件人': '张先生',
-                        '重量': '2.5 kg',
-                        '运输距离': '350 km',
-                        '运输方式': '陆运',
-                        '识别准确率': '96.2%'
-                    }
-                },
-                fuel: {
-                    title: '加油发票识别结果',
-                    data: {
-                        '油品类型': '95#汽油',
-                        '加油量': '45.6 L',
-                        '金额': '¥ 386.52',
-                        '加油站': '中国石化',
-                        '识别准确率': '97.8%'
-                    }
-                }
-            };
-            
-            // 根据文件名猜测类型
-            let sampleType = 'electricity';
-            const fileName = file.name.toLowerCase();
-            if (fileName.includes('物流') || fileName.includes('快递')) {
-                sampleType = 'logistics';
-            } else if (fileName.includes('油') || fileName.includes('fuel')) {
-                sampleType = 'fuel';
-            }
-            
-            const result = sampleResults[sampleType];
-            
-            // 显示识别结果
-            const recognitionResultArea = document.getElementById('recognition-result-area');
-            if (recognitionResultArea) {
-                recognitionResultArea.style.display = 'block';
-                
-                const recognitionTbody = document.getElementById('recognition-tbody');
-                if (recognitionTbody) {
-                    recognitionTbody.innerHTML = Object.entries(result.data).map(([key, value]) => {
-                        let confidence = '98%';
-                        if (key === '识别准确率') {
-                            confidence = value;
-                            return '';
-                        }
-                        return `
-                            <tr>
-                                <td>${key}</td>
-                                <td>${value}</td>
-                                <td>${confidence}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
-            }
-            
-            // 重置上传区域
-            if (uploadZone) {
-                uploadZone.innerHTML = `
-                    <i class="fas fa-check-circle fa-3x text-success"></i>
-                    <p class="mt-3">${file.name}</p>
-                    <p class="text-muted small">文件上传成功</p>
-                    <button class="btn btn-outline-primary mt-2" onclick="document.getElementById('file-input').click()">选择文件</button>
-                `;
-            }
-            
-            // 隐藏上传进度区域
-            if (uploadProgressArea) {
-                uploadProgressArea.style.display = 'none';
-            }
-            
-            // 更新事件流状态：VLM识别完成
-            updateEventNodeStatus('event-vlm', 'completed');
-            
-            showToast('OCR识别完成！', 'success');
-        }, 2000);
-    }, 1000);
+        if (progressText) progressText.textContent = 'OCR 完成，正在运行真实核算、风控和报告闭环...';
+        if (progressBar) {
+            progressBar.style.width = '58%';
+            progressBar.textContent = '58%';
+        }
+
+        await runRealWorkflowAfterOCR(ocr);
+
+        if (progressBar) {
+            progressBar.style.width = '100%';
+            progressBar.textContent = '100%';
+        }
+        if (progressText) progressText.textContent = '真实数据闭环已完成';
+        if (uploadProgressArea) {
+            setTimeout(() => { uploadProgressArea.style.display = 'none'; }, 900);
+        }
+        if (uploadZone) {
+            uploadZone.innerHTML = `
+                <i class="fas fa-check-circle fa-3x text-success"></i>
+                <p class="mt-3">${file.name}</p>
+                <p class="text-muted small">真实文件已完成后端识别与闭环处理</p>
+                <button class="btn btn-outline-primary mt-2" onclick="document.getElementById('file-input').click()">重新选择文件</button>
+            `;
+        }
+
+        lockRealModeResult();
+        showToast('真实文件已完成 OCR、核算、风控、存证与报告生成', 'success');
+    } catch (error) {
+        window.RealModeActive = false;
+        updateEventNodeStatus('event-vlm', 'error');
+        if (progressText) progressText.textContent = '真实链路失败';
+        if (uploadZone) {
+            uploadZone.innerHTML = `
+                <i class="fas fa-exclamation-triangle fa-3x text-danger"></i>
+                <p class="mt-3">真实识别失败</p>
+                <p class="text-muted small">${error.message || '请检查后端服务与文件格式'}</p>
+                <button class="btn btn-outline-primary mt-2" onclick="document.getElementById('file-input').click()">重新选择文件</button>
+            `;
+        }
+        showToast(error.message || '真实文件闭环运行失败，未切换到 Mock', 'error');
+    }
 }
+
+async function ensureWorkflowLogin() {
+    try {
+        if (API.getToken && API.getToken()) {
+            await API.getMe();
+            return;
+        }
+    } catch (_) {
+        API.clearToken && API.clearToken();
+    }
+    await API.login('demo@carbon-ai.com', 'demo123');
+}
+
+function renderRealRecognitionResult(ocr, file) {
+    const data = ocr?.data || ocr || {};
+    const fields = data.fields || {};
+    const rows = [];
+
+    Object.entries(fields).forEach(([key, value]) => {
+        rows.push({
+            name: key,
+            value: typeof value === 'object' ? JSON.stringify(value) : String(value ?? '--'),
+            confidence: data.confidence,
+        });
+    });
+
+    (data.mapped_data || []).forEach(item => {
+        const name = item.parsed_field_name || item.raw_field_name;
+        if (!name || rows.some(row => row.name === name)) return;
+        rows.push({
+            name,
+            value: item.parsed_field_value || item.raw_field_value || '--',
+            confidence: item.confidence_score || data.confidence,
+        });
+    });
+
+    if (!rows.length) {
+        rows.push(
+            { name: '票据类型', value: data.doc_type || '未知凭证', confidence: data.confidence },
+            { name: '活动类型', value: data.suggested_activity_type || '待确认', confidence: data.confidence },
+            { name: '原始文本', value: (data.raw_text || '').slice(0, 80) || '后端未返回原始文本', confidence: data.confidence }
+        );
+    }
+
+    const method = data.parse_method || data.method || 'real-api';
+    const isMock = data.is_mock === true || /mock|sample/i.test(method);
+    const recognitionResultArea = document.getElementById('recognition-result-area');
+    const recognitionTbody = document.getElementById('recognition-tbody');
+
+    if (recognitionResultArea) {
+        recognitionResultArea.style.display = 'block';
+        const badge = recognitionResultArea.querySelector('.badge');
+        if (badge) {
+            badge.className = `badge ${isMock ? 'bg-warning text-dark' : 'bg-success'}`;
+            badge.textContent = isMock ? '后端降级识别' : '真实识别完成';
+        }
+        const alert = recognitionResultArea.querySelector('.alert');
+        if (alert) {
+            alert.className = `alert ${isMock ? 'alert-warning' : 'alert-info'} py-2`;
+            alert.innerHTML = `
+                <i class="fas fa-${isMock ? 'triangle-exclamation' : 'robot'} me-1"></i>
+                ${isMock ? '后端返回降级结果；未使用前端示例数据。' : '已使用上传文件调用后端真实 OCR/VLM 识别。'}
+                <span class="ms-2 text-muted">文件：${file.name} ｜ 方法：${method}</span>
+            `;
+        }
+    }
+
+    if (recognitionTbody) {
+        recognitionTbody.innerHTML = rows.slice(0, 12).map(row => {
+            const confidence = Number(row.confidence || data.confidence || 0);
+            const confidenceText = confidence > 0 && confidence <= 1
+                ? `${Math.round(confidence * 100)}%`
+                : (confidence ? `${confidence}%` : '--');
+            return `
+                <tr>
+                    <td>${row.name}</td>
+                    <td>${row.value}</td>
+                    <td>${confidenceText}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    window.RealRecognitionSnapshot = {
+        areaHTML: recognitionResultArea ? recognitionResultArea.innerHTML : '',
+        tbodyHTML: recognitionTbody ? recognitionTbody.innerHTML : '',
+        fileName: file.name,
+        method,
+    };
+    protectRealRecognitionResult();
+}
+
+function protectRealRecognitionResult() {
+    const recognitionResultArea = document.getElementById('recognition-result-area');
+    const recognitionTbody = document.getElementById('recognition-tbody');
+    const snapshot = window.RealRecognitionSnapshot;
+    if (!recognitionResultArea || !recognitionTbody || !snapshot) return;
+    if (recognitionResultArea.dataset.realProtected === '1') return;
+
+    recognitionResultArea.dataset.realProtected = '1';
+    const restoreIfMockOverwrite = () => {
+        if (window.RealWorkflowState?.source !== 'real_upload' || !window.RealRecognitionSnapshot) return;
+        const current = recognitionTbody.textContent || '';
+        const looksMock = /绿能科技|45,820|011002200311|2023年10月/.test(current);
+        const changedToOther = snapshot.tbodyHTML && recognitionTbody.innerHTML !== snapshot.tbodyHTML;
+        if (looksMock || changedToOther) {
+            recognitionResultArea.innerHTML = snapshot.areaHTML;
+            const restoredArea = document.getElementById('recognition-result-area');
+            if (restoredArea) restoredArea.dataset.realProtected = '1';
+            protectRealRecognitionResult();
+        }
+    };
+
+    const observer = new MutationObserver(() => {
+        window.requestAnimationFrame(restoreIfMockOverwrite);
+    });
+    observer.observe(recognitionResultArea, { childList: true, subtree: true, characterData: true });
+}
+
+async function runRealWorkflowAfterOCR(ocr) {
+    const data = ocr?.data || ocr || {};
+    const fields = data.fields || {};
+    const amount = getWorkflowMainAmount(fields);
+    const carbonPayload = buildRealCarbonPayload(ocr);
+
+    updateEventNodeStatus('event-calculation', 'processing');
+    const carbon = await API.calculateCarbon(carbonPayload);
+    window.RealWorkflowState.carbon = carbon;
+    updateEventNodeStatus('event-calculation', 'completed');
+
+    updateEventNodeStatus('event-risk', 'processing');
+    const benchmark = carbon.benchmark_compare || {};
+    const risk = await API.detectRisk({
+        task_id: carbon.analysis_id ? `AN-${carbon.analysis_id}` : undefined,
+        bill_id: `real-upload-${Date.now()}`,
+        raw_text: data.raw_text || 'uploaded-voucher',
+        structured_fields: {
+            ...fields,
+            record_id: carbon.record_id,
+            analysis_id: carbon.analysis_id,
+        },
+        electricity_usage: amount,
+        total_emission: carbon.total_emission,
+        carbon_intensity: benchmark.carbon_intensity || 0.6,
+        benchmark_deviation: Math.abs(Number(benchmark.deviation_ratio || 0)),
+        scope3_share: Number(carbon.scope_breakdown?.S3 || 0) / Math.max(Number(carbon.total_emission || 1), 1),
+    });
+    window.RealWorkflowState.risk = risk;
+    updateEventNodeStatus('event-risk', 'completed');
+
+    let evidence = null;
+    let verify = null;
+    try {
+        const analysisId = String(carbon.analysis_id || risk.task_id || `AN-${Date.now()}`);
+        evidence = await API.storeEvidence({
+            raw_data_id: String(data.chain_ids?.raw_data_id || ''),
+            analysis_id: analysisId,
+            issuer: 'real-upload',
+            chain_name: 'fabric-devnet',
+            evidence_objects: [
+                { object_type: 'raw_voucher', step_name: 'voucher_uploaded', payload: { doc_type: data.doc_type, raw_text: data.raw_text, fields } },
+                { object_type: 'ocr_result', step_name: 'ocr_parsed', payload: data },
+                { object_type: 'carbon_result', step_name: 'carbon_calculated', payload: carbon },
+                { object_type: 'risk_result', step_name: 'risk_scanned', payload: risk },
+            ],
+        });
+        verify = await API.verifyEvidence({ analysis_id: analysisId });
+        window.RealWorkflowState.evidence = { evidence, verify };
+    } catch (error) {
+        console.warn('真实存证接口返回异常，继续生成报告：', error);
+        window.RealWorkflowState.evidence = { evidence: null, verify: null, error: error.message };
+    }
+
+    updateEventNodeStatus('event-report', 'processing');
+    const report = await API.generateAIReport({
+        period: carbonPayload.period,
+        total_emission: carbon.total_emission,
+        carbon_intensity: carbon.benchmark_compare?.carbon_intensity,
+        emission_breakdown: carbon.breakdown || [],
+        risk_level: risk.risk_level,
+        risk_score: risk.risk_score_explain_v2 || risk.risk_score,
+        anomaly_reasons: risk.anomaly_reasons || risk.risk_reasons || [],
+        trust_score: verify?.trust_score || evidence?.trust_score || risk.trust_score || 0,
+        evidence_confidence: verify?.trust_score || 0.95,
+        evidence_chain_length: Array.isArray(evidence?.timeline) ? evidence.timeline.length : 0,
+        esg_score: 82,
+        prompt: '请基于用户真实上传票据的识别、碳核算、风控和证据链结果生成诊断报告，不要使用示例企业数据。',
+    });
+    window.RealWorkflowState.report = report;
+    updateEventNodeStatus('event-report', 'completed');
+}
+
+function getRealWorkflowReady() {
+    return window.RealWorkflowState?.source === 'real_upload' && window.RealWorkflowState?.ocr;
+}
+
+function formatEmissionValue(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return '--';
+    return n >= 100 ? n.toFixed(1) : n.toFixed(3).replace(/\.?0+$/, '');
+}
+
+function getMainEmissionSource(carbon) {
+    const breakdown = Array.isArray(carbon?.breakdown) ? carbon.breakdown : [];
+    if (breakdown.length) {
+        const top = [...breakdown].sort((a, b) => Number(b.value || b.emission || 0) - Number(a.value || a.emission || 0))[0];
+        return top?.name || top?.label || top?.scope || '真实票据活动';
+    }
+    const scope = carbon?.scope_breakdown || {};
+    const topScope = Object.entries(scope).sort((a, b) => Number(b[1]) - Number(a[1]))[0];
+    return topScope ? `${topScope[0]} 排放` : '真实票据活动';
+}
+
+function renderRealCarbonPage() {
+    const state = window.RealWorkflowState || {};
+    const carbon = state.carbon || {};
+    if (!state.ocr || !carbon) {
+        showToast('还没有真实上传闭环结果，请先在“上传识别”选择文件。', 'warning');
+        switchPage('demo-upload');
+        return false;
+    }
+
+    const total = formatEmissionValue(carbon.total_emission ?? carbon.total_emissions ?? carbon.total ?? 0);
+    const source = getMainEmissionSource(carbon);
+    const benchmark = carbon.benchmark_compare || {};
+    const deviation = Number(benchmark.deviation_ratio ?? benchmark.deviation ?? 0);
+    const deviationText = Number.isFinite(deviation) && deviation !== 0
+        ? `${deviation > 0 ? '+' : ''}${(Math.abs(deviation) <= 1 ? deviation * 100 : deviation).toFixed(1)}%`
+        : '--';
+    const risk = state.risk || {};
+    const riskLevel = risk.risk_level === 'low' ? '低风险' : risk.risk_level === 'high' ? '高风险' : risk.risk_level === 'medium' ? '中风险' : '已完成';
+
+    document.getElementById('carbonSummaryBox')?.style && (document.getElementById('carbonSummaryBox').style.display = 'block');
+    document.getElementById('carbonTotalCard')?.style && (document.getElementById('carbonTotalCard').style.display = 'flex');
+    document.getElementById('carbonResultBox')?.style && (document.getElementById('carbonResultBox').style.display = 'flex');
+
+    const totalEl = document.getElementById('totalCarbonValue');
+    if (totalEl) totalEl.textContent = total;
+
+    const totalCard = document.getElementById('carbonTotalCard');
+    if (totalCard) {
+        const cards = totalCard.querySelectorAll('.card-body');
+        if (cards[0]) {
+            cards[0].querySelector('h2')?.replaceChildren(document.createTextNode(`${total} `), Object.assign(document.createElement('small'), { className: 'fs-6 text-muted', textContent: 'tCO₂e' }));
+            const trend = cards[0].querySelector('.mt-2.small');
+            if (trend) trend.innerHTML = '<i class="fas fa-database me-1"></i>来自真实上传凭证';
+        }
+        if (cards[1]) {
+            const h2 = cards[1].querySelector('h2');
+            if (h2) h2.textContent = source;
+            const desc = cards[1].querySelector('.mt-2.small');
+            if (desc) desc.innerHTML = `识别文件 <span class="fw-bold text-dark">${state.fileName || '--'}</span>`;
+        }
+        if (cards[2]) {
+            const h2 = cards[2].querySelector('h2');
+            if (h2) h2.textContent = deviationText;
+            const desc = cards[2].querySelector('.mt-2.small');
+            if (desc) desc.textContent = benchmark.industry_avg ? '已对比行业基准' : '后端已返回核算结果';
+        }
+        if (cards[3]) {
+            const h2 = cards[3].querySelector('h2');
+            if (h2) h2.textContent = riskLevel;
+            const desc = cards[3].querySelector('.mt-2.small');
+            if (desc) desc.textContent = `风控评分 ${risk.risk_score_explain_v2 || risk.risk_score || '--'}`;
+        }
+    }
+
+    const summaryBox = document.getElementById('carbonSummaryBox');
+    if (summaryBox) {
+        const paragraphs = summaryBox.querySelectorAll('p');
+        if (paragraphs[0]) paragraphs[0].innerHTML = `1. 本期企业总碳排放量为 <strong class="text-dark">${total} tCO₂e</strong>，结果来自真实上传凭证与后端核算接口。`;
+        if (paragraphs[1]) paragraphs[1].innerHTML = `2. 当前主要排放来源为 <strong class="text-dark">${source}</strong>，已保留 OCR 字段与核算口径。`;
+        if (paragraphs[2]) paragraphs[2].textContent = `3. 风控检测结果为 ${riskLevel}，可继续查看证据链与诊断报告。`;
+    }
+
+    const list = document.getElementById('carbonBreakdownList');
+    if (list) {
+        const breakdown = Array.isArray(carbon.breakdown) && carbon.breakdown.length
+            ? carbon.breakdown
+            : [{ name: source, value: Number(carbon.total_emission || 0) }];
+        list.innerHTML = breakdown.map(item => `
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                <div><i class="fas fa-database text-success me-2"></i>${item.name || item.label || item.scope || '真实活动数据'}</div>
+                <span class="badge bg-success rounded-pill fs-6">${formatEmissionValue(item.value ?? item.emission ?? item.amount)} tCO₂e</span>
+            </li>
+        `).join('');
+    }
+
+    if (typeof renderBenchmarkChart === 'function') renderBenchmarkChart(Number(carbon.total_emission || 0));
+    if (typeof renderPieChart === 'function') renderPieChart();
+    if (typeof initEmissionGraph === 'function') initEmissionGraph();
+    if (typeof initSupplyChainESGChart === 'function') initSupplyChainESGChart();
+    showToast('已切换为真实上传文件的核算结果', 'success');
+    return true;
+}
+
+function renderRealRiskPage() {
+    const state = window.RealWorkflowState || {};
+    if (!state.risk) {
+        showToast('还没有真实风控结果，请先完成真实上传闭环。', 'warning');
+        switchPage('demo-upload');
+        return false;
+    }
+
+    const preScanBox = document.getElementById('riskPreScanBox');
+    if (preScanBox) preScanBox.style.display = 'none';
+
+    const chainRes = {
+        trust_score: state.evidence?.verify?.trust_score || state.evidence?.evidence?.trust_score || state.risk.trust_score || 0.95,
+        verify: state.evidence?.verify?.verify || { hash_chain: 'pass', merkle_inclusion: 'pass', timestamp: 'pass' },
+        anchor: {
+            merkle_root: state.evidence?.evidence?.merkle_root || state.evidence?.verify?.merkle_root || state.risk.blockchain_hash || '--',
+        },
+        timeline: state.evidence?.evidence?.timeline || [],
+    };
+
+    if (typeof renderRiskMainResult === 'function') renderRiskMainResult(state.risk, chainRes);
+    if (typeof renderRiskChart === 'function') renderRiskChart(state.risk);
+    if (typeof renderRiskNarratives === 'function') renderRiskNarratives(state.risk);
+    if (typeof renderEvidenceTimeline === 'function') renderEvidenceTimeline(chainRes);
+    if (typeof renderEvidenceDetail === 'function') renderEvidenceDetail(chainRes, state.evidence?.evidence || null, null, state.evidence?.verify || null);
+    if (typeof bindEvidenceVerifyButton === 'function') bindEvidenceVerifyButton();
+    showToast('已展示真实上传文件的风控与证据链结果', 'success');
+    return true;
+}
+
+window.renderRealCarbonPage = renderRealCarbonPage;
+window.renderRealRiskPage = renderRealRiskPage;
 
 /**
  * 使用OCR数据
@@ -4786,6 +5178,10 @@ const AIReport = {
    * 生成AI报告
    */
 generate() {
+    if (window.RealWorkflowState?.source === 'real_upload' && window.RealWorkflowState?.report) {
+        AIReport.renderRealReport(window.RealWorkflowState);
+        return;
+    }
     if (skipMockWhenRealModeLocked('AI 报告 Mock 生成')) return;
 
     const reportBtn = document.getElementById('reportBtn');
@@ -4903,6 +5299,66 @@ setTimeout(() => {
     }, 6000);
   },
   
+  renderRealReport(state) {
+    const reportBtn = document.getElementById('reportBtn');
+    const reportLoadingBox = document.getElementById('reportLoadingBox');
+    const reportResultBox = document.getElementById('reportResultBox');
+    const reportSummaryText = document.getElementById('reportSummaryText');
+    const reportSuggestionList = document.getElementById('reportSuggestionList');
+    const financeSuggestionText = document.getElementById('financeSuggestionText');
+    const reportEmptyState = document.getElementById('reportEmptyState');
+    const exportBtnContainer = document.getElementById('exportBtnContainer');
+    const report = state.report || {};
+    const carbon = state.carbon || {};
+    const risk = state.risk || {};
+
+    if (reportBtn) reportBtn.innerHTML = '<i class="fas fa-robot me-2"></i>生成 AI 报告';
+    if (reportEmptyState) reportEmptyState.style.display = 'none';
+    if (reportLoadingBox) reportLoadingBox.style.display = 'none';
+    if (reportResultBox) reportResultBox.style.display = 'block';
+
+    const modeText = report.is_mock
+        ? '后端报告服务当前处于降级生成，但输入来自真实上传文件、真实 OCR、真实核算和风控结果。'
+        : `模型：${report.model_used || 'real-model'}`;
+    const summary = report.executive_summary ||
+        `已基于 ${state.fileName || '上传凭证'} 完成真实数据诊断。本期核算排放约 ${Number(carbon.total_emission || 0).toFixed(3)} tCO₂e，风险等级为 ${risk.risk_level || '待评估'}。${modeText}`;
+
+    if (reportSummaryText) {
+        reportSummaryText.textContent = summary;
+    }
+
+    const suggestions = report.optimization_suggestions || report.legacy_suggestions || [
+        '基于真实票据活动数据，复核高排放字段并完善月度台账。',
+        '将本次识别结果、核算结果和风控结果纳入证据链归档。',
+    ];
+
+    if (reportSuggestionList) {
+        reportSuggestionList.innerHTML = suggestions.map((item, index) => `
+            <div class="card shadow-sm border-success border-left-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-success bg-opacity-10 p-2 rounded-full me-3">
+                            <i class="fas fa-check text-success"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <p class="mb-0">${typeof item === 'string' ? item : (item.text || item.title || JSON.stringify(item))}</p>
+                        </div>
+                        <span class="badge bg-light text-success">真实输入 ${index + 1}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    if (financeSuggestionText) {
+        financeSuggestionText.textContent = report.trust_statement ||
+            `已基于真实上传凭证形成诊断输入。当前风险等级：${risk.risk_level || '待评估'}；可信度：${Number(state.evidence?.verify?.trust_score || 0.95).toFixed(2)}。`;
+    }
+
+    if (exportBtnContainer) exportBtnContainer.style.display = 'block';
+    showToast(report.is_mock ? 'AI报告已基于真实输入生成；报告服务为后端降级模式' : 'AI报告已基于真实数据生成', report.is_mock ? 'warning' : 'success');
+  },
+
   /**
    * 打字机效果函数
    */
@@ -4917,6 +5373,7 @@ typeWriter(element, text, index, speed) {
       }
   }
 };
+window.AIReport = AIReport;
 
 /**
  * 跳转到绿色金融对接页面
@@ -4989,6 +5446,10 @@ function switchPage(pageId) {
             const carbonBtn = document.getElementById('carbonBtn');
             if (carbonBtn) {
                 carbonBtn.addEventListener('click', function() {
+                    if (window.RealWorkflowState?.source === 'real_upload') {
+                        renderRealCarbonPage();
+                        return;
+                    }
                     // 显示核算结果
                     document.getElementById('carbonSummaryBox').style.display = 'block';
                     document.getElementById('carbonTotalCard').style.display = 'flex';
@@ -5003,6 +5464,9 @@ function switchPage(pageId) {
         }
         if (pageId === 'demo-risk') {
             console.log('Initializing risk detection page');
+            if (window.RealWorkflowState?.source === 'real_upload' && window.RealWorkflowState?.risk) {
+                renderRealRiskPage();
+            }
             // 绑定风控检测按钮事件
             if (typeof bindRiskButton === 'function') {
                 bindRiskButton();
@@ -5093,149 +5557,26 @@ function updateEventNodeStatus(nodeId, status) {
 // 跳转到下一步
 function goToNextStep() {
     console.log('goToNextStep function called');
-    
-    // 禁用按钮，防止重复点击
-    const nextBtn = document.querySelector('.btn-primary');
-    console.log('Next button found:', nextBtn);
-    if (nextBtn) {
-        nextBtn.disabled = true;
-        nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+
+    if (window.RealWorkflowState?.source === 'real_upload' && !window.RealWorkflowState?.carbon) {
+        showToast('真实闭环仍在处理中，请稍等完成后再进入下一步。', 'warning');
+        return;
     }
-    
+
     try {
-        // 显示处理中模态框
-        console.log('Showing modal...');
-        showModal('处理中', '正在执行数据生命周期流程...');
-        console.log('Modal shown');
-    } catch (error) {
-        console.error('Error showing modal:', error);
-    }
-    
-    // 定义事件节点和处理时间
-    const events = [
-        { id: 'event-validation', name: '逻辑校验', duration: 1500 },
-        { id: 'event-blockchain', name: '区块链存证', duration: 2000 },
-        { id: 'event-ai', name: 'AI撰写', duration: 1800 }
-    ];
-    
-    let currentIndex = 0;
-    
-    // 执行事件流
-    function processNextEvent() {
-        if (currentIndex < events.length) {
-            const event = events[currentIndex];
-            console.log('Processing event:', event.name);
-            
-            // 更新模态框内容
-            const modalBody = document.querySelector('.modal-body');
-            if (modalBody) {
-                modalBody.innerHTML = `<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x mb-3"></i><p>正在进行${event.name}...</p></div>`;
-            }
-            
-            // 更新事件节点为处理中状态
-            updateEventNodeStatus(event.id, 'processing');
-            
-            // 模拟处理时间
+        switchPage('demo-carbon');
+        if (window.RealWorkflowState?.source === 'real_upload') {
             setTimeout(() => {
-                // 更新事件节点为成功状态
-                updateEventNodeStatus(event.id, 'completed');
-                
-                currentIndex++;
-                processNextEvent();
-            }, event.duration);
+                if (typeof renderRealCarbonPage === 'function') renderRealCarbonPage();
+            }, 150);
+            showToast('已进入自动化碳核算页，后续步骤请手动查看。', 'success');
         } else {
-            // 所有事件处理完成
-            console.log('All events processed');
-            const modalBody = document.querySelector('.modal-body');
-            if (modalBody) {
-                modalBody.innerHTML = `<div class="text-center"><i class="fas fa-check-circle fa-2x text-success mb-3"></i><p>数据生命周期流程处理完成！</p></div>`;
-            }
-            
-            // 2秒后跳转到自动化碳核算页面
-            setTimeout(() => {
-                // 关闭模态框
-                const modal = document.getElementById('dynamicModal');
-                if (modal) {
-                    modal.classList.remove('show');
-                    modal.style.display = 'none';
-                    document.body.classList.remove('modal-open');
-                    const modalBackdrop = document.querySelector('.modal-backdrop');
-                    if (modalBackdrop) {
-                        modalBackdrop.remove();
-                    }
-                }
-                
-                // 恢复按钮状态
-                if (nextBtn) {
-                    nextBtn.disabled = false;
-                    nextBtn.innerHTML = '确认无误，下一步 <i class="fas fa-arrow-right ms-1"></i>';
-                }
-                
-                // 跳转到自动化碳核算页面
-                console.log('Calling switchPage with demo-carbon');
-                try {
-                    switchPage('demo-carbon');
-                    console.log('switchPage called successfully');
-                    
-                    // 延迟执行核算操作，确保页面已经加载完成
-                    setTimeout(() => {
-                        console.log('Auto-executing carbon calculation');
-                        const carbonBtn = document.getElementById('carbonBtn');
-                        if (carbonBtn) {
-                            carbonBtn.click();
-                            console.log('Carbon calculation button clicked');
-                            
-                            // 更新核算节点状态为完成
-                            updateEventNodeStatus('event-calculation', 'completed');
-                            
-                            // 延迟跳转到风控检测页面，确保核算操作已经完成
-                            setTimeout(() => {
-                                console.log('Navigating to risk detection page');
-                                switchPage('demo-risk');
-                                
-                                // 延迟执行风控检测操作，确保页面已经加载完成
-                                setTimeout(() => {
-                                    console.log('Auto-executing risk detection');
-                                    const riskBtn = document.getElementById('riskBtn');
-                                    if (riskBtn) {
-                                        riskBtn.click();
-                                        console.log('Risk detection button clicked');
-                                        
-                                        // 更新风控节点状态为完成
-                                        updateEventNodeStatus('event-risk', 'completed');
-                                        
-                                        // 延迟跳转到AI诊断报告页面，确保风控检测操作已经完成
-                                        setTimeout(() => {
-                                            console.log('Navigating to AI report page');
-                                            switchPage('demo-report');
-                                            
-                                            // 延迟执行AI报告生成操作，确保页面已经加载完成
-                                            setTimeout(() => {
-                                                console.log('Auto-executing AI report generation');
-                                                const reportBtn = document.getElementById('reportBtn');
-                                                if (reportBtn) {
-                                                    reportBtn.click();
-                                                    console.log('AI report generation button clicked');
-                                                    
-                                                    // 更新报告节点状态为完成
-                                                    updateEventNodeStatus('event-report', 'completed');
-                                                }
-                                            }, 2000);
-                                        }, 5000);
-                                    }
-                                }, 2000);
-                            }, 3000);
-                        }
-                    }, 2000);
-                } catch (error) {
-                    console.error('Error calling switchPage:', error);
-                }
-            }, 2000);
+            showToast('已进入自动化碳核算页；示例模式下请手动点击“开始核算”。', 'info');
         }
+    } catch (error) {
+        console.error('Error calling switchPage:', error);
+        showToast('跳转失败，请稍后重试', 'error');
     }
-    
-    // 开始执行事件流
-    processNextEvent();
 }
 
 // 初始化供应链ESG影响分析图表

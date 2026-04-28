@@ -2051,8 +2051,20 @@ function bindRecognizeButton() {
 function bindCarbonButton() {
     const btn = document.getElementById('carbonBtn');
     if (!btn) return;
+    if (btn.dataset.demoCarbonBound === '1') return;
+    btn.dataset.demoCarbonBound = '1';
 
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async (event) => {
+        if (window.RealWorkflowState?.source === 'real_upload') {
+            event.stopImmediatePropagation();
+            if (typeof window.renderRealCarbonPage === 'function') {
+                window.renderRealCarbonPage();
+            } else {
+                alert('真实上传结果已存在，请刷新页面后重试。');
+            }
+            return;
+        }
+
         if (!DemoState.ocrResult) {
             alert('流程拦截：请先在第一步完成票据上传与识别！');
             return;
@@ -2199,8 +2211,20 @@ function bindExportCarbonButton() {
 function bindRiskButton() {
     const btn = document.getElementById('riskBtn');
     if (!btn) return;
+    if (btn.dataset.demoRiskBound === '1') return;
+    btn.dataset.demoRiskBound = '1';
 
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async (event) => {
+        if (window.RealWorkflowState?.source === 'real_upload') {
+            event.stopImmediatePropagation();
+            if (typeof window.renderRealRiskPage === 'function') {
+                window.renderRealRiskPage();
+            } else {
+                alert('真实风控结果已存在，请刷新页面后重试。');
+            }
+            return;
+        }
+
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>区块链上链与全域核验中...';
         btn.disabled = true;
 
@@ -2683,8 +2707,61 @@ function goToAIReport() {
 function bindReportButton() {
     const btn = document.getElementById('reportBtn');
     if (!btn) return;
+    if (btn.dataset.demoReportBound === '1') return;
+    btn.dataset.demoReportBound = '1';
 
     btn.addEventListener('click', async () => {
+        if (window.RealWorkflowState?.source === 'real_upload') {
+            if (window.RealWorkflowState.report && typeof window.AIReport?.renderRealReport === 'function') {
+                window.AIReport.renderRealReport(window.RealWorkflowState);
+                return;
+            }
+            if (window.RealWorkflowState.risk) {
+                // 真实风控已完成但报告未生成时，允许继续用真实状态组装报告请求。
+                const realCarbon = window.RealWorkflowState.carbon || {};
+                const realRisk = window.RealWorkflowState.risk || {};
+                const realEvidence = window.RealWorkflowState.evidence || {};
+
+                btn.innerHTML = '<i class="fas fa-brain fa-pulse me-2"></i>基于真实风控结果生成报告...';
+                btn.classList.add('btn-warning', 'text-dark');
+                btn.classList.remove('btn-primary');
+                btn.disabled = true;
+
+                document.getElementById('reportResultBox').style.display = 'none';
+                document.getElementById('exportBtnContainer').style.display = 'none';
+
+                try {
+                    const res = await API.generateAIReport({
+                        period: new Date().toISOString().slice(0, 7),
+                        total_emission: Number(realCarbon.total_emission || realCarbon.total_emissions || 0),
+                        carbon_intensity: Number(realCarbon.benchmark_compare?.carbon_intensity || realCarbon.carbon_intensity || 0.6),
+                        emission_breakdown: realCarbon.breakdown || [],
+                        risk_level: realRisk.risk_level || 'medium',
+                        risk_score: Number(realRisk.risk_score_explain_v2 || realRisk.risk_score || 0),
+                        anomaly_reasons: realRisk.anomaly_reasons || realRisk.risk_reasons || [],
+                        trust_score: Number(realEvidence.verify?.trust_score || realEvidence.evidence?.trust_score || realRisk.trust_score || 0.95),
+                        evidence_confidence: Number(realEvidence.verify?.trust_score || 0.95),
+                        evidence_chain_length: Array.isArray(realEvidence.evidence?.timeline) ? realEvidence.evidence.timeline.length : 0,
+                        esg_score: 82,
+                        prompt: '基于真实上传文件的OCR、核算、风控和证据链结果生成报告。'
+                    });
+                    window.RealWorkflowState.report = res;
+                    if (typeof window.AIReport?.renderRealReport === 'function') {
+                        window.AIReport.renderRealReport(window.RealWorkflowState);
+                    }
+                } catch (err) {
+                    console.error('真实报告生成失败:', err);
+                    if(typeof showToast === 'function') showToast(err.message || '真实报告生成失败，请检查后端服务', 'error');
+                } finally {
+                    btn.innerHTML = '<i class="fas fa-robot me-2"></i>生成 AI 报告';
+                    btn.classList.remove('btn-warning', 'text-dark');
+                    btn.classList.add('btn-primary');
+                    btn.disabled = false;
+                }
+                return;
+            }
+        }
+
         // 1. 拦截检查（防止未测风险直接生成）
         if (typeof DemoState === 'undefined' || !DemoState.riskResult) {
             alert('流程拦截：请先完成风控检测，确保数据真实有效！');
@@ -3030,6 +3107,24 @@ function typeHTML(element, htmlString, speed, callback) {
       const pieDom = document.getElementById('pieChartBox');
       if (!pieDom) return;
       const pieChart = echarts.init(pieDom);
+      const realCarbon = window.RealWorkflowState?.source === 'real_upload' ? window.RealWorkflowState.carbon : null;
+      const realBreakdown = Array.isArray(realCarbon?.breakdown) && realCarbon.breakdown.length
+          ? realCarbon.breakdown.map((item) => ({
+              value: Number(item.value ?? item.emission ?? item.amount ?? 0),
+              name: item.name || item.label || item.scope || '真实活动数据',
+          })).filter((item) => item.value > 0)
+          : Object.entries(realCarbon?.scope_breakdown || {}).map(([name, value]) => ({
+              value: Number(value),
+              name,
+          })).filter((item) => item.value > 0);
+      const chartData = realBreakdown.length
+          ? realBreakdown
+          : [
+              { value: 3.12, name: '电力排放(3.12)', itemStyle: { color: '#2E7D32' } },
+              { value: 1.48, name: '运输排放(1.48)', itemStyle: { color: '#F9A825' } },
+              { value: 1.87, name: '燃料排放(1.87)', itemStyle: { color: '#0277BD' } },
+              { value: 0.79, name: '其他排放(0.79)', itemStyle: { color: '#757575' } }
+          ];
       const pieOption = {
           tooltip: { trigger: 'item' },
           legend: { top: '5%', left: 'center', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 10 } },
@@ -3047,12 +3142,7 @@ function typeHTML(element, htmlString, speed, callback) {
                   label: { show: false, position: 'center' },
                   emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' } },
                   labelLine: { show: false },
-                  data: [
-                      { value: 3.12, name: '电力排放(3.12)', itemStyle: { color: '#2E7D32' } },
-                      { value: 1.48, name: '运输排放(1.48)', itemStyle: { color: '#F9A825' } },
-                      { value: 1.87, name: '燃料排放(1.87)', itemStyle: { color: '#0277BD' } },
-                      { value: 0.79, name: '其他排放(0.79)', itemStyle: { color: '#757575' } }
-                  ]
+                  data: chartData
               }
           ]
       };
